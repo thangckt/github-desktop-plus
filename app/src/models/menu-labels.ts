@@ -60,4 +60,9 @@ export type MenuLabelsEvent = {
    * their existing stash or not.
    */
   readonly askForConfirmationWhenStashingAllChanges?: boolean
+
+  /**
+   * Whether or not the current repository is a GitHub repository.
+   */
+  readonly isGitHub?: boolean
 }
