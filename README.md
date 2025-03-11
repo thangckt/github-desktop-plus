@@ -33,7 +33,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 ### Changes tab:
 
-- [ ] Context menu option to **permanently discard changes** without sending to trash (useful when the there are many changed files and the regular "Discard" is extremely slow).
+- [x] Context menu option to **permanently discard changes** without sending to trash (useful when the there are many changed files and the regular "Discard" is extremely slow).
 
 ## Running the app locally
 

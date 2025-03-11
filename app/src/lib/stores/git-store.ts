@@ -100,6 +100,7 @@ import { getDefaultBranch } from '../helpers/default-branch'
 import { stat } from 'fs/promises'
 import { findForkedRemotesToPrune } from './helpers/find-forked-remotes-to-prune'
 import { findDefaultBranch } from '../find-default-branch'
+import { cleanUntrackedFiles } from '../git/clean'
 
 /** The number of commits to load from history per batch. */
 const CommitBatchSize = 100
@@ -1502,7 +1503,8 @@ export class GitStore extends BaseStore {
   public async discardChanges(
     files: ReadonlyArray<WorkingDirectoryFileChange>,
     moveToTrash: boolean = true,
-    askForConfirmationOnDiscardChangesPermanently: boolean = false
+    askForConfirmationOnDiscardChangesPermanently: boolean = false,
+    cleanUntracked: boolean = false
   ): Promise<void> {
     const pathsToCheckout = new Array<string>()
     const pathsToReset = new Array<string>()
@@ -1594,6 +1596,12 @@ export class GitStore extends BaseStore {
       )
       await checkoutIndex(this.repository, necessaryPathsToCheckout)
     })
+
+    if (cleanUntracked) {
+      await this.performFailableOperation(() =>
+        cleanUntrackedFiles(this.repository)
+      )
+    }
   }
 
   public async discardChangesFromSelection(

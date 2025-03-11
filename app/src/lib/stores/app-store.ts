@@ -4941,7 +4941,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public async _discardChanges(
     repository: Repository,
     files: ReadonlyArray<WorkingDirectoryFileChange>,
-    moveToTrash: boolean = true
+    moveToTrash: boolean = true,
+    cleanUntracked: boolean = false
   ) {
     const gitStore = this.gitStoreCache.get(repository)
 
@@ -4951,7 +4952,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       await gitStore.discardChanges(
         files,
         moveToTrash,
-        askForConfirmationOnDiscardChangesPermanently
+        askForConfirmationOnDiscardChangesPermanently,
+        cleanUntracked
       )
     } catch (error) {
       if (!(error instanceof DiscardChangesError)) {
