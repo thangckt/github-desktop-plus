@@ -42,6 +42,14 @@ body.theme-dark {
   --secondary-button-focus-shadow-color: #{rgba($gray-200, 0.75)};
   --secondary-button-focus-border-color: #{$gray-300};
 
+  --button-destructive-background: #{rgba($red-800, 0.25)};
+  --button-destructive-border-color: #{$red-900};
+  --button-destructive-text-color: var(--text-color);
+  --button-destructive-hover-background: #{$red-700};
+  --button-destructive-hover-border-color: #{$red-900};
+  --button-destructive-focus-background: #{$red-900};
+  --button-destructive-focus-border-color: #{$red-900};
+
   /**
    * Color for icons that are placed on top of a colored backing
    * (like a circle badge icon)

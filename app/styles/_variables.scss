@@ -43,6 +43,14 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
   --secondary-button-focus-shadow-color: #{rgba($gray-200, 0.75)};
   --secondary-button-focus-border-color: #{$gray-300};
 
+  --button-destructive-background: #{$red-100};
+  --button-destructive-border-color: #{$red-200};
+  --button-destructive-text-color: #{$red-800};
+  --button-destructive-hover-background: #{$red-200};
+  --button-destructive-hover-border-color: #{$red-300};
+  --button-destructive-focus-background: #{$red-200};
+  --button-destructive-focus-border-color: #{$red-300};
+
   /**
    * Color for icons that are placed on top of a colored backing
    * (like a circle badge icon)

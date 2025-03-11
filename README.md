@@ -7,6 +7,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 ## General:
 
 - [ ] Customizable **keyboard shortcuts**.
+- [x] Red color for destructive action buttons.
 - [ ] Bitbucket integration:
   - [ ] Correctly set repository owner (instead of "Other").
   - [ ] Create pull requests.

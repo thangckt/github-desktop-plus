@@ -148,6 +148,7 @@ export class OkCancelButtonGroup extends React.Component<
         disabled={this.props.okButtonDisabled}
         tooltip={this.props.okButtonTitle}
         type={this.props.destructive === true ? 'button' : 'submit'}
+        className={this.props.destructive === true ? 'destructive' : ''}
         ariaDescribedBy={this.props.okButtonAriaDescribedBy}
       >
         {this.props.okButtonText || 'Ok'}
