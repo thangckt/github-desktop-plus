@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "command": "yarn start",
+      "name": "Start app",
+      "request": "launch",
+      "type": "node-terminal",
+      "preLaunchTask": "Compile & Build"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Jest All",

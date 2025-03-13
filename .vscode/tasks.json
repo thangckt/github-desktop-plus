@@ -5,6 +5,12 @@
       "type": "npm",
       "script": "compile:dev:watch",
       "label": "Compile",
+      "options": {
+        "shell": {
+          "executable": "${env:SHELL}",
+          "args": ["-ic"]
+        }
+      },
       "isBackground": true,
       "presentation": {
         "reveal": "never",
@@ -22,8 +28,8 @@
           "message": 3
         },
         "background": {
-          "beginsPattern": "",
-          "endsPattern": ""
+          "beginsPattern": "Started watching",
+          "endsPattern": "Finished building"
         }
       }
     },
@@ -31,6 +37,12 @@
       "type": "npm",
       "script": "build:dev:watch",
       "label": "Build",
+      "options": {
+        "shell": {
+          "executable": "${env:SHELL}",
+          "args": ["-ic"]
+        }
+      },
       "isBackground": true,
       "presentation": {
         "reveal": "never",

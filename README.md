@@ -53,14 +53,13 @@ yarn start                # Start the app for development
 
 ### From VSCode
 
-Instead of running:
+The first time you open the project, install the dependencies by running:
 ```bash
-yarn compile:dev:watch &
-yarn build:dev:watch &
+corepack enable
+yarn
 ```
 
-You can use the build shourtcut (by default, `Ctrl+Shift+B`), which will run both commands in the background.
-
+Then, you can simply build and run the app by pressing `F5`. Breakpoints should be set in the developer tools that open up, not the VSCode editor.
 
 ## Why this fork?
 
