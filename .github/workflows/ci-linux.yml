@@ -9,6 +9,7 @@ on:
     tags:
       - 'release-*.*.*-linux*'
       - 'release-*.*.*-test*'
+      - 'v*.*.*'
   pull_request:
     branches:
       - linux

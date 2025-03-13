@@ -43,12 +43,15 @@ function findYarnVersion(callback: (path: string) => void) {
   })
 }
 
+console.log('---> Running post-install script...')
+
 findYarnVersion(path => {
   const installArgs = getYarnArgs([path, '--cwd', 'app', 'install', '--force'])
 
   let result = spawnSync('node', installArgs, options)
 
   if (result.status !== 0) {
+    console.error('Failed to install app dependencies. Code:', result.status)
     process.exit(result.status || 1)
   }
 
@@ -60,6 +63,7 @@ findYarnVersion(path => {
     )
 
     if (result.status !== 0) {
+      console.error('Failed to update submodules. Code:', result.status)
       process.exit(result.status || 1)
     }
   }
@@ -67,6 +71,7 @@ findYarnVersion(path => {
   result = spawnSync('node', getYarnArgs([path, 'compile:script']), options)
 
   if (result.status !== 0) {
+    console.error('Failed to compile app dependencies. Code:', result.status)
     process.exit(result.status || 1)
   }
 
@@ -74,6 +79,7 @@ findYarnVersion(path => {
     result = spawnSync('node', getYarnArgs([path, 'patch-package']), options)
 
     if (result.status !== 0) {
+      console.error('Failed to run patch-package. Code:', result.status)
       process.exit(result.status || 1)
     }
   }
