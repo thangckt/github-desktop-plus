@@ -113,7 +113,11 @@ jobs:
         run: |
           RELEASE_TAG=${GITHUB_REF/refs\/tags\//}
           echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
-          tagNameWithoutPrefix="${RELEASE_TAG:8}"
+          if [[ "${RELEASE_TAG}" == release-* ]]; then
+            tagNameWithoutPrefix="${RELEASE_TAG:8}"
+          else
+            tagNameWithoutPrefix="${RELEASE_TAG}"
+          fi
           echo "RELEASE_TAG_WITHOUT_PREFIX=${tagNameWithoutPrefix}" >> $GITHUB_ENV
 
       # TODO: generate release notes

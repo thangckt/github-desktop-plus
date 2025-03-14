@@ -19,12 +19,12 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 ### Repositories list:
 
 - [ ] **Pull all** button to fetch and pull from all remotes at once.
-- [ ] Allow **collapsing groups** of repositories.
+- [ ] Allow **hiding** the '**Recent**' repositories section.
 
 ### Branches list:
 
 - [ ] Add warning icon to **local-only branches** (branches that are not on the remote).
-- [ ] Allow manually setting which is the **default branch** for a repository (base branch for creating new branches).
+- [ ] Allow manually setting which is the **default branch** for a repository (even if it doesn't match the one configured in the remote).
 
 ### History tab:
 
