@@ -59,7 +59,13 @@ corepack enable
 yarn
 ```
 
-Then, you can simply build and run the app by pressing `F5`. Breakpoints should be set in the developer tools that open up, not the VSCode editor.
+Then, you can simply build and run the app by pressing `F5`.
+
+**Tips:**
+
+- Breakpoints should be set in the developer tools, not the VSCode editor.
+
+- You don't need to restart the app to apply changes. Just reload the window (`Ctrl + Alt + R`).
 
 ## Why this fork?
 

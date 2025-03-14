@@ -6,6 +6,7 @@
       "name": "Start app",
       "request": "launch",
       "type": "node-terminal",
+      "nodeVersionHint": 20,
       "preLaunchTask": "Compile & Build"
     },
     {
@@ -24,6 +25,7 @@
       "env": {
         "ELECTRON_RUN_AS_NODE": "1"
       },
+      "nodeVersionHint": 20,
       "windows": {
         "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
       }
@@ -45,6 +47,7 @@
       "env": {
         "ELECTRON_RUN_AS_NODE": "1"
       },
+      "nodeVersionHint": 20,
       "windows": {
         "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
       }
