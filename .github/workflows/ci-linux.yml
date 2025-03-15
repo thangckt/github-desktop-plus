@@ -193,7 +193,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish AUR package
-        uses: KSXGitHub/github-actions-deploy-aur@v4.1.0
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.1
         with:
           pkgname: github-desktop-plus-bin
           pkgbuild: ${{ env.PKGBUILD_FILE }}
