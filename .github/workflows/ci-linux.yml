@@ -141,11 +141,11 @@ jobs:
           cat ${RELEASE_NOTES_FILE}
           echo "---"
 
-      # GitHubDesktop-linux-<arch>-<number>.<number>.<number>.<ext> -> GitHubDesktopPlus-<arch>-$RELEASE_TAG.<ext>
+      # GitHubDesktop-linux-<arch>-<old_version>.<ext> -> GitHubDesktopPlus-<release_tag>-linux-<arch>.<ext>
       - name: Rename artifacts
         run: |
-          for file in $(find ./artifacts -type f -name "GitHubDesktop-linux-*.*.*.*.*"); do
-            mv --verbose $file $(echo $file | sed -E "s/GitHubDesktop-linux-(.*)-([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.(.*)/GitHubDesktopPlus-\1-${{ env.RELEASE_TAG }}.\3/")
+          for file in $(find ./artifacts -type f -name "GitHubDesktop-linux-*"); do
+            mv --verbose $file $(echo $file | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
           done
 
       - name: Create Release
