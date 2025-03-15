@@ -70,8 +70,6 @@ jobs:
           repository: ${{ inputs.repository || github.repository }}
           ref: ${{ inputs.ref }}
           submodules: recursive
-      - name: Fix dubious ownership of /github/workspace
-        run: git config --global --add safe.directory /github/workspace
       - name: Package and test application in container
         uses: shiftkey/desktop-ubuntu-amd64-packaging@ea7b7a6a940a6b907b160b946439c5c7a516f9f1
       - name: Upload output artifacts
@@ -145,7 +143,9 @@ jobs:
       - name: Rename artifacts
         run: |
           for file in $(find ./artifacts -type f -name "GitHubDesktop-linux-*"); do
-            mv --verbose $file $(echo $file | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
+            new_name=$(echo $file | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
+            new_name=$(echo $new_name | sed -E "s/linux-amd64/linux-x86_64/")
+            mv --verbose "$file" "$new_name"
           done
 
       - name: Create Release
