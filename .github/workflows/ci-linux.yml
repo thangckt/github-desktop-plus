@@ -143,7 +143,7 @@ jobs:
       - name: Rename artifacts
         run: |
           for file in $(find ./artifacts -type f -name "GitHubDesktop-linux-*"); do
-            new_name=$(echo $file | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
+            new_name=$(echo "$file" | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
             new_name=$(echo $new_name | sed -E "s/linux-amd64/linux-x86_64/")
             mv --verbose "$file" "$new_name"
           done
