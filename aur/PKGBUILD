@@ -38,10 +38,17 @@ sha256sums_armv7h=('[[ARMV7H_SHA256]]')
 package() {
     tar xf data.tar.xz -C "${pkgdir}"
     install -d "${pkgdir}/opt/${_pkgname}"
-    mv "${pkgdir}/usr/lib/github-desktop" "${pkgdir}/opt/"
+
+    mv "${pkgdir}/usr/lib/github-desktop/"* "${pkgdir}/opt/${_pkgname}/"
+    rmdir "${pkgdir}/usr/lib/github-desktop"
+    rmdir "${pkgdir}/usr/lib"
+    mv "${pkgdir}/usr/share/doc/github-desktop" "${pkgdir}/usr/share/doc/${_pkgname}"
+    mv "${pkgdir}/usr/share/lintian/overrides/github-desktop" "${pkgdir}/usr/share/lintian/overrides/${_pkgname}"
+    find "${pkgdir}/usr/share/icons" -name 'github-desktop.png' -execdir mv {} "${_pkgname}.png" \;
 
     rm "${pkgdir}/usr/share/applications/github-desktop.desktop"
     install -Dm644 "${_pkgname}.desktop" "${pkgdir}/usr/share/applications/${_pkgname}.desktop"
 
-    ln -sf "/opt/$_pkgname/$_pkgname" "${pkgdir}/usr/bin/$_pkgname"
+    ln -sf "/opt/$_pkgname/github-desktop" "${pkgdir}/usr/bin/$_pkgname"
+    rm "${pkgdir}/usr/bin/github-desktop"
 }
