@@ -188,6 +188,10 @@
       flex-shrink: 0;
     }
 
+    &.local-only {
+      color: var(--dialog-warning-color);
+    }
+
     .name {
       flex-grow: 2;
       @include ellipsis;
@@ -211,6 +215,10 @@
       text-align: right;
       white-space: nowrap;
     }
+  }
+
+  .new-branch-button .octicon {
+    transform: translateX(-4px);
   }
 }
 

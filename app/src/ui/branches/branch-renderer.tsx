@@ -17,11 +17,13 @@ export function renderDefaultBranch(
   const branch = item.branch
   const commit = branch.tip
   const currentBranchName = currentBranch ? currentBranch.name : null
+  const isLocalOnly = !branch.upstream && !branch.remoteName
   return (
     <BranchListItem
       name={branch.name}
       isCurrentBranch={branch.name === currentBranchName}
       lastCommitDate={commit ? commit.author.date : null}
+      isLocalOnly={isLocalOnly}
       matches={matches}
       onDropOntoBranch={onDropOntoBranch}
       onDropOntoCurrentBranch={onDropOntoCurrentBranch}

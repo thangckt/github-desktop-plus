@@ -21,6 +21,8 @@ interface IBranchListItemProps {
   /** The date may be null if we haven't loaded the tip commit yet. */
   readonly lastCommitDate: Date | null
 
+  readonly isLocalOnly: boolean
+
   /** The characters in the branch name to highlight */
   readonly matches: IMatches
 
@@ -91,10 +93,16 @@ export class BranchListItem extends React.Component<
   }
 
   public render() {
-    const { lastCommitDate, isCurrentBranch, name } = this.props
-    const icon = isCurrentBranch ? octicons.check : octicons.gitBranch
+    const { lastCommitDate, isCurrentBranch, isLocalOnly, name } = this.props
+    function getIcon() {
+      if (isLocalOnly) {
+        return octicons.upload
+      }
+      return isCurrentBranch ? octicons.check : octicons.gitBranch
+    }
     const className = classNames('branches-list-item', {
       'drop-target': this.state.isDragInProgress,
+      'local-only': isLocalOnly,
     })
 
     return (
@@ -105,7 +113,7 @@ export class BranchListItem extends React.Component<
         onMouseLeave={this.onMouseLeave}
         onMouseUp={this.onMouseUp}
       >
-        <Octicon className="icon" symbol={icon} />
+        <Octicon className="icon" symbol={getIcon()} />
         <TooltippedContent
           className="name"
           tooltip={name}

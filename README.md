@@ -23,7 +23,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 ### Branches list:
 
-- [ ] Add warning icon to **local-only branches** (branches that are not on the remote).
+- [X] Add warning indicator to **local-only branches** (branches that are not on the remote).
 - [ ] Allow manually setting which is the **default branch** for a repository (even if it doesn't match the one configured in the remote).
 
 ### History tab:

@@ -19,6 +19,8 @@ import { SelectionDirection, ClickSource } from '../lib/list'
 import { generateBranchContextMenuItems } from './branch-list-item-context-menu'
 import { showContextualMenu } from '../../lib/menu-item'
 import { SectionFilterList } from '../lib/section-filter-list'
+import { Octicon } from '../octicons'
+import * as octicons from '../octicons/octicons.generated'
 
 const RowHeight = 30
 
@@ -325,6 +327,7 @@ export class BranchList extends React.Component<
   private onRenderNewButton = () => {
     return this.props.canCreateNewBranch ? (
       <Button className="new-branch-button" onClick={this.onCreateNewBranch}>
+        <Octicon symbol={octicons.plus} />
         {__DARWIN__ ? 'New Branch' : 'New branch'}
       </Button>
     ) : null
