@@ -121,19 +121,17 @@
     white-space: nowrap;
   }
 
-  .new-repository-button {
+  .repo-list-button {
     flex-shrink: 0;
-
-    .octicon {
-      margin-left: 5px;
-    }
   }
-  .pull-repositories-button {
-    flex-shrink: 0;
-
-    .octicon {
-      margin-right: 5px;
-    }
+  .repo-list-button.new-repository .octicon {
+    transform: translateX(4px) translateY(-1px);
+  }
+  .repo-list-button.pull-repositories .octicon {
+    transform: translateX(-4px) translateY(-1px);
+  }
+  .repo-list-button.pull-repositories-spin .octicon {
+    margin-right: var(--spacing-half);
   }
 
   .no-items {
