@@ -24,7 +24,7 @@ if (process.platform === 'darwin') {
   process.exit(1)
 }
 
-export function run(spawnOptions: SpawnOptions) {
+export function run(spawnOptions: SpawnOptions, launchArgs: string[]) {
   try {
     // eslint-disable-next-line no-sync
     const stats = Fs.statSync(binaryPath)
@@ -41,5 +41,5 @@ export function run(spawnOptions: SpawnOptions) {
     NODE_ENV: 'development',
   })
 
-  return spawn(binaryPath, [], opts)
+  return spawn(binaryPath, launchArgs, opts)
 }

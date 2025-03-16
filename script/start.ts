@@ -23,7 +23,15 @@ function getPortOrDefault() {
 }
 
 function startApp() {
-  const runningApp = run({ stdio: 'inherit' })
+  const useWayland =
+    process.platform === 'linux' && process.env.XDG_SESSION_TYPE === 'wayland'
+  const launchArgs = useWayland
+    ? [
+        '--enable-features=UseOzonePlatform,WaylandWindowDecorations',
+        '--ozone-platform-hint=auto',
+      ]
+    : []
+  const runningApp = run({ stdio: 'inherit' }, launchArgs)
   if (runningApp == null) {
     console.error(
       "Couldn't launch the app. You probably need to build it first. Run `yarn build:dev`."
