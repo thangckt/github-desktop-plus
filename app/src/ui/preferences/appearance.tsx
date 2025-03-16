@@ -11,6 +11,7 @@ import { RadioGroup } from '../lib/radio-group'
 import { Select } from '../lib/select'
 import { encodePathAsUrl } from '../../lib/path'
 import { tabSizeDefault } from '../../lib/stores/app-store'
+import { Checkbox, CheckboxValue } from '../lib/checkbox'
 
 interface IAppearanceProps {
   readonly selectedTheme: ApplicationTheme
@@ -19,12 +20,15 @@ interface IAppearanceProps {
   readonly onSelectedTabSizeChanged: (tabSize: number) => void
   readonly titleBarStyle: TitleBarStyle
   readonly onTitleBarStyleChanged: (titleBarStyle: TitleBarStyle) => void
+  readonly showRecentRepositories: boolean
+  readonly onShowRecentRepositoriesChanged: (show: boolean) => void
 }
 
 interface IAppearanceState {
   readonly selectedTheme: ApplicationTheme | null
   readonly selectedTabSize: number
   readonly titleBarStyle: TitleBarStyle
+  readonly showRecentRepositories: boolean
 }
 
 function getTitleBarStyleDescription(titleBarStyle: TitleBarStyle): string {
@@ -51,6 +55,7 @@ export class Appearance extends React.Component<
       selectedTheme: usePropTheme ? props.selectedTheme : null,
       selectedTabSize: props.selectedTabSize,
       titleBarStyle: props.titleBarStyle,
+      showRecentRepositories: props.showRecentRepositories,
     }
 
     if (!usePropTheme) {
@@ -84,6 +89,14 @@ export class Appearance extends React.Component<
 
   private onSelectedThemeChanged = (theme: ApplicationTheme) => {
     this.props.onSelectedThemeChanged(theme)
+  }
+
+  private onShowRecentRepositoriesChanged = (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    const show = event.currentTarget.checked
+    this.setState({ showRecentRepositories: show })
+    this.props.onShowRecentRepositoriesChanged(show)
   }
 
   private onSelectedTabSizeChanged = (
@@ -172,7 +185,7 @@ export class Appearance extends React.Component<
     ]
 
     return (
-      <div className="appearance-section">
+      <div className="advanced-section">
         <h2 id="theme-heading">Theme</h2>
         <Row>
           <RadioGroup<ApplicationTheme>
@@ -188,11 +201,29 @@ export class Appearance extends React.Component<
     )
   }
 
+  private renderRepositoryList() {
+    return (
+      <div className="advanced-section">
+        <h2 id="repository-list-heading">{'Repository list'}</h2>
+
+        <Checkbox
+          label="Show recent repositories"
+          value={
+            this.state.showRecentRepositories
+              ? CheckboxValue.On
+              : CheckboxValue.Off
+          }
+          onChange={this.onShowRecentRepositoriesChanged}
+        />
+      </div>
+    )
+  }
+
   private renderSelectedTabSize() {
     const availableTabSizes: number[] = [1, 2, 3, 4, 5, 6, 8, 10, 12]
 
     return (
-      <div className="appearance-section">
+      <div className="advanced-section">
         <h2 id="diff-heading">{'Diff'}</h2>
 
         <Select
@@ -214,6 +245,7 @@ export class Appearance extends React.Component<
     return (
       <DialogContent>
         {this.renderSelectedTheme()}
+        {this.renderRepositoryList()}
         {this.renderSelectedTabSize()}
         {this.renderTitleBarStyleDropdown()}
       </DialogContent>

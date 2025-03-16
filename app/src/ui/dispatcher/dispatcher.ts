@@ -2707,6 +2707,10 @@ export class Dispatcher {
     this.appStore._setRepositoryIndicatorsEnabled(repositoryIndicatorsEnabled)
   }
 
+  public setShowRecentRepositories(showRecentRepositories: boolean) {
+    this.appStore._setShowRecentRepositories(showRecentRepositories)
+  }
+
   public setCommitSpellcheckEnabled(commitSpellcheckEnabled: boolean) {
     this.appStore._setCommitSpellcheckEnabled(commitSpellcheckEnabled)
   }

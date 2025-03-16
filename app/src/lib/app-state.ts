@@ -296,6 +296,9 @@ export interface IAppState {
   /** The selected title bar style for the application */
   readonly titleBarStyle: TitleBarStyle
 
+  /** Whether or not recent repositories should be shown in the repo list */
+  readonly showRecentRepositories: boolean
+
   /**
    * A map keyed on a user account (GitHub.com or GitHub Enterprise)
    * containing an object with repositories that the authenticated

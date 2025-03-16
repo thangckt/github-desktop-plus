@@ -415,6 +415,7 @@ const tabSizeKey: string = 'tab-size'
 
 const shellKey = 'shell'
 
+const showRecentRepositoriesKey = 'show-recent-repositories'
 const repositoryIndicatorsEnabledKey = 'enable-repository-indicators'
 
 // background fetching should occur hourly when Desktop is active, but this
@@ -557,6 +558,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private currentTheme: ApplicableTheme = ApplicationTheme.Light
   private selectedTabSize = tabSizeDefault
   private titleBarStyle: TitleBarStyle = 'native'
+  private showRecentRepositories: boolean = true
 
   private useWindowsOpenSSH: boolean = false
 
@@ -655,6 +657,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.repositoryIndicatorsEnabled =
       getBoolean(repositoryIndicatorsEnabledKey) ?? true
+
+    this.showRecentRepositories = getBoolean(showRecentRepositoriesKey) ?? true
 
     this.repositoryIndicatorUpdater = new RepositoryIndicatorUpdater(
       this.getRepositoriesForIndicatorRefresh,
@@ -1060,6 +1064,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       currentTheme: this.currentTheme,
       selectedTabSize: this.selectedTabSize,
       titleBarStyle: this.titleBarStyle,
+      showRecentRepositories: this.showRecentRepositories,
       apiRepositories: this.apiRepositoriesStore.getState(),
       useWindowsOpenSSH: this.useWindowsOpenSSH,
       showCommitLengthWarning: this.showCommitLengthWarning,
@@ -3684,6 +3689,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.repositoryIndicatorUpdater.stop()
     }
 
+    this.emitUpdate()
+  }
+
+  public _setShowRecentRepositories(showRecentRepositories: boolean) {
+    if (this.showRecentRepositories === showRecentRepositories) {
+      return
+    }
+    setBoolean(showRecentRepositoriesKey, showRecentRepositories)
+    this.showRecentRepositories = showRecentRepositories
     this.emitUpdate()
   }
 

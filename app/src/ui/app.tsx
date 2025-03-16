@@ -1758,6 +1758,7 @@ export class App extends React.Component<IAppProps, IAppState> {
             useCustomShell={this.state.useCustomShell}
             customShell={this.state.customShell}
             titleBarStyle={this.state.titleBarStyle}
+            showRecentRepositories={this.state.showRecentRepositories}
             repositoryIndicatorsEnabled={this.state.repositoryIndicatorsEnabled}
             onOpenFileInExternalEditor={this.openFileInExternalEditor}
             underlineLinks={this.state.underlineLinks}
@@ -2878,6 +2879,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         onSelectionChanged={this.onSelectionChanged}
         repositories={this.state.repositories}
         recentRepositories={this.state.recentRepositories}
+        showRecentRepositories={this.state.showRecentRepositories}
         localRepositoryStateLookup={this.state.localRepositoryStateLookup}
         askForConfirmationOnRemoveRepository={
           this.state.askForConfirmationOnRepositoryRemoval

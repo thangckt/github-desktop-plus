@@ -33,6 +33,7 @@ const recentRepositoriesThreshold = 7
 interface IRepositoriesListProps {
   readonly selectedRepository: Repositoryish | null
   readonly repositories: ReadonlyArray<Repositoryish>
+  readonly showRecentRepositories: boolean
   readonly recentRepositories: ReadonlyArray<number>
 
   /** A cache of the latest repository state values, keyed by the repository id */
@@ -237,6 +238,7 @@ export class RepositoriesList extends React.Component<
     )
 
     const groups =
+      this.props.showRecentRepositories &&
       this.props.repositories.length > recentRepositoriesThreshold
         ? [
             makeRecentRepositoriesGroup(

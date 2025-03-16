@@ -79,6 +79,7 @@ interface IPreferencesProps {
   readonly useCustomShell: boolean
   readonly customShell: ICustomIntegration | null
   readonly titleBarStyle: TitleBarStyle
+  readonly showRecentRepositories: boolean
   readonly repositoryIndicatorsEnabled: boolean
   readonly onOpenFileInExternalEditor: (path: string) => void
   readonly underlineLinks: boolean
@@ -116,6 +117,7 @@ interface IPreferencesState {
   readonly availableShells: ReadonlyArray<Shell>
   readonly selectedShell: Shell
   readonly titleBarStyle: TitleBarStyle
+  readonly showRecentRepositories: boolean
   /**
    * If unable to save Git configuration values (name, email)
    * due to an existing configuration lock file this property
@@ -186,6 +188,7 @@ export class Preferences extends React.Component<
       availableShells: [],
       selectedShell: this.props.selectedShell,
       titleBarStyle: this.props.titleBarStyle,
+      showRecentRepositories: this.props.showRecentRepositories,
       repositoryIndicatorsEnabled: this.props.repositoryIndicatorsEnabled,
       initiallySelectedTheme: this.props.selectedTheme,
       initiallySelectedTabSize: this.props.selectedTabSize,
@@ -466,6 +469,10 @@ export class Preferences extends React.Component<
             onSelectedTabSizeChanged={this.onSelectedTabSizeChanged}
             titleBarStyle={this.props.titleBarStyle}
             onTitleBarStyleChanged={this.onTitleBarStyleChanged}
+            showRecentRepositories={this.props.showRecentRepositories}
+            onShowRecentRepositoriesChanged={
+              this.onShowRecentRepositoriesChanged
+            }
           />
         )
         break
@@ -687,6 +694,12 @@ export class Preferences extends React.Component<
     this.setState({ titleBarStyle })
   }
 
+  private onShowRecentRepositoriesChanged = (
+    showRecentRepositories: boolean
+  ) => {
+    this.setState({ showRecentRepositories })
+  }
+
   private renderFooter() {
     const hasDisabledError = this.state.disallowedCharactersMessage != null
 
@@ -741,6 +754,12 @@ export class Preferences extends React.Component<
         dispatcher.setRepositoryIndicatorsEnabled(
           this.state.repositoryIndicatorsEnabled
         )
+      }
+
+      if (
+        this.state.showRecentRepositories !== this.props.showRecentRepositories
+      ) {
+        dispatcher.setShowRecentRepositories(this.state.showRecentRepositories)
       }
     } catch (e) {
       if (isConfigFileLockError(e)) {
