@@ -128,6 +128,13 @@
       margin-left: 5px;
     }
   }
+  .pull-repositories-button {
+    flex-shrink: 0;
+
+    .octicon {
+      margin-right: 5px;
+    }
+  }
 
   .no-items {
     text-align: center;

@@ -14,7 +14,7 @@ import { IMatches } from '../../lib/fuzzy-find'
 import { ILocalRepositoryState, Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
 import { Button } from '../lib/button'
-import { Octicon } from '../octicons'
+import { Octicon, syncClockwise } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { showContextualMenu } from '../../lib/menu-item'
 import { IMenuItem } from '../../lib/menu-item'
@@ -80,6 +80,7 @@ interface IRepositoriesListProps {
 
 interface IRepositoriesListState {
   readonly newRepositoryMenuExpanded: boolean
+  readonly pullingRepositories: boolean
 }
 
 const RowHeight = 29
@@ -142,6 +143,7 @@ export class RepositoriesList extends React.Component<
 
     this.state = {
       newRepositoryMenuExpanded: false,
+      pullingRepositories: false,
     }
   }
 
@@ -277,14 +279,31 @@ export class RepositoriesList extends React.Component<
 
   private renderPostFilter = () => {
     return (
-      <Button
-        className="new-repository-button"
-        onClick={this.onNewRepositoryButtonClick}
-        ariaExpanded={this.state.newRepositoryMenuExpanded}
-      >
-        Add
-        <Octicon symbol={octicons.triangleDown} />
-      </Button>
+      <>
+        <Button
+          className="new-repository-button"
+          onClick={this.onNewRepositoryButtonClick}
+          ariaExpanded={this.state.newRepositoryMenuExpanded}
+        >
+          Add
+          <Octicon symbol={octicons.triangleDown} />
+        </Button>
+
+        {this.state.pullingRepositories ? (
+          <Button className="pull-repositories-button" disabled={true}>
+            <Octicon symbol={syncClockwise} className="spin" />
+            Pulling…
+          </Button>
+        ) : (
+          <Button
+            className="pull-repositories-button"
+            onClick={this.onPullRepositoriesButtonClick}
+          >
+            <Octicon symbol={octicons.download} />
+            {__DARWIN__ ? 'Pull All' : 'Pull all'}
+          </Button>
+        )}
+      </>
     )
   }
 
@@ -334,6 +353,16 @@ export class RepositoriesList extends React.Component<
     showContextualMenu(items).then(() => {
       this.setState({ newRepositoryMenuExpanded: false })
     })
+  }
+
+  private onPullRepositoriesButtonClick = async () => {
+    this.setState({ pullingRepositories: true })
+    await Promise.all(
+      this.props.repositories
+        .filter(r => r instanceof Repository)
+        .map(r => this.props.dispatcher.pull(r))
+    )
+    this.setState({ pullingRepositories: false })
   }
 
   private onCloneRepository = () => {

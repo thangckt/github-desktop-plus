@@ -18,7 +18,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 ### Repositories list:
 
-- [ ] **Pull all** button to fetch and pull from all remotes at once.
+- [X] **Pull all** button to fetch and pull from all remotes at once.
 - [X] Allow **hiding** the '**Recent**' repositories section.
 
 ### Branches list:
