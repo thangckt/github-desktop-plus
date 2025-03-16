@@ -30,7 +30,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 - [X] Use a different style for **merge commits**.
 - [ ] **Search commits** by title or message.
-- [ ] If a commit modifies only 1 file, allow double-clicking the commit to open the file.
+- [X] If a commit modifies only 1 file, allow double-clicking the commit to open the file.
 
 ### Changes tab:
 

@@ -2536,6 +2536,7 @@ export class App extends React.Component<IAppProps, IAppState> {
 
         return (
           <UnreachableCommitsDialog
+            dispatcher={this.props.dispatcher}
             selectedShas={shas}
             shasInDiff={shasInDiff}
             commitLookup={commitLookup}

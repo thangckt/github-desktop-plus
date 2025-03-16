@@ -947,6 +947,14 @@ export class Dispatcher {
     return this.appStore._revertCommit(repository, commit)
   }
 
+  /** Get the changed files for a given commit. */
+  public async getCommitChangedFiles(
+    repository: Repository,
+    commit: Commit
+  ): Promise<ReadonlyArray<CommittedFileChange>> {
+    return this.appStore._getCommitChangedFiles(repository, commit)
+  }
+
   /**
    * Set the width of the repository sidebar to the given
    * value. This affects the changes and history sidebar

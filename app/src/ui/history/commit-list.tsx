@@ -1,6 +1,6 @@
 import * as React from 'react'
+import * as Path from 'path'
 import memoize from 'memoize-one'
-import { GitHubRepository } from '../../models/github-repository'
 import { Commit, CommitOneLine } from '../../models/commit'
 import { CommitListItem } from './commit-list-item'
 import { KeyboardInsertionData, List } from '../lib/list'
@@ -28,12 +28,18 @@ import {
 import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { Repository } from '../../models/repository'
+import { Dispatcher } from '../dispatcher'
+import { AppFileStatusKind } from '../../models/status'
 
 const RowHeight = 50
 
 interface ICommitListProps {
-  /** The GitHub repository associated with this commit (if found) */
-  readonly gitHubRepository: GitHubRepository | null
+  /** The Repository associated with this commit (if found) */
+  readonly repository: Repository | null
+
+  /** Dispatcher for handling actions */
+  readonly dispatcher: Dispatcher
 
   /** The list of commits SHAs to display, in order. */
   readonly commitSHAs: ReadonlyArray<string>
@@ -289,7 +295,7 @@ export class CommitList extends React.Component<
     return (
       <CommitListItem
         key={commit.sha}
-        gitHubRepository={this.props.gitHubRepository}
+        gitHubRepository={this.props.repository?.gitHubRepository ?? null}
         showUnpushedIndicator={showUnpushedIndicator}
         unpushedIndicatorTitle={this.getUnpushedIndicatorTitle(
           isLocal,
@@ -414,6 +420,26 @@ export class CommitList extends React.Component<
     }
   }
 
+  private onRowDoubleClick = async (row: number) => {
+    const sha = this.props.commitSHAs[row]
+    const commit = this.props.commitLookup.get(sha)
+    if (!this.props.repository || !commit) {
+      return
+    }
+    const files = await this.props.dispatcher.getCommitChangedFiles(
+      this.props.repository,
+      commit
+    )
+    if (
+      files.length === 1 &&
+      files[0].status.kind !== AppFileStatusKind.Deleted
+    ) {
+      const relativePath = files[0].path
+      const absPath = Path.join(this.props.repository.path, relativePath)
+      this.props.dispatcher.openInExternalEditor(absPath)
+    }
+  }
+
   private lookupCommits(
     commitSHAs: ReadonlyArray<string>
   ): ReadonlyArray<Commit> {
@@ -508,6 +534,7 @@ export class CommitList extends React.Component<
           onDropDataInsertion={this.onDropDataInsertion}
           onSelectionChanged={this.onSelectionChanged}
           onSelectedRowChanged={this.onSelectedRowChanged}
+          onRowDoubleClick={this.onRowDoubleClick}
           onKeyboardInsertionIndexPathChanged={
             this.onKeyboardInsertionIndexPathChanged
           }
@@ -577,7 +604,7 @@ export class CommitList extends React.Component<
   private renderKeyboardInsertionElement = (
     data: KeyboardInsertionData
   ): JSX.Element | null => {
-    const { emoji, gitHubRepository } = this.props
+    const { emoji, repository } = this.props
     const { commits } = data
 
     if (commits.length === 0) {
@@ -588,7 +615,7 @@ export class CommitList extends React.Component<
       case DragType.Commit:
         return (
           <CommitDragElement
-            gitHubRepository={gitHubRepository}
+            gitHubRepository={repository?.gitHubRepository ?? null}
             commit={commits[0]}
             selectedCommits={commits}
             isKeyboardInsertion={true}
@@ -651,7 +678,7 @@ export class CommitList extends React.Component<
     const canBeCheckedOut = row > 0 //Cannot checkout the current commit
 
     let viewOnGitHubLabel = 'View on GitHub'
-    const gitHubRepository = this.props.gitHubRepository
+    const gitHubRepository = this.props.repository?.gitHubRepository
 
     if (
       gitHubRepository &&

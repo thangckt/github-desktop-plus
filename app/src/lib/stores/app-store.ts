@@ -6299,6 +6299,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
     })
   }
 
+  /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _getCommitChangedFiles(
+    repository: Repository,
+    commit: Commit
+  ): Promise<ReadonlyArray<CommittedFileChange>> {
+    const changesetData = await getChangedFiles(repository, commit.sha)
+    return changesetData.files
+  }
+
   public async _installGlobalLFSFilters(force: boolean): Promise<void> {
     try {
       await installGlobalLFSFilters(force)

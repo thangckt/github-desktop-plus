@@ -7,6 +7,7 @@ import { CommitList } from './commit-list'
 import { LinkButton } from '../lib/link-button'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { Dispatcher } from '../dispatcher'
 
 export enum UnreachableCommitsTab {
   Unreachable,
@@ -14,6 +15,9 @@ export enum UnreachableCommitsTab {
 }
 
 interface IUnreachableCommitsDialogProps {
+  /** The dispatcher to use. */
+  readonly dispatcher: Dispatcher
+
   /** The shas of the currently selected commits */
   readonly selectedShas: ReadonlyArray<string>
 
@@ -107,7 +111,8 @@ export class UnreachableCommitsDialog extends React.Component<
         {this.renderUnreachableCommitsMessage()}
         <div className="unreachable-commit-list">
           <CommitList
-            gitHubRepository={null}
+            repository={null}
+            dispatcher={this.props.dispatcher}
             isLocalRepository={true}
             commitLookup={commitLookup}
             commitSHAs={this.getShasToDisplay()}
