@@ -4,7 +4,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 ## Features and Roadmap
 
-## General:
+### General:
 
 - [ ] Customizable **keyboard shortcuts**.
 - [x] Red color for destructive action buttons.
@@ -18,23 +18,56 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 ### Repositories list:
 
-- [X] **Pull all** button to fetch and pull from all remotes at once.
-- [X] Allow **hiding** the '**Recent**' repositories section.
+- [x] **Pull all** button to fetch and pull from all remotes at once.
+- [x] Allow **hiding** the '**Recent**' repositories section.
 
 ### Branches list:
 
-- [X] Add warning indicator to **local-only branches** (branches that are not on the remote).
+- [x] Add warning indicator to **local-only branches** (branches that are not on the remote).
 - [ ] Allow manually setting which is the **default branch** for a repository (even if it doesn't match the one configured in the remote).
 
 ### History tab:
 
-- [X] Use a different style for **merge commits**.
+- [x] Use a different style for **merge commits**.
 - [ ] **Search commits** by title or message.
-- [X] If a commit modifies only 1 file, allow double-clicking the commit to open the file.
+- [x] If a commit modifies only 1 file, allow double-clicking the commit to open the file. For other commits, you can still double-click the file as usual.
 
 ### Changes tab:
 
 - [x] Context menu option to **permanently discard changes** without sending to trash (useful when the there are many changed files and the regular "Discard" is extremely slow).
+
+## Download and Installation
+
+### Arch Linux
+
+Simply install `github-desktop-plus-bin` from the AUR.
+
+### Other linux distros
+
+Download correct binary from the [releases page](https://github.com/pol-rivero/github-desktop-plus/releases/latest) and copy it to a directory in your `PATH`.
+
+| | **64-bit x86** | **64-bit ARM** | **32-bit ARM** |
+| --- | --- | --- | --- |
+| **Debian/Ubuntu** | `-linux-x86_64.deb` | `-linux-arm64.deb` | `-linux-armvhf.deb` |
+| **Fedora/RHEL** | `-linux-x86_64.rpm` | `-linux-arm64.rpm` | `-linux-armv7l.rpm` |
+| **AppImage (Universal)** | `-linux-x86_64.AppImage` | `-linux-arm64.AppImage` | `-linux-armv7l.AppImage` |
+
+### Windows:
+
+Download and execute the installer from the [releases page](https://github.com/pol-rivero/github-desktop-plus/releases/latest).
+
+| | **64-bit x86** | **64-bit ARM** |
+| --- | --- | --- |
+| **.EXE Installer** | `-win-x64.exe` | `-win-arm64.exe` |
+| **.MSI Installer** | `-win-x64.msi` | `-win-arm64.msi` |
+
+### macOS:
+
+Download the ZIP file from the [releases page](https://github.com/pol-rivero/github-desktop-plus/releases/latest) and extract it. To run the installer, execute the file `GitHub Desktop Plus.app/Contents/MacOS/GitHub Desktop`.
+
+| **64-bit x86** | **64-bit ARM (Apple Silicon)** |
+| --- | --- |
+| `-macOS-x64.zip` | `-macOS-arm64.zip` |
 
 ## Running the app locally
 
@@ -52,6 +85,8 @@ yarn start                # Start the app for development
 
 - While starting up, this error is normal: `UnhandledPromiseRejectionWarning: Error: Invalid header: Does not start with Cr24`
 
+- You don't need to restart the app to apply changes. Just reload the window (`Ctrl + Alt + R`).
+
 ### From VSCode
 
 The first time you open the project, install the dependencies by running:
@@ -60,13 +95,8 @@ corepack enable
 yarn
 ```
 
-Then, you can simply build and run the app by pressing `F5`.
-
-**Tips:**
-
-- Breakpoints should be set in the developer tools, not the VSCode editor.
-
-- You don't need to restart the app to apply changes. Just reload the window (`Ctrl + Alt + R`).
+Then, you can simply build and run the app by pressing `F5`.  
+Breakpoints should be set in the developer tools, not the VSCode editor.
 
 ## Why this fork?
 
