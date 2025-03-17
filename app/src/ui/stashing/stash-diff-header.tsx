@@ -43,13 +43,14 @@ export class StashDiffHeader extends React.Component<
         <h3>Stashed changes</h3>
         <div className="row">
           <OkCancelButtonGroup
-            okButtonText="Restore"
+            destructive={true}
+            okButtonText="Discard"
             okButtonDisabled={isRestoring || isDiscarding}
-            onOkButtonClick={this.onRestoreClick}
-            cancelButtonText="Discard"
+            onOkButtonClick={this.onDiscardClick}
+            cancelButtonText="Restore"
             cancelButtonDisabled={isRestoring || isDiscarding}
-            onCancelButtonClick={this.onDiscardClick}
-            okButtonAriaDescribedBy="restore-description"
+            onCancelButtonClick={this.onRestoreClick}
+            cancelButtonAriaDescribedBy="restore-description"
           />
           <div className="explanatory-text" id="restore-description">
             <span className="text">
