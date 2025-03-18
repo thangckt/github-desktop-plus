@@ -151,6 +151,7 @@ export class RepositoriesStore extends TypedBaseStore<
         : await Promise.resolve(null), // Dexie gets confused if we return null
       repo.missing,
       repo.alias,
+      repo.defaultBranch,
       repo.workflowPreferences,
       repo.isTutorialRepository
     )
@@ -214,6 +215,7 @@ export class RepositoriesStore extends TypedBaseStore<
           ...(existingRepo?.id !== undefined && { id: existingRepo.id }),
           path,
           alias: null,
+          defaultBranch: null,
           gitHubRepositoryID: ghRepo.dbID,
           missing: false,
           lastStashCheckDate: null,
@@ -252,6 +254,7 @@ export class RepositoriesStore extends TypedBaseStore<
           missing: opts?.missing ?? false,
           lastStashCheckDate: null,
           alias: null,
+          defaultBranch: null,
         }
         const id = await this.db.repositories.add(dbRepo)
         return this.toRepository({ id, ...dbRepo })
@@ -286,6 +289,7 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.gitHubRepository,
       missing,
       repository.alias,
+      repository.defaultBranch,
       repository.workflowPreferences,
       repository.isTutorialRepository
     )
@@ -304,6 +308,32 @@ export class RepositoriesStore extends TypedBaseStore<
     await this.db.repositories.update(repository.id, { alias })
 
     this.emitUpdatedRepositories()
+  }
+
+  /**
+   * Update the alias for the specified repository.
+   *
+   * @param repository    The repository to update.
+   * @param defaultBranch The new default branch to use.
+   */
+  public async updateRepositoryDefaultBranch(
+    repository: Repository,
+    defaultBranch: string | null
+  ): Promise<Repository> {
+    await this.db.repositories.update(repository.id, { defaultBranch })
+
+    this.emitUpdatedRepositories()
+
+    return new Repository(
+      repository.path,
+      repository.id,
+      repository.gitHubRepository,
+      repository.missing,
+      repository.alias,
+      defaultBranch,
+      repository.workflowPreferences,
+      repository.isTutorialRepository
+    )
   }
 
   /**
@@ -336,6 +366,7 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.gitHubRepository,
       false,
       repository.alias,
+      repository.defaultBranch,
       repository.workflowPreferences,
       repository.isTutorialRepository
     )
@@ -482,6 +513,7 @@ export class RepositoriesStore extends TypedBaseStore<
       ghRepo,
       repo.missing,
       repo.alias,
+      repo.defaultBranch,
       repo.workflowPreferences,
       repo.isTutorialRepository
     )

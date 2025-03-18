@@ -838,6 +838,14 @@ export class Dispatcher {
     return this.appStore._changeRepositoryAlias(repository, newAlias)
   }
 
+  /** Changes the repository's default branch */
+  public updateRepositoryDefaultBranch(
+    repository: Repository,
+    branch: string | null
+  ): Promise<void> {
+    return this.appStore._updateRepositoryDefaultBranch(repository, branch)
+  }
+
   /** Rename the branch to a new name. */
   public renameBranch(
     repository: Repository,

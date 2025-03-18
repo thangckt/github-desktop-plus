@@ -6,6 +6,7 @@ interface IBranchContextMenuConfig {
   isLocal: boolean
   onRenameBranch?: (branchName: string) => void
   onViewPullRequestOnGitHub?: () => void
+  onMakeDefaultBranch?: (branchName: string) => void
   onDeleteBranch?: (branchName: string) => void
 }
 
@@ -17,6 +18,7 @@ export function generateBranchContextMenuItems(
     isLocal,
     onRenameBranch,
     onViewPullRequestOnGitHub,
+    onMakeDefaultBranch,
     onDeleteBranch,
   } = config
   const items = new Array<IMenuItem>()
@@ -38,6 +40,13 @@ export function generateBranchContextMenuItems(
     items.push({
       label: 'View Pull Request on GitHub',
       action: () => onViewPullRequestOnGitHub(),
+    })
+  }
+
+  if (onMakeDefaultBranch !== undefined) {
+    items.push({
+      label: __DARWIN__ ? 'Make Default Branch' : 'Make default branch',
+      action: () => onMakeDefaultBranch(name),
     })
   }
 

@@ -4324,6 +4324,18 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _updateRepositoryDefaultBranch(
+    repository: Repository,
+    defaultBranch: string | null
+  ): Promise<void> {
+    const repo = await this.repositoriesStore.updateRepositoryDefaultBranch(
+      repository,
+      defaultBranch
+    )
+    await this._refreshRepository(repo)
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
   public async _renameBranch(
     repository: Repository,
     branch: Branch,
