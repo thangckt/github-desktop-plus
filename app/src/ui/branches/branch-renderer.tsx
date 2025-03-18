@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Branch } from '../../models/branch'
+import { Branch, BranchType } from '../../models/branch'
 
 import { IBranchListItem } from './group-branches'
 import { BranchListItem } from './branch-list-item'
@@ -17,7 +17,7 @@ export function renderDefaultBranch(
   const branch = item.branch
   const commit = branch.tip
   const currentBranchName = currentBranch ? currentBranch.name : null
-  const isLocalOnly = !branch.upstream && !branch.remoteName
+  const isLocalOnly = branch.type === BranchType.Local && !branch.upstream
   return (
     <BranchListItem
       name={branch.name}
