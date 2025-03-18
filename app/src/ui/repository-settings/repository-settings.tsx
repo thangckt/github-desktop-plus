@@ -51,6 +51,7 @@ export enum RepositorySettingsTab {
 interface IRepositorySettingsState {
   readonly selectedTab: RepositorySettingsTab
   readonly remote: IRemote | null
+  readonly defaultBranch: string | undefined
   readonly ignoreText: string | null
   readonly ignoreTextHasChanged: boolean
   readonly disabled: boolean
@@ -79,6 +80,7 @@ export class RepositorySettings extends React.Component<
       selectedTab:
         this.props.initialSelectedTab || RepositorySettingsTab.Remote,
       remote: props.remote,
+      defaultBranch: props.repository.defaultBranch ?? undefined,
       ignoreText: null,
       ignoreTextHasChanged: false,
       disabled: false,
@@ -224,7 +226,9 @@ export class RepositorySettings extends React.Component<
           return (
             <Remote
               remote={remote}
+              defaultBranch={this.state.defaultBranch}
               onRemoteUrlChanged={this.onRemoteUrlChanged}
+              onDefaultBranchChanged={this.onDefaultBranchChanged}
             />
           )
         } else {
@@ -310,6 +314,24 @@ export class RepositorySettings extends React.Component<
           )
           errors.push(`Failed setting the remote URL: ${e}`)
         }
+      }
+    }
+
+    if (
+      this.state.defaultBranch &&
+      this.state.defaultBranch !== this.props.repository.defaultBranch
+    ) {
+      try {
+        await this.props.dispatcher.updateRepositoryDefaultBranch(
+          this.props.repository,
+          this.state.defaultBranch
+        )
+      } catch (e) {
+        log.error(
+          `RepositorySettings: unable to change default branch at ${this.props.repository.path}`,
+          e
+        )
+        errors.push(`Failed changing the default branch: ${e}`)
       }
     }
 
@@ -413,6 +435,10 @@ export class RepositorySettings extends React.Component<
     this.setState({
       forkContributionTarget,
     })
+  }
+
+  private onDefaultBranchChanged = (branch: string) => {
+    this.setState({ defaultBranch: branch })
   }
 
   private onGitConfigLocationChanged = (value: GitConfigLocation) => {
