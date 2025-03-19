@@ -15,24 +15,34 @@ describe('Branches grouping', () => {
     null,
     branchTip,
     BranchType.Local,
-    ''
+    '',
+    false
   )
   const defaultBranch = new Branch(
     'master',
     null,
     branchTip,
     BranchType.Local,
-    ''
+    '',
+    false
   )
   const recentBranches = [
-    new Branch('some-recent-branch', null, branchTip, BranchType.Local, ''),
+    new Branch(
+      'some-recent-branch',
+      null,
+      branchTip,
+      BranchType.Local,
+      '',
+      false
+    ),
   ]
   const otherBranch = new Branch(
     'other-branch',
     null,
     branchTip,
     BranchType.Local,
-    ''
+    '',
+    false
   )
 
   const allBranches = [currentBranch, ...recentBranches, otherBranch]

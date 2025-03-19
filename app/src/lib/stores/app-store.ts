@@ -2677,7 +2677,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
           null,
           commit,
           BranchType.Local,
-          `refs/heads/${rebaseState.targetBranch}`
+          `refs/heads/${rebaseState.targetBranch}`,
+          false
         )
       }
     } else if (isCherryPickConflictState(conflictState)) {

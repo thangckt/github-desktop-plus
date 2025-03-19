@@ -17,7 +17,8 @@ export function renderDefaultBranch(
   const branch = item.branch
   const commit = branch.tip
   const currentBranchName = currentBranch ? currentBranch.name : null
-  const isLocalOnly = branch.type === BranchType.Local && !branch.upstream
+  const isLocalOnly =
+    branch.type === BranchType.Local && (!branch.upstream || branch.isGone)
   return (
     <BranchListItem
       name={branch.name}

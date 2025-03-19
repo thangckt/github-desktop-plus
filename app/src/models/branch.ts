@@ -60,7 +60,8 @@ export class Branch {
     public readonly upstream: string | null,
     public readonly tip: IBranchTip,
     public readonly type: BranchType,
-    public readonly ref: string
+    public readonly ref: string,
+    public readonly isGone: boolean
   ) {}
 
   /** The name of the upstream's remote. */
