@@ -103,8 +103,11 @@ Breakpoints should be set in the developer tools, not the VSCode editor.
 
 ### Running tests
 
+I recommend running the tests in a Docker container for reproducibility and to avoid conflicts with your git configuration.  
+After installing the dependencies with `yarn`, make sure you have Docker installed and run:
+
 ```bash
-yarn test:unit [dir/some-test.ts]
+yarn test:docker
 ```
 
 ## Why this fork?
