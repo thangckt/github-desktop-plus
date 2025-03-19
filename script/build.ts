@@ -1,11 +1,10 @@
 /* eslint-disable no-sync */
 /// <reference path="./globals.d.ts" />
 
+import * as path from 'path'
 import * as cp from 'child_process'
-import * as chokidar from 'chokidar'
 import packager, { OsxNotarizeOptions } from 'electron-packager'
 import frontMatter from 'front-matter'
-import * as path from 'path'
 import { externals } from '../app/webpack.common'
 
 interface IChooseALicense {
@@ -28,16 +27,18 @@ import {
   getProductName,
 } from '../app/package-info'
 
-import { isGitHubActions } from './build-platforms'
 import {
   getChannel,
-  getDistArchitecture,
   getDistRoot,
   getExecutableName,
-  getIconFileName,
   isPublishable,
+  getIconFileName,
+  getDistArchitecture,
 } from './dist-info'
+import { isGitHubActions } from './build-platforms'
 
+import { updateLicenseDump } from './licenses/update-license-dump'
+import { verifyInjectedSassVariables } from './validate-sass/validate-all'
 import {
   existsSync,
   mkdirSync,
@@ -48,8 +49,6 @@ import {
   writeFileSync,
 } from 'fs'
 import { copySync } from 'fs-extra'
-import { updateLicenseDump } from './licenses/update-license-dump'
-import { verifyInjectedSassVariables } from './validate-sass/validate-all'
 
 const isPublishableBuild = isPublishable()
 const isDevelopmentBuild = getChannel() === 'development'
@@ -60,112 +59,64 @@ const entitlementsPath = `${projectRoot}/script/entitlements${entitlementsSuffix
 const extendInfoPath = `${projectRoot}/script/info.plist`
 const outRoot = path.join(projectRoot, 'out')
 
-const watch = process.argv.includes('--watch')
+console.log(`Building for ${getChannel()}…`)
 
-main()
+console.log('Removing old distribution…')
+rmSync(getDistRoot(), { recursive: true, force: true })
 
-if (watch) {
-  console.log(
-    'WARNING: Running in watch mode. If you modify a dependency, restart the build.'
-  )
-  const watcher = chokidar.watch(
-    [outRoot, path.join(projectRoot, 'app', 'static')],
-    {
-      ignored:
-        /package\.json|yarn\.lock|licenses\.json|emoji\.json|node_modules|\.git|out\/static|out\/emoji|out\/git/,
-      ignoreInitial: true,
-    }
-  )
-  const debounce = (func: (...args: any[]) => void, wait: number) => {
-    let timeout: NodeJS.Timeout | null = null
-    return (...args: any[]) => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-      timeout = setTimeout(() => func(...args), wait)
-    }
-  }
+console.log('Copying dependencies…')
+copyDependencies()
 
-  const debouncedMain = debounce(main, 1000)
+console.log('Packaging emoji…')
+copyEmoji()
 
-  watcher.on('add', debouncedMain)
-  watcher.on('change', debouncedMain)
-  watcher.on('unlink', debouncedMain)
+console.log('Copying static resources…')
+copyStaticResources()
+
+console.log('Parsing license metadata…')
+generateLicenseMetadata(outRoot)
+
+moveAnalysisFiles()
+
+if (isGitHubActions() && process.platform === 'darwin' && isPublishableBuild) {
+  console.log('Setting up keychain…')
+  cp.execSync(path.join(__dirname, 'setup-macos-keychain'))
 }
 
-function main(changedFile?: string) {
-  if (changedFile) {
-    console.log(`Rebuilding due to change in ${changedFile}`)
-  }
+verifyInjectedSassVariables(outRoot)
+  .catch(err => {
+    console.error(
+      'Error verifying the Sass variables in the rendered app. This is fatal for a published build.'
+    )
 
-  console.log(`Building for ${getChannel()}…`)
-
-  console.log('Removing old distribution…')
-  rmSync(getDistRoot(), { recursive: true, force: true })
-
-  console.log('Copying dependencies…')
-  copyDependencies()
-
-  console.log('Packaging emoji…')
-  copyEmoji()
-
-  console.log('Copying static resources…')
-  copyStaticResources()
-
-  console.log('Parsing license metadata…')
-  generateLicenseMetadata(outRoot)
-
-  moveAnalysisFiles()
-
-  if (
-    isGitHubActions() &&
-    process.platform === 'darwin' &&
-    isPublishableBuild
-  ) {
-    console.log('Setting up keychain…')
-    cp.execSync(path.join(__dirname, 'setup-macos-keychain'))
-  }
-
-  verifyAndPackage()
-}
-
-function verifyAndPackage() {
-  console.log('VERIFY_AND_PACKAGE')
-  verifyInjectedSassVariables(outRoot)
-    .catch(err => {
+    if (!isDevelopmentBuild) {
+      process.exit(1)
+    }
+  })
+  .then(() => {
+    console.log('Updating our licenses dump…')
+    return updateLicenseDump(projectRoot, outRoot).catch(err => {
       console.error(
-        'Error verifying the Sass variables in the rendered app. This is fatal for a published build.'
+        'Error updating the license dump. This is fatal for a published build.'
       )
+      console.error(err)
 
       if (!isDevelopmentBuild) {
         process.exit(1)
       }
     })
-    .then(() => {
-      console.log('Updating our licenses dump…')
-      return updateLicenseDump(projectRoot, outRoot).catch(err => {
-        console.error(
-          'Error updating the license dump. This is fatal for a published build.'
-        )
-        console.error(err)
-
-        if (!isDevelopmentBuild) {
-          process.exit(1)
-        }
-      })
-    })
-    .then(() => {
-      console.log('Packaging…')
-      return packageApp()
-    })
-    .catch(err => {
-      console.error(err)
-      process.exit(1)
-    })
-    .then(appPaths => {
-      console.log(`Built to ${appPaths}`)
-    })
-}
+  })
+  .then(() => {
+    console.log('Packaging…')
+    return packageApp()
+  })
+  .catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
+  .then(appPaths => {
+    console.log(`Built to ${appPaths}`)
+  })
 
 function packageApp() {
   // not sure if this is needed anywhere, so I'm just going to inline it here
@@ -300,7 +251,6 @@ function copyEmoji() {
 }
 
 function copyStaticResources() {
-  console.log('COPYING STATIC RESOURCES…')
   const dirName = process.platform
   const platformSpecific = path.join(projectRoot, 'app', 'static', dirName)
   const common = path.join(projectRoot, 'app', 'static', 'common')

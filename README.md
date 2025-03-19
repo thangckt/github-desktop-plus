@@ -74,18 +74,21 @@ Download the ZIP file from the [releases page](https://github.com/pol-rivero/git
 ### From the terminal
 
 ```bash
-corepack enable           # Install yarn if needed
-yarn                      # Install dependencies
-yarn compile:dev:watch &  # Compile and watch for changes
-yarn build:dev:watch &    # Build app and watch for changes
-yarn start                # Start the app for development
+corepack enable  # Install yarn if needed
+yarn             # Install dependencies
+yarn build:dev   # Initial build
+yarn start       # Start the app for development and watch for changes
 ```
 
 - It's normal for the app to take a while to start up, especially the first time.
 
 - While starting up, this error is normal: `UnhandledPromiseRejectionWarning: Error: Invalid header: Does not start with Cr24`
 
-- You don't need to restart the app to apply changes. Just reload the window (`Ctrl + Alt + R`).
+- You don't need to restart the app to apply changes. Just reload the window (`Ctrl + Alt + R` / `Cmd + Alt + R`).
+
+- Changes to the code inside `main-process` do require a full rebuild. Stop the app and run `yarn build:dev` again.
+
+- [Read this document](docs/contributing/setup.md) for more information on how to set up your development environment.
 
 ### From VSCode
 
@@ -97,6 +100,12 @@ yarn
 
 Then, you can simply build and run the app by pressing `F5`.  
 Breakpoints should be set in the developer tools, not the VSCode editor.
+
+### Running tests
+
+```bash
+yarn test:unit [dir/some-test.ts]
+```
 
 ## Why this fork?
 

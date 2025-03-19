@@ -3,39 +3,7 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "compile:dev:watch",
-      "label": "Compile",
-      "options": {
-        "shell": {
-          "executable": "${env:SHELL}",
-          "args": ["-ic"]
-        }
-      },
-      "isBackground": true,
-      "presentation": {
-        "reveal": "never",
-        "group": "buildWatchers",
-        "close": false
-      },
-      "problemMatcher": {
-        "owner": "typescript",
-        "applyTo": "closedDocuments",
-        "fileLocation": ["absolute"],
-        "pattern": {
-          "regexp": "Error: ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): (.*)$",
-          "file": 1,
-          "location": 2,
-          "message": 3
-        },
-        "background": {
-          "beginsPattern": "Started watching",
-          "endsPattern": "Finished building"
-        }
-      }
-    },
-    {
-      "type": "npm",
-      "script": "build:dev:watch",
+      "script": "build:dev",
       "label": "Build",
       "options": {
         "shell": {
@@ -43,36 +11,10 @@
           "args": ["-ic"]
         }
       },
-      "isBackground": true,
       "presentation": {
         "reveal": "never",
-        "group": "buildWatchers",
-        "close": false
-      },
-      "problemMatcher": {
-        "owner": "typescript",
-        "applyTo": "closedDocuments",
-        "fileLocation": ["absolute"],
-        "pattern": {
-          "regexp": "Error: ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): (.*)$",
-          "file": 1,
-          "location": 2,
-          "message": 3
-        },
-        "background": {
-          "beginsPattern": "Building for",
-          "endsPattern": "Built to"
-        }
+        "close": true
       }
-    },
-    {
-      "label": "Compile & Build",
-      "dependsOn": ["Compile", "Build"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": []
     }
   ]
 }

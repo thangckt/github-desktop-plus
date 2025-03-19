@@ -7,7 +7,7 @@
       "request": "launch",
       "type": "node-terminal",
       "nodeVersionHint": 20,
-      "preLaunchTask": "Compile & Build"
+      "preLaunchTask": "Build"
     },
     {
       "type": "node",
