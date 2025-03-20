@@ -310,7 +310,10 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
       isLocal: tip.branch.type === BranchType.Local,
       onRenameBranch: this.onRenameBranch,
       onViewPullRequestOnGitHub: this.onViewPullRequestOnGithub,
-      onMakeDefaultBranch: this.onMakeDefaultBranch,
+      onMakeDefaultBranch:
+        tip.branch.name === this.props.repository.defaultBranch
+          ? undefined
+          : this.onMakeDefaultBranch,
       onDeleteBranch: this.onDeleteBranch,
     })
 

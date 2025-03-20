@@ -262,7 +262,10 @@ export class BranchList extends React.Component<
       name,
       isLocal,
       onRenameBranch,
-      onMakeDefaultBranch,
+      onMakeDefaultBranch:
+        name === this.props.defaultBranch?.name
+          ? undefined
+          : onMakeDefaultBranch,
       onDeleteBranch,
     })
 

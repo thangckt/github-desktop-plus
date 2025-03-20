@@ -45,7 +45,7 @@ export function generateBranchContextMenuItems(
 
   if (onMakeDefaultBranch !== undefined) {
     items.push({
-      label: __DARWIN__ ? 'Make Default Branch' : 'Make default branch',
+      label: __DARWIN__ ? 'Make The Default Branch' : 'Make the default branch',
       action: () => onMakeDefaultBranch(name),
     })
   }
