@@ -18,6 +18,10 @@
 
   border-radius: var(--button-border-radius);
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   &:not([aria-disabled='true']):hover {
     border-color: var(--secondary-button-hover-border-color);
     background-color: var(--secondary-button-hover-background);
@@ -31,8 +35,16 @@
     opacity: 0.6;
   }
 
-  .octicon {
-    vertical-align: middle;
+  .octicon.mr {
+    transform: translateX(-4px);
+    margin-right: 2px;
+  }
+  .octicon.ml {
+    margin-left: 4px;
+  }
+
+  span {
+    margin-right: 4px;
   }
 
   &.button-with-icon .octicon {
@@ -141,4 +153,8 @@
 .button-component.copy-button .octicon {
   height: 12px;
   width: 12px;
+}
+
+.button-group .button-component .octicon {
+  margin-left: 0;
 }

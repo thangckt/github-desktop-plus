@@ -1,6 +1,8 @@
 import * as React from 'react'
 import classNames from 'classnames'
 import { Button } from '../lib/button'
+import { Octicon, OcticonSymbol } from '../octicons'
+import * as octicons from '../octicons/octicons.generated'
 
 interface IOkCancelButtonGroupProps {
   /**
@@ -145,18 +147,33 @@ export class OkCancelButtonGroup extends React.Component<
   }
 
   private renderOkButton() {
+    const okButtonIcon =
+      typeof this.props.okButtonText === 'string'
+        ? this.getOkButtonIcon(this.props.okButtonText)
+        : null
     return (
       <Button
         onClick={this.onOkButtonClick}
         disabled={this.props.okButtonDisabled}
         tooltip={this.props.okButtonTitle}
         type={this.props.destructive === true ? 'button' : 'submit'}
-        className={this.props.destructive === true ? 'destructive' : ''}
+        className={classNames({ destructive: this.props.destructive === true })}
         ariaDescribedBy={this.props.okButtonAriaDescribedBy}
       >
+        {okButtonIcon && <Octicon symbol={okButtonIcon} className="mr" />}
         {this.props.okButtonText || 'Ok'}
       </Button>
     )
+  }
+
+  private getOkButtonIcon(text: string): OcticonSymbol | null {
+    switch (text.toLowerCase()) {
+      case 'delete':
+      case 'discard':
+        return octicons.trash
+      default:
+        return null
+    }
   }
 
   private renderCancelButton() {

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { SuggestedAction } from './suggested-action'
 import { MenuIDs } from '../../models/menu-ids'
 import { executeMenuItemById } from '../main-process-proxy'
+import { OcticonSymbol } from '../octicons'
 
 interface IMenuBackedSuggestedActionProps {
   /**
@@ -34,6 +35,11 @@ interface IMenuBackedSuggestedActionProps {
    * The text, or "label", for the action button.
    */
   readonly buttonText: string | JSX.Element
+
+  /**
+   * The icon to display next to the button text
+   */
+  readonly icon: OcticonSymbol
 
   /**
    * The type of action, currently supported actions are
@@ -84,6 +90,7 @@ export class MenuBackedSuggestedAction extends React.Component<
         description={this.props.description}
         discoverabilityContent={this.props.discoverabilityContent}
         buttonText={this.props.buttonText}
+        icon={this.props.icon}
         onClick={this.onClick}
         type={this.props.type}
         disabled={this.props.disabled}

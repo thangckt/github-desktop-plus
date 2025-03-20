@@ -77,6 +77,7 @@ export class TutorialDone extends React.Component<ITutorialDoneProps, {}> {
               title="Explore projects on GitHub"
               description="Contribute to a project that interests you"
               buttonText={__DARWIN__ ? 'Open in Browser' : 'Open in browser'}
+              icon={octicons.browser}
               onClick={this.openDotcomExplore}
               type="normal"
               image={TelescopeOcticon}
@@ -87,6 +88,7 @@ export class TutorialDone extends React.Component<ITutorialDoneProps, {}> {
               buttonText={
                 __DARWIN__ ? 'Create Repository' : 'Create repository'
               }
+              icon={octicons.repo}
               onClick={this.onCreateNewRepository}
               type="normal"
               image={PlusOcticon}
@@ -95,6 +97,7 @@ export class TutorialDone extends React.Component<ITutorialDoneProps, {}> {
               title="Add a local repository"
               description="Work on an existing project in GitHub Desktop"
               buttonText={__DARWIN__ ? 'Add Repository' : 'Add repository'}
+              icon={octicons.fileDirectory}
               onClick={this.onAddExistingRepository}
               type="normal"
               image={FileDirectoryOcticon}

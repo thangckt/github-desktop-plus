@@ -35,6 +35,9 @@ import {
   isIdPullRequestSuggestedNextAction,
 } from '../../models/pull-request'
 import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
+import * as octicons from '../octicons/octicons.generated'
+import { OcticonSymbol } from '../octicons/octicons.generated'
+import { stash } from '../octicons'
 
 function formatMenuItemLabel(text: string) {
   if (__WIN32__ || __LINUX__) {
@@ -165,6 +168,7 @@ function buildMenuItemInfoMap(
       continue
     }
 
+    console.warn('item', item)
     const infoItem: IMenuItemInfo = {
       label: item.label as string,
       acceleratorKeys: getItemAcceleratorKeys(item),
@@ -243,6 +247,7 @@ export class NoChanges extends React.Component<
   private renderMenuBackedAction(
     itemId: MenuIDs,
     title: string,
+    icon: OcticonSymbol,
     description?: string | JSX.Element,
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   ) {
@@ -260,6 +265,7 @@ export class NoChanges extends React.Component<
         discoverabilityContent={this.renderDiscoverabilityElements(menuItem)}
         menuItemId={itemId}
         buttonText={formatMenuItemLabel(menuItem.label)}
+        icon={icon}
         disabled={!menuItem.enabled}
         onClick={onClick}
       />
@@ -272,6 +278,7 @@ export class NoChanges extends React.Component<
     return this.renderMenuBackedAction(
       'open-working-directory',
       `View the files of your repository in ${fileManager}`,
+      octicons.fileDirectory,
       undefined,
       this.onShowInFileManagerClicked
     )
@@ -294,6 +301,7 @@ export class NoChanges extends React.Component<
     return this.renderMenuBackedAction(
       'view-repository-in-browser',
       'Open the repository page ' + browserTarget + 'in your Browser',
+      isGitHub ? octicons.markGithub : octicons.globe,
       undefined,
       this.onViewInBrowserClicked
     )
@@ -343,6 +351,7 @@ export class NoChanges extends React.Component<
     return this.renderMenuBackedAction(
       itemId,
       title,
+      octicons.code,
       description,
       this.onOpenInExternalEditorClicked
     )
@@ -447,6 +456,7 @@ export class NoChanges extends React.Component<
         description={description}
         discoverabilityContent={discoverabilityContent}
         buttonText="View stash"
+        icon={stash}
         type="primary"
         disabled={menuItem !== null && !menuItem.enabled}
         onClick={this.onViewStashClicked}
@@ -484,6 +494,7 @@ export class NoChanges extends React.Component<
         description="This repository is currently only available on your local machine. By publishing it on GitHub you can share it, and collaborate with others."
         discoverabilityContent={discoverabilityContent}
         buttonText="Publish repository"
+        icon={octicons.repoPush}
         menuItemId={itemId}
         type="primary"
         disabled={!menuItem.enabled}
@@ -534,6 +545,7 @@ export class NoChanges extends React.Component<
         description={description}
         discoverabilityContent={discoverabilityContent}
         buttonText="Publish branch"
+        icon={octicons.gitBranch}
         type="primary"
         disabled={!menuItem.enabled}
         onClick={this.onPublishBranchClicked}
@@ -590,6 +602,7 @@ export class NoChanges extends React.Component<
         description={description}
         discoverabilityContent={discoverabilityContent}
         buttonText={buttonText}
+        icon={octicons.arrowDown}
         type="primary"
         disabled={!menuItem.enabled}
       />
@@ -656,6 +669,7 @@ export class NoChanges extends React.Component<
         description={description}
         discoverabilityContent={discoverabilityContent}
         buttonText={buttonText}
+        icon={octicons.arrowUp}
         type="primary"
         disabled={!menuItem.enabled}
       />

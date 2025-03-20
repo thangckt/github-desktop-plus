@@ -1,6 +1,7 @@
 import * as React from 'react'
 import classNames from 'classnames'
 import { Button } from '../lib/button'
+import { Octicon, OcticonSymbol } from '../octicons'
 
 interface ISuggestedActionProps {
   /**
@@ -26,6 +27,11 @@ interface ISuggestedActionProps {
    * The text, or "label", for the action button.
    */
   readonly buttonText: string | JSX.Element
+
+  /**
+   * The icon to display next to the button text
+   */
+  readonly icon: OcticonSymbol
 
   /**
    * A callback which is invoked when the user clicks
@@ -85,9 +91,11 @@ export class SuggestedAction extends React.Component<ISuggestedActionProps> {
         </div>
         <Button
           type={primary ? 'submit' : undefined}
+          className="suggested-action-button"
           onClick={this.props.onClick}
           disabled={this.props.disabled}
         >
+          <Octicon symbol={this.props.icon} className="mr ml" />
           {this.props.buttonText}
         </Button>
       </div>
