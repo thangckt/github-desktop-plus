@@ -168,7 +168,6 @@ function buildMenuItemInfoMap(
       continue
     }
 
-    console.warn('item', item)
     const infoItem: IMenuItemInfo = {
       label: item.label as string,
       acceleratorKeys: getItemAcceleratorKeys(item),
