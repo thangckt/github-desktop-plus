@@ -75,6 +75,9 @@ import { AriaLiveContainer } from '../accessibility/aria-live-container'
 
 const DefaultRowHeight = 20
 
+let oldWidth = 0
+let oldHeight = 0
+
 export interface ISelection {
   /// Initial diff line number in the selection
   readonly from: number
@@ -623,41 +626,52 @@ export class SideBySideDiff extends React.Component<
             message={ariaLiveMessage}
             trackedUserInput={this.ariaLiveChangeSignal}
           />
-          <AutoSizer onResize={this.clearListRowsHeightCache}>
-            {({ height, width }) => (
-              <List
-                deferredMeasurementCache={listRowsHeightCache}
-                width={width}
-                height={height}
-                rowCount={rows.length}
-                rowHeight={this.getRowHeight}
-                rowRenderer={this.renderRow}
-                onRowsRendered={this.onRowsRendered}
-                ref={this.virtualListRef}
-                overscanIndicesGetter={this.overscanIndicesGetter}
-                // The following properties are passed to the list
-                // to make sure that it gets re-rendered when any of
-                // them change.
-                isSearching={isSearching}
-                selectedSearchResult={this.state.selectedSearchResult}
-                searchQuery={this.state.searchQuery}
-                showSideBySideDiff={this.props.showSideBySideDiff}
-                beforeTokens={this.state.beforeTokens}
-                afterTokens={this.state.afterTokens}
-                temporarySelection={this.state.temporarySelection}
-                hoveredHunk={this.state.hoveredHunk}
-                showDiffCheckMarks={this.props.showDiffCheckMarks}
-                isSelectable={canSelect(this.props.file)}
-                fileSelection={this.getSelection()}
-                // rows are memoized and include things like the
-                // noNewlineIndicator
-                rows={rows}
-              />
-            )}
+          <AutoSizer>
+            {({ height, width }) =>
+              this.checkOnResize(height, width) && (
+                <List
+                  deferredMeasurementCache={listRowsHeightCache}
+                  width={width}
+                  height={height}
+                  rowCount={rows.length}
+                  rowHeight={this.getRowHeight}
+                  rowRenderer={this.renderRow}
+                  onRowsRendered={this.onRowsRendered}
+                  ref={this.virtualListRef}
+                  overscanIndicesGetter={this.overscanIndicesGetter}
+                  // The following properties are passed to the list
+                  // to make sure that it gets re-rendered when any of
+                  // them change.
+                  isSearching={isSearching}
+                  selectedSearchResult={this.state.selectedSearchResult}
+                  searchQuery={this.state.searchQuery}
+                  showSideBySideDiff={this.props.showSideBySideDiff}
+                  beforeTokens={this.state.beforeTokens}
+                  afterTokens={this.state.afterTokens}
+                  temporarySelection={this.state.temporarySelection}
+                  hoveredHunk={this.state.hoveredHunk}
+                  showDiffCheckMarks={this.props.showDiffCheckMarks}
+                  isSelectable={canSelect(this.props.file)}
+                  fileSelection={this.getSelection()}
+                  // rows are memoized and include things like the
+                  // noNewlineIndicator
+                  rows={rows}
+                />
+              )
+            }
           </AutoSizer>
         </div>
       </div>
     )
+  }
+
+  private checkOnResize = (height: number, width: number) => {
+    if (height !== oldHeight || width !== oldWidth) {
+      oldHeight = height
+      oldWidth = width
+      this.clearListRowsHeightCache()
+    }
+    return true
   }
 
   private overscanIndicesGetter = (params: OverscanIndicesGetterParams) => {
