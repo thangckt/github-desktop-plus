@@ -3,6 +3,7 @@ import { clipboard } from 'electron'
 
 interface IBranchContextMenuConfig {
   name: string
+  nameWithoutRemote: string
   isLocal: boolean
   onRenameBranch?: (branchName: string) => void
   onViewPullRequestOnGitHub?: () => void
@@ -15,6 +16,7 @@ export function generateBranchContextMenuItems(
 ): IMenuItem[] {
   const {
     name,
+    nameWithoutRemote,
     isLocal,
     onRenameBranch,
     onViewPullRequestOnGitHub,
@@ -46,7 +48,7 @@ export function generateBranchContextMenuItems(
   if (onMakeDefaultBranch !== undefined) {
     items.push({
       label: __DARWIN__ ? 'Make The Default Branch' : 'Make the default branch',
-      action: () => onMakeDefaultBranch(name),
+      action: () => onMakeDefaultBranch(nameWithoutRemote),
     })
   }
 

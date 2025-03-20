@@ -305,13 +305,15 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
       return
     }
 
+    const { name, type, nameWithoutRemote } = tip.branch
     const items = generateBranchContextMenuItems({
-      name: tip.branch.name,
-      isLocal: tip.branch.type === BranchType.Local,
+      name,
+      nameWithoutRemote,
+      isLocal: type === BranchType.Local,
       onRenameBranch: this.onRenameBranch,
       onViewPullRequestOnGitHub: this.onViewPullRequestOnGithub,
       onMakeDefaultBranch:
-        tip.branch.name === this.props.repository.defaultBranch
+        nameWithoutRemote === this.props.repository.defaultBranch
           ? undefined
           : this.onMakeDefaultBranch,
       onDeleteBranch: this.onDeleteBranch,

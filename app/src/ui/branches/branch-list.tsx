@@ -255,15 +255,16 @@ export class BranchList extends React.Component<
       return
     }
 
-    const { type, name } = item.branch
+    const { type, name, nameWithoutRemote } = item.branch
     const isLocal = type === BranchType.Local
 
     const items = generateBranchContextMenuItems({
       name,
+      nameWithoutRemote,
       isLocal,
       onRenameBranch,
       onMakeDefaultBranch:
-        name === this.props.defaultBranch?.name
+        nameWithoutRemote === this.props.defaultBranch?.name
           ? undefined
           : onMakeDefaultBranch,
       onDeleteBranch,
@@ -337,8 +338,8 @@ export class BranchList extends React.Component<
 
   private onRenderNewButton = () => {
     return this.props.canCreateNewBranch ? (
-      <Button className="new-branch-button" onClick={this.onCreateNewBranch}>
-        <Octicon symbol={octicons.plus} />
+      <Button onClick={this.onCreateNewBranch}>
+        <Octicon symbol={octicons.plus} className="mr" />
         {__DARWIN__ ? 'New Branch' : 'New branch'}
       </Button>
     ) : null
