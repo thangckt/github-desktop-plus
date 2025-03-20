@@ -29,6 +29,7 @@ export enum PopupType {
   DeleteBranch = 'DeleteBranch',
   DeleteRemoteBranch = 'DeleteRemoteBranch',
   ConfirmDiscardChanges = 'ConfirmDiscardChanges',
+  ConfirmStashChanges = 'ConfirmStashChanges',
   Preferences = 'Preferences',
   RepositorySettings = 'RepositorySettings',
   AddRepository = 'AddRepository',
@@ -125,6 +126,13 @@ export type PopupDetail =
       showDiscardChangesSetting?: boolean
       discardingAllChanges?: boolean
       permanentlyDelete?: boolean
+    }
+  | {
+      type: PopupType.ConfirmStashChanges
+      repository: Repository
+      files: ReadonlyArray<WorkingDirectoryFileChange>
+      showStashChangesSetting?: boolean
+      stashingAllChanges?: boolean
     }
   | {
       type: PopupType.ConfirmDiscardSelection

@@ -177,6 +177,7 @@ import { TestNotifications } from './test-notifications/test-notifications'
 import { NotificationsDebugStore } from '../lib/stores/notifications-debug-store'
 import { PullRequestComment } from './notifications/pull-request-comment'
 import { UnknownAuthors } from './unknown-authors/unknown-authors-dialog'
+import { StashChanges } from './stash-changes/stash-changes-dialog'
 import { UnsupportedOSBannerDismissedAtKey } from './banners/os-version-no-longer-supported-banner'
 import { offsetFromNow } from '../lib/offset-from'
 import { getBoolean, getNumber } from '../lib/local-storage'
@@ -1700,6 +1701,29 @@ export class App extends React.Component<IAppProps, IAppState> {
             onConfirmDiscardChangesChanged={this.onConfirmDiscardChangesChanged}
           />
         )
+      case PopupType.ConfirmStashChanges:
+        const showStashChangesSetting =
+          popup.showStashChangesSetting === undefined
+            ? true
+            : popup.showStashChangesSetting
+        const stashingAllChanges =
+          popup.stashingAllChanges === undefined
+            ? false
+            : popup.stashingAllChanges
+
+        return (
+          <StashChanges
+            key="stash-changes"
+            repository={popup.repository}
+            dispatcher={this.props.dispatcher}
+            files={popup.files}
+            confirmStashChanges={this.state.askForConfirmationOnStashChanges}
+            showStashChangesSetting={showStashChangesSetting}
+            stashingAllChanges={stashingAllChanges}
+            onDismissed={onPopupDismissedFn}
+            onConfirmStashChangesChanged={this.onConfirmStashChangesChanged}
+          />
+        )
       case PopupType.ConfirmDiscardSelection:
         return (
           <DiscardSelection
@@ -2822,6 +2846,10 @@ export class App extends React.Component<IAppProps, IAppState> {
 
   private onConfirmDiscardChangesChanged = (value: boolean) => {
     this.props.dispatcher.setConfirmDiscardChangesSetting(value)
+  }
+
+  private onConfirmStashChangesChanged = (value: boolean) => {
+    this.props.dispatcher.setConfirmStashChangesSetting(value)
   }
 
   private onConfirmDiscardChangesPermanentlyChanged = (value: boolean) => {
