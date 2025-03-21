@@ -419,16 +419,13 @@ export class ChangesList extends React.Component<
   }
 
   private getStashChangesMenuItemLabel = (files: ReadonlyArray<string>) => {
-    const label =
-      files.length === 1
-        ? __DARWIN__
-          ? `Stash Changes`
-          : `Stash changes`
-        : __DARWIN__
-        ? `Stash ${files.length} Selected Changes`
-        : `Stash ${files.length} selected changes`
-
-    return this.props.askForConfirmationOnDiscardChanges ? `${label}…` : label
+    return files.length === 1
+      ? __DARWIN__
+        ? `Stash Changes`
+        : `Stash changes`
+      : __DARWIN__
+      ? `Stash ${files.length} Selected Changes`
+      : `Stash ${files.length} selected changes`
   }
 
   private onContextMenu = (event: React.MouseEvent<any>) => {

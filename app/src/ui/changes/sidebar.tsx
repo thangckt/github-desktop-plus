@@ -231,16 +231,9 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
   }
 
   private onStashChangesFromFiles = (
-    files: ReadonlyArray<WorkingDirectoryFileChange>,
-    isStashingAllChanges: boolean
+    files: ReadonlyArray<WorkingDirectoryFileChange>
   ) => {
-    this.props.dispatcher.showPopup({
-      type: PopupType.ConfirmStashChanges,
-      repository: this.props.repository,
-      showStashChangesSetting: false,
-      stashingAllChanges: isStashingAllChanges,
-      files,
-    })
+    this.props.dispatcher.stashChanges(this.props.repository, files)
   }
 
   private onDiscardChangesFromFiles = (

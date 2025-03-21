@@ -1976,13 +1976,6 @@ export class Dispatcher {
   }
 
   /**
-   * Sets the user's preference so that confirmation to stash changes is not asked
-   */
-  public setConfirmStashChangesSetting(value: boolean): Promise<void> {
-    return this.appStore._setConfirmStashChangesSetting(value)
-  }
-
-  /**
    * Sets the user's preference for handling uncommitted changes when switching branches
    */
   public setUncommittedChangesStrategySetting(

@@ -378,7 +378,6 @@ const confirmRepoRemovalDefault: boolean = true
 const showCommitLengthWarningDefault: boolean = false
 const confirmDiscardChangesDefault: boolean = true
 const confirmDiscardChangesPermanentlyDefault: boolean = true
-const confirmStashChangesDefault: boolean = true
 const confirmDiscardStashDefault: boolean = true
 const confirmCheckoutCommitDefault: boolean = true
 const askForConfirmationOnForcePushDefault = true
@@ -387,7 +386,6 @@ const askToMoveToApplicationsFolderKey: string = 'askToMoveToApplicationsFolder'
 const confirmRepoRemovalKey: string = 'confirmRepoRemoval'
 const showCommitLengthWarningKey: string = 'showCommitLengthWarning'
 const confirmDiscardChangesKey: string = 'confirmDiscardChanges'
-const confirmStashChangesKey: string = 'confirmStashChanges'
 const confirmDiscardStashKey: string = 'confirmDiscardStash'
 const confirmCheckoutCommitKey: string = 'confirmCheckoutCommit'
 const confirmDiscardChangesPermanentlyKey: string =
@@ -520,7 +518,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private confirmDiscardChanges: boolean = confirmDiscardChangesDefault
   private confirmDiscardChangesPermanently: boolean =
     confirmDiscardChangesPermanentlyDefault
-  private confirmStashChanges: boolean = confirmStashChangesDefault
   private confirmDiscardStash: boolean = confirmDiscardStashDefault
   private confirmCheckoutCommit: boolean = confirmCheckoutCommitDefault
   private askForConfirmationOnForcePush = askForConfirmationOnForcePushDefault
@@ -1048,7 +1045,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       askForConfirmationOnDiscardChanges: this.confirmDiscardChanges,
       askForConfirmationOnDiscardChangesPermanently:
         this.confirmDiscardChangesPermanently,
-      askForConfirmationOnStashChanges: this.confirmStashChanges,
       askForConfirmationOnDiscardStash: this.confirmDiscardStash,
       askForConfirmationOnCheckoutCommit: this.confirmCheckoutCommit,
       askForConfirmationOnForcePush: this.askForConfirmationOnForcePush,
@@ -2203,11 +2199,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.confirmDiscardChangesPermanently = getBoolean(
       confirmDiscardChangesPermanentlyKey,
       confirmDiscardChangesPermanentlyDefault
-    )
-
-    this.confirmStashChanges = getBoolean(
-      confirmStashChangesKey,
-      confirmStashChangesDefault
     )
 
     this.confirmDiscardStash = getBoolean(
@@ -4202,18 +4193,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const repositoryState = this.repositoryStateCache.get(repository)
     const tip = repositoryState.branchesState.tip
     const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
-    const hasExistingStash = repositoryState.changesState.stashEntry !== null
 
     if (currentBranch === null) {
-      return false
-    }
-
-    if (showConfirmationDialog && hasExistingStash) {
-      this._showPopup({
-        type: PopupType.ConfirmOverwriteStash,
-        branchToCheckout: null,
-        repository,
-      })
       return false
     }
 
@@ -5788,15 +5769,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.confirmDiscardChanges = value
 
     setBoolean(confirmDiscardChangesKey, value)
-    this.emitUpdate()
-
-    return Promise.resolve()
-  }
-
-  public _setConfirmStashChangesSetting(value: boolean): Promise<void> {
-    this.confirmStashChanges = value
-
-    setBoolean(confirmStashChangesKey, value)
     this.emitUpdate()
 
     return Promise.resolve()
