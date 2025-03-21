@@ -167,7 +167,7 @@ export class OkCancelButtonGroup extends React.Component<
   }
 
   private getOkButtonIcon(text: string): OcticonSymbol | null {
-    switch (text.toLowerCase()) {
+    switch (text.split(' ')[0].toLowerCase()) {
       case 'delete':
       case 'remove':
       case 'discard':

@@ -58,7 +58,7 @@ export class DiscardChanges extends React.Component<
 
   private getOkButtonLabel() {
     if (this.props.discardingAllChanges) {
-      return __DARWIN__ ? 'Discard All Changes' : 'Discard all changes'
+      return __DARWIN__ ? 'Discard All' : 'Discard all'
     }
     return __DARWIN__ ? 'Discard Changes' : 'Discard changes'
   }
