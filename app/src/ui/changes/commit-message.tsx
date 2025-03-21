@@ -1127,7 +1127,7 @@ export class CommitMessage extends React.Component<
 
     return (
       <>
-        {verb} to <strong>{branch}</strong>
+        <span>{verb} to</span> <strong>{branch}</strong>
       </>
     )
   }
