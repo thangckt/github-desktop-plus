@@ -242,7 +242,7 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
       files,
     })
   }
-  
+
   private onDiscardChangesFromFiles = (
     files: ReadonlyArray<WorkingDirectoryFileChange>,
     isDiscardingAllChanges: boolean,

@@ -335,7 +335,7 @@ export class ChangesList extends React.Component<
   private onStashAllChanges = () => {
     this.props.dispatcher.createStashForCurrentBranch(this.props.repository)
   }
-  
+
   private onDiscardAllChanges = () => {
     this.props.onDiscardChangesFromFiles(
       this.props.workingDirectory.files,
@@ -365,12 +365,9 @@ export class ChangesList extends React.Component<
     })
 
     const stashingAllChanges =
-          modifiedFiles.length === workingDirectory.files.length
+      modifiedFiles.length === workingDirectory.files.length
 
-    this.props.onStashChangesFromFiles(
-      modifiedFiles,
-      stashingAllChanges
-    )
+    this.props.onStashChangesFromFiles(modifiedFiles, stashingAllChanges)
   }
 
   private onDiscardChanges = (files: ReadonlyArray<string>) => {
