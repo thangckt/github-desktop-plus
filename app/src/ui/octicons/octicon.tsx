@@ -45,7 +45,7 @@ export class Octicon extends React.Component<IOcticonProps, {}> {
     const { symbol } = this.props
 
     if (this.isSingleVariant(symbol)) {
-      return this.renderIcon(symbol.p, symbol.h, symbol.w)
+      return this.renderIcon(symbol.p, symbol.h, symbol.w, symbol.mult ?? 1)
     } else {
       const height = this.props.height ?? 16
       const naturalHeight = this.closestNaturalHeight(
@@ -63,11 +63,21 @@ export class Octicon extends React.Component<IOcticonProps, {}> {
       const naturalWidth = scaledSymbol.w
       const width = height * (naturalWidth / naturalHeight)
 
-      return this.renderIcon(scaledSymbol.p, height, width)
+      return this.renderIcon(
+        scaledSymbol.p,
+        height,
+        width,
+        scaledSymbol.mult ?? 1
+      )
     }
   }
 
-  private renderIcon(paths: string[], height: number, width: number) {
+  private renderIcon(
+    paths: string[],
+    height: number,
+    width: number,
+    sizeMultiplier: number
+  ) {
     const { title, tooltipDirection } = this.props
     const viewBox = `0 0 ${width} ${height}`
     const className = classNames('octicon', this.props.className)
@@ -90,8 +100,8 @@ export class Octicon extends React.Component<IOcticonProps, {}> {
         viewBox={viewBox}
         ref={this.svgRef}
         tabIndex={-1}
-        height={height}
-        width={width}
+        height={height * sizeMultiplier}
+        width={width * sizeMultiplier}
       >
         {title !== undefined && (
           <Tooltip target={this.svgRef} direction={direction}>

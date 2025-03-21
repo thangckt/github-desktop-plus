@@ -39,6 +39,7 @@ interface IOcticonVariant {
   p: string[]
   h: number
   w: number
+  mult?: number
 }
 
 interface IOcticon {
@@ -73,11 +74,29 @@ async function generateIconData(): Promise<ReadonlyArray<IOcticon>> {
           p: data.ast.children.map(c => c.attributes.d),
           h: parseInt(data.options.height, 10),
           w: parseInt(data.options.width, 10),
+          mult: getSizeMultiplier(name),
+        }
+        if (variants[height].mult === undefined) {
+          delete variants[height].mult
         }
       })
 
       return { name: getJsFriendlyName(name), variants }
     })
+}
+
+function getSizeMultiplier(icon: string) {
+  switch (icon) {
+    case 'globe':
+    case 'mark-github':
+    case 'file-diff':
+      return 14 / 16
+    case 'file-directory':
+    case 'trash':
+      return 15 / 16
+    default:
+      return undefined
+  }
 }
 
 generateIconData().then(results => {
@@ -104,6 +123,9 @@ export type OcticonSymbolVariant = {
 
   /** The height of the symbol */
   readonly h: number
+
+  /** The size multiplier in order to normalize the apparent size (generally between 0 and 1) */
+  readonly mult?: number
 }
 
 export type OcticonSymbolVariants = Record<PropertyKey, OcticonSymbolVariant>

@@ -12,6 +12,9 @@ export type OcticonSymbolVariant = {
 
   /** The height of the symbol */
   readonly h: number
+
+  /** The size multiplier in order to normalize the apparent size (generally between 0 and 1) */
+  readonly mult?: number
 }
 
 export type OcticonSymbolVariants = Record<PropertyKey, OcticonSymbolVariant>
@@ -1739,6 +1742,7 @@ export const fileDiff: OcticonSymbolVariants = {
     ],
     h: 16,
     w: 16,
+    mult: 0.875,
   },
   '24': {
     p: [
@@ -1747,6 +1751,7 @@ export const fileDiff: OcticonSymbolVariants = {
     ],
     h: 24,
     w: 24,
+    mult: 0.875,
   },
 }
 export const fileDirectory: OcticonSymbolVariants = {
@@ -1756,6 +1761,7 @@ export const fileDirectory: OcticonSymbolVariants = {
     ],
     h: 16,
     w: 16,
+    mult: 0.9375,
   },
   '24': {
     p: [
@@ -1763,6 +1769,7 @@ export const fileDirectory: OcticonSymbolVariants = {
     ],
     h: 24,
     w: 24,
+    mult: 0.9375,
   },
 }
 export const fileDirectoryFill: OcticonSymbolVariants = {
@@ -2171,6 +2178,7 @@ export const globe: OcticonSymbolVariants = {
     ],
     h: 16,
     w: 16,
+    mult: 0.875,
   },
   '24': {
     p: [
@@ -2178,6 +2186,7 @@ export const globe: OcticonSymbolVariants = {
     ],
     h: 24,
     w: 24,
+    mult: 0.875,
   },
 }
 export const goal: OcticonSymbolVariants = {
@@ -2833,6 +2842,7 @@ export const markGithub: OcticonSymbolVariants = {
     ],
     h: 16,
     w: 16,
+    mult: 0.875,
   },
 }
 export const markdown: OcticonSymbolVariants = {
@@ -4624,6 +4634,7 @@ export const trash: OcticonSymbolVariants = {
     ],
     h: 16,
     w: 16,
+    mult: 0.9375,
   },
   '24': {
     p: [
@@ -4632,6 +4643,7 @@ export const trash: OcticonSymbolVariants = {
     ],
     h: 24,
     w: 24,
+    mult: 0.9375,
   },
 }
 export const triangleDown: OcticonSymbolVariants = {
