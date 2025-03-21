@@ -3,8 +3,10 @@ import { IStashEntry } from '../../models/stash-entry'
 import { Dispatcher } from '../dispatcher'
 import { Repository } from '../../models/repository'
 import { PopupType } from '../../models/popup'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { ErrorWithMetadata } from '../../lib/error-with-metadata'
+import { Button } from '../lib/button'
+import { Octicon } from '../octicons'
+import * as octicons from '../octicons/octicons.generated'
 
 interface IStashDiffHeaderProps {
   readonly stashEntry: IStashEntry
@@ -41,23 +43,29 @@ export class StashDiffHeader extends React.Component<
     return (
       <div className="header">
         <h3>Stashed changes</h3>
-        <div className="row">
-          <OkCancelButtonGroup
-            destructive={true}
-            okButtonText="Discard"
-            okButtonDisabled={isRestoring || isDiscarding}
-            onOkButtonClick={this.onDiscardClick}
-            cancelButtonText="Restore"
-            cancelButtonDisabled={isRestoring || isDiscarding}
-            onCancelButtonClick={this.onRestoreClick}
-            cancelButtonAriaDescribedBy="restore-description"
-          />
-          <div className="explanatory-text" id="restore-description">
-            <span className="text">
-              <strong>Restore</strong> will move your stashed files to the
-              Changes list.
-            </span>
-          </div>
+        <div className="row button-group">
+          <Button onClick={this.onCloseClick} tooltip={'Close the stash view'}>
+            <Octicon symbol={octicons.x} className="mr" />
+            Close
+          </Button>
+          <Button
+            onClick={this.onRestoreClick}
+            type="submit"
+            tooltip={'Restore the stashed changes into the working directory'}
+            disabled={isRestoring || isDiscarding}
+          >
+            <Octicon symbol={octicons.fileDiff} className="mr" />
+            Restore to Changes
+          </Button>
+          <Button
+            onClick={this.onDiscardClick}
+            tooltip={'Discard the stashed changes'}
+            className="destructive"
+            disabled={isRestoring || isDiscarding}
+          >
+            <Octicon symbol={octicons.trash} className="mr" />
+            Discard
+          </Button>
         </div>
       </div>
     )
@@ -106,5 +114,10 @@ export class StashDiffHeader extends React.Component<
     } finally {
       this.setState({ isRestoring: false })
     }
+  }
+
+  private onCloseClick = () => {
+    const { dispatcher, repository } = this.props
+    dispatcher.selectWorkingDirectoryFiles(repository)
   }
 }
