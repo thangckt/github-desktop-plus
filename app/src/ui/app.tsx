@@ -18,7 +18,7 @@ import { RetryAction } from '../models/retry-actions'
 import { FetchType } from '../models/fetch'
 import { shouldRenderApplicationMenu } from './lib/features'
 import { matchExistingRepository } from '../lib/repository-matching'
-import { getDotComAPIEndpoint } from '../lib/api'
+import { getBitbucketAPIEndpoint, getDotComAPIEndpoint } from '../lib/api'
 import { getVersion, getName } from './lib/app-proxy'
 import {
   getOS,
@@ -818,9 +818,18 @@ export class App extends React.Component<IAppProps, IAppState> {
 
   private getEnterpriseAccount(): Account | null {
     const enterpriseAccount = this.state.accounts.find(
-      a => a.endpoint !== getDotComAPIEndpoint()
+      a =>
+        a.endpoint !== getDotComAPIEndpoint() &&
+        a.endpoint !== getBitbucketAPIEndpoint()
     )
     return enterpriseAccount || null
+  }
+
+  private getBitbucketAccount(): Account | null {
+    const bitbucketAccount = this.state.accounts.find(
+      a => a.endpoint === getBitbucketAPIEndpoint()
+    )
+    return bitbucketAccount || null
   }
 
   private updateBranchWithContributionTargetBranch() {
@@ -1748,6 +1757,7 @@ export class App extends React.Component<IAppProps, IAppState> {
             optOutOfUsageTracking={this.state.optOutOfUsageTracking}
             useExternalCredentialHelper={this.state.useExternalCredentialHelper}
             enterpriseAccount={this.getEnterpriseAccount()}
+            bitbucketAccount={this.getBitbucketAccount()}
             repository={repository}
             onDismissed={onPopupDismissedFn}
             selectedShell={this.state.selectedShell}

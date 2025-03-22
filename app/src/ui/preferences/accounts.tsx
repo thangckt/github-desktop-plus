@@ -12,15 +12,18 @@ import { CallToAction } from '../lib/call-to-action'
 interface IAccountsProps {
   readonly dotComAccount: Account | null
   readonly enterpriseAccount: Account | null
+  readonly bitbucketAccount: Account | null
 
   readonly onDotComSignIn: () => void
   readonly onEnterpriseSignIn: () => void
+  readonly onBitbucketSignIn: () => void
   readonly onLogout: (account: Account) => void
 }
 
 enum SignInType {
   DotCom,
   Enterprise,
+  Bitbucket,
 }
 
 export class Accounts extends React.Component<IAccountsProps, {}> {
@@ -39,6 +42,14 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
               SignInType.Enterprise
             )
           : this.renderSignIn(SignInType.Enterprise)}
+
+        <h2>Bitbucket</h2>
+        {this.props.bitbucketAccount
+          ? this.renderAccount(
+              this.props.bitbucketAccount,
+              SignInType.Bitbucket
+            )
+          : this.renderSignIn(SignInType.Bitbucket)}
       </DialogContent>
     )
   }
@@ -51,12 +62,10 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
       endpoint: account.endpoint,
     }
 
-    const accountTypeLabel =
-      type === SignInType.DotCom ? 'GitHub.com' : 'GitHub Enterprise'
-
     const accounts = [
       ...(this.props.dotComAccount ? [this.props.dotComAccount] : []),
       ...(this.props.enterpriseAccount ? [this.props.enterpriseAccount] : []),
+      ...(this.props.bitbucketAccount ? [this.props.bitbucketAccount] : []),
     ]
 
     // The DotCom account is shown first, so its sign in/out button should be
@@ -74,10 +83,24 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
           </div>
         </div>
         <Button onClick={this.logout(account)} className={className}>
-          {__DARWIN__ ? 'Sign Out of' : 'Sign out of'} {accountTypeLabel}
+          {__DARWIN__ ? 'Sign Out of' : 'Sign out of'}{' '}
+          {this.getAccountTypeLabel(type)}
         </Button>
       </Row>
     )
+  }
+
+  private getAccountTypeLabel(type: SignInType) {
+    switch (type) {
+      case SignInType.DotCom:
+        return 'GitHub.com'
+      case SignInType.Enterprise:
+        return 'GitHub Enterprise'
+      case SignInType.Bitbucket:
+        return 'Bitbucket'
+      default:
+        return assertNever(type, `Unknown sign in type: ${type}`)
+    }
   }
 
   private onDotComSignIn = () => {
@@ -86,6 +109,10 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
 
   private onEnterpriseSignIn = () => {
     this.props.onEnterpriseSignIn()
+  }
+
+  private onBitbucketSignIn = () => {
+    this.props.onBitbucketSignIn()
   }
 
   private renderSignIn(type: SignInType) {
@@ -115,6 +142,17 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
             <div>
               If you are using GitHub Enterprise at work, sign in to it to get
               access to your repositories.
+            </div>
+          </CallToAction>
+        )
+      case SignInType.Bitbucket:
+        return (
+          <CallToAction
+            actionTitle={signInTitle + ' Bitbucket'}
+            onAction={this.onBitbucketSignIn}
+          >
+            <div>
+              Sign in to your Bitbucket account to access your repositories.
             </div>
           </CallToAction>
         )

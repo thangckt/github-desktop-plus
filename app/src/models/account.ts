@@ -12,6 +12,8 @@ export function accountEquals(x: Account, y: Account) {
   return x.endpoint === y.endpoint && x.id === y.id
 }
 
+export type AccountType = 'GitHubDotCom' | 'GitHubEnterprise' | 'Bitbucket'
+
 /**
  * A GitHub account, representing the user found on GitHub The Website or GitHub Enterprise.
  *
@@ -20,7 +22,17 @@ export function accountEquals(x: Account, y: Account) {
 export class Account {
   /** Create an account which can be used to perform unauthenticated API actions */
   public static anonymous(): Account {
-    return new Account('', getDotComAPIEndpoint(), '', [], '', -1, '', 'free')
+    return new Account(
+      'GitHubDotCom',
+      '',
+      getDotComAPIEndpoint(),
+      '',
+      [],
+      '',
+      -1,
+      '',
+      'free'
+    )
   }
 
   /**
@@ -35,6 +47,7 @@ export class Account {
    * @param name The friendly name associated with this account
    */
   public constructor(
+    public readonly type: AccountType,
     public readonly login: string,
     public readonly endpoint: string,
     public readonly token: string,
@@ -47,6 +60,7 @@ export class Account {
 
   public withToken(token: string): Account {
     return new Account(
+      this.type,
       this.login,
       this.endpoint,
       token,

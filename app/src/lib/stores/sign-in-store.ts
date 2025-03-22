@@ -9,10 +9,8 @@ import {
 
 import {
   fetchUser,
-  getDotComAPIEndpoint,
   getEnterpriseAPIURL,
   requestOAuthToken,
-  getOAuthAuthorizationURL,
 } from '../../lib/api'
 
 import { TypedBaseStore } from './base-store'
@@ -21,6 +19,12 @@ import { IOAuthAction } from '../parse-app-url'
 import { shell } from '../app-shell'
 import noop from 'lodash/noop'
 import { AccountsStore } from './accounts-store'
+import { OAuthProvider } from '../auth-providers'
+import {
+  GitHubDotComAuthProvider,
+  GitHubEnterpriseAuthProvider,
+} from '../auth-providers/github-auth'
+import { BitbucketAuthProvider } from '../auth-providers/bitbucket-auth'
 
 /**
  * An enumeration of the possible steps that the sign in
@@ -87,7 +91,7 @@ export interface IExistingAccountWarning extends ISignInState {
    * instance.
    */
   readonly existingAccount: Account
-  readonly endpoint: string
+  readonly authProvider: OAuthProvider
 
   readonly resultCallback: (result: SignInResult) => void
 }
@@ -119,13 +123,13 @@ export interface IAuthenticationState extends ISignInState {
    * URL when signing in against a GitHub Enterprise
    * instance.
    */
-  readonly endpoint: string
+  readonly authProvider: OAuthProvider
 
   readonly resultCallback: (result: SignInResult) => void
 
   readonly oauthState?: {
     state: string
-    endpoint: string
+    authProvider: OAuthProvider
     onAuthCompleted: (account: Account) => void
     onAuthError: (error: Error) => void
   }
@@ -225,20 +229,16 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
    * in the Authentication step ready to receive user credentials.
    */
   public beginDotComSignIn(resultCallback?: (result: SignInResult) => void) {
-    const endpoint = getDotComAPIEndpoint()
-
     if (this.state !== null) {
       this.reset()
     }
 
-    const existingAccount = this.accounts.find(
-      x => x.endpoint === getDotComAPIEndpoint()
-    )
-
+    const authProvider = new GitHubDotComAuthProvider()
+    const existingAccount = authProvider.findAccount(this.accounts)
     if (existingAccount) {
       this.setState({
         kind: SignInStep.ExistingAccountWarning,
-        endpoint,
+        authProvider,
         existingAccount,
         error: null,
         loading: false,
@@ -247,7 +247,7 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     } else {
       this.setState({
         kind: SignInStep.Authentication,
-        endpoint,
+        authProvider,
         error: null,
         loading: false,
         resultCallback: resultCallback ?? noop,
@@ -287,22 +287,22 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     const csrfToken = uuid()
 
     new Promise<Account>((resolve, reject) => {
-      const { endpoint, resultCallback } = currentState
+      const { authProvider, resultCallback } = currentState
       log.info('[SignInStore] initializing OAuth flow')
       this.setState({
         kind: SignInStep.Authentication,
-        endpoint,
+        authProvider,
         resultCallback,
         error: null,
         loading: true,
         oauthState: {
           state: csrfToken,
-          endpoint,
+          authProvider,
           onAuthCompleted: resolve,
           onAuthError: reject,
         },
       })
-      shell.openExternal(getOAuthAuthorizationURL(endpoint, csrfToken))
+      shell.openExternal(authProvider.getAuthorizationURL(csrfToken))
     })
       .then(account => {
         if (!this.state || this.state.kind !== SignInStep.Authentication) {
@@ -348,11 +348,11 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
       return
     }
 
-    const { endpoint } = this.state
-    const token = await requestOAuthToken(endpoint, action.code)
+    const { authProvider } = this.state
+    const token = await requestOAuthToken(authProvider, action.code)
 
     if (token) {
-      const account = await fetchUser(endpoint, token)
+      const account = await fetchUser(authProvider, token)
       this.state.oauthState.onAuthCompleted(account)
     } else {
       this.state.oauthState.onAuthError(
@@ -379,6 +379,38 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
       loading: false,
       resultCallback: resultCallback ?? noop,
     })
+  }
+
+  /**
+   * Initiate a sign in flow for a Bitbucket Cloud instance.
+   * This will put the store in the Authentication step ready to
+   * receive user credentials.
+   */
+  public beginBitbucketSignIn(resultCallback?: (result: SignInResult) => void) {
+    if (this.state !== null) {
+      this.reset()
+    }
+
+    const authProvider = new BitbucketAuthProvider()
+    const existingAccount = authProvider.findAccount(this.accounts)
+    if (existingAccount) {
+      this.setState({
+        kind: SignInStep.ExistingAccountWarning,
+        authProvider,
+        existingAccount,
+        error: null,
+        loading: false,
+        resultCallback: resultCallback ?? noop,
+      })
+    } else {
+      this.setState({
+        kind: SignInStep.Authentication,
+        authProvider,
+        error: null,
+        loading: false,
+        resultCallback: resultCallback ?? noop,
+      })
+    }
   }
 
   /**
@@ -439,12 +471,12 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
 
     const endpoint = getEnterpriseAPIURL(validUrl)
 
-    const existingAccount = this.accounts.find(x => x.endpoint === endpoint)
-
+    const authProvider = new GitHubEnterpriseAuthProvider(endpoint)
+    const existingAccount = authProvider.findAccount(this.accounts)
     if (existingAccount) {
       this.setState({
         kind: SignInStep.ExistingAccountWarning,
-        endpoint,
+        authProvider,
         existingAccount,
         error: null,
         loading: false,
@@ -453,7 +485,7 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     } else {
       this.setState({
         kind: SignInStep.Authentication,
-        endpoint,
+        authProvider,
         error: null,
         loading: false,
         resultCallback: currentState.resultCallback,
