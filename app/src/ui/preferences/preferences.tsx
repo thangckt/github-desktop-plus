@@ -54,7 +54,6 @@ interface IPreferencesProps {
   readonly dispatcher: Dispatcher
   readonly dotComAccount: Account | null
   readonly enterpriseAccount: Account | null
-  readonly bitbucketAccount: Account | null
   readonly repository: Repository | null
   readonly onDismissed: () => void
   readonly useWindowsOpenSSH: boolean
@@ -378,11 +377,6 @@ export class Preferences extends React.Component<
     this.props.dispatcher.showEnterpriseSignInDialog()
   }
 
-  private onBitbucketSignIn = () => {
-    this.props.onDismissed()
-    this.props.dispatcher.showBitbucketSignInDialog()
-  }
-
   private onLogout = (account: Account) => {
     this.props.dispatcher.removeAccount(account)
   }
@@ -405,10 +399,8 @@ export class Preferences extends React.Component<
           <Accounts
             dotComAccount={this.props.dotComAccount}
             enterpriseAccount={this.props.enterpriseAccount}
-            bitbucketAccount={this.props.bitbucketAccount}
             onDotComSignIn={this.onDotComSignIn}
             onEnterpriseSignIn={this.onEnterpriseSignIn}
-            onBitbucketSignIn={this.onBitbucketSignIn}
             onLogout={this.onLogout}
           />
         )

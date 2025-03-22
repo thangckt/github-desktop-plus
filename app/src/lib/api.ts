@@ -21,8 +21,6 @@ import {
   clearCertificateErrorSuppressionFor,
   suppressCertificateErrorFor,
 } from './suppress-certificate-error'
-import { OAuthProvider } from './auth-providers'
-import { getAuthProvider } from './stores'
 
 const envEndpoint = process.env['DESKTOP_GITHUB_DOTCOM_API_ENDPOINT']
 const envHTMLURL = process.env['DESKTOP_GITHUB_DOTCOM_HTML_URL']
@@ -94,7 +92,19 @@ interface IFetchAllOptions<T> {
   suppressErrors?: boolean
 }
 
+const ClientID = process.env.TEST_ENV ? '' : __OAUTH_CLIENT_ID__
+const ClientSecret = process.env.TEST_ENV ? '' : __OAUTH_SECRET__
+
+if (!ClientID || !ClientID.length || !ClientSecret || !ClientSecret.length) {
+  log.warn(
+    `DESKTOP_OAUTH_CLIENT_ID and/or DESKTOP_OAUTH_CLIENT_SECRET is undefined. You won't be able to authenticate new users.`
+  )
+}
+
 export type GitHubAccountType = 'User' | 'Organization'
+
+/** The OAuth scopes we want to request */
+const oauthScopes = ['repo', 'user', 'workflow']
 
 enum HttpStatusCode {
   NotModified = 304,
@@ -787,15 +797,15 @@ export class API {
 
   /** Create a new API client from the given account. */
   public static fromAccount(account: Account): API {
-    return new API(getAuthProvider(account), account.token)
+    return new API(account.endpoint, account.token)
   }
 
-  private authProvider: OAuthProvider
+  private endpoint: string
   private token: string
 
   /** Create a new API client for the endpoint, authenticated with the token. */
-  public constructor(authProvider: OAuthProvider, token: string) {
-    this.authProvider = authProvider
+  public constructor(endpoint: string, token: string) {
+    this.endpoint = endpoint
     this.token = token
   }
 
@@ -1000,7 +1010,7 @@ export class API {
       })
     } catch (error) {
       log.warn(
-        `streamUserRepositories: failed with endpoint ${this.authProvider}`,
+        `streamUserRepositories: failed with endpoint ${this.endpoint}`,
         error
       )
     }
@@ -1013,7 +1023,7 @@ export class API {
       const result = await parsedResponse<IAPIFullIdentity>(response)
       return result
     } catch (e) {
-      log.warn(`fetchAccount: failed with endpoint ${this.authProvider}`, e)
+      log.warn(`fetchAccount: failed with endpoint ${this.endpoint}`, e)
       throw e
     }
   }
@@ -1026,7 +1036,7 @@ export class API {
 
       return Array.isArray(result) ? result : []
     } catch (e) {
-      log.warn(`fetchEmails: failed with endpoint ${this.authProvider}`, e)
+      log.warn(`fetchEmails: failed with endpoint ${this.endpoint}`, e)
       return []
     }
   }
@@ -1036,7 +1046,7 @@ export class API {
     try {
       return await this.fetchAll<IAPIOrganization>('user/orgs')
     } catch (e) {
-      log.warn(`fetchOrgs: failed with endpoint ${this.authProvider}`, e)
+      log.warn(`fetchOrgs: failed with endpoint ${this.endpoint}`, e)
       return []
     }
   }
@@ -1069,10 +1079,7 @@ export class API {
         throw e
       }
 
-      log.error(
-        `createRepository: failed with endpoint ${this.authProvider}`,
-        e
-      )
+      log.error(`createRepository: failed with endpoint ${this.endpoint}`, e)
       throw new Error(
         `Unable to publish repository. Please check if you have an internet connection and try again.`
       )
@@ -1090,7 +1097,7 @@ export class API {
       return await parsedResponse<IAPIFullRepository>(response)
     } catch (e) {
       log.error(
-        `forkRepository: failed to fork ${owner}/${name} at endpoint: ${this.authProvider}`,
+        `forkRepository: failed to fork ${owner}/${name} at endpoint: ${this.endpoint}`,
         e
       )
       throw e
@@ -1740,7 +1747,7 @@ export class API {
     } = {}
   ): Promise<Response> {
     const response = await request(
-      this.authProvider.getEndpoint(),
+      this.endpoint,
       this.token,
       method,
       path,
@@ -1759,13 +1766,10 @@ export class API {
       response.headers.has('X-GitHub-Request-Id') &&
       !response.headers.has('X-GitHub-OTP')
     ) {
-      API.emitTokenInvalidated(this.authProvider.getEndpoint(), this.token)
+      API.emitTokenInvalidated(this.endpoint, this.token)
     }
 
-    tryUpdateEndpointVersionFromResponse(
-      this.authProvider.getEndpoint(),
-      response
-    )
+    tryUpdateEndpointVersionFromResponse(this.endpoint, response)
 
     return response
   }
@@ -1850,26 +1854,44 @@ export class API {
 
       return await parsedResponse<IAPIFullIdentity>(response)
     } catch (e) {
-      log.warn(`fetchUser: failed with endpoint ${this.authProvider}`, e)
+      log.warn(`fetchUser: failed with endpoint ${this.endpoint}`, e)
       throw e
     }
   }
 }
 
+export async function deleteToken(account: Account) {
+  try {
+    const creds = Buffer.from(`${ClientID}:${ClientSecret}`).toString('base64')
+    const response = await request(
+      account.endpoint,
+      null,
+      'DELETE',
+      `applications/${ClientID}/token`,
+      { access_token: account.token },
+      { Authorization: `Basic ${creds}` }
+    )
+
+    return response.status === 204
+  } catch (e) {
+    log.error(`deleteToken: failed with endpoint ${account.endpoint}`, e)
+    return false
+  }
+}
+
 /** Fetch the user authenticated by the token. */
 export async function fetchUser(
-  authProvider: OAuthProvider,
+  endpoint: string,
   token: string
 ): Promise<Account> {
-  const api = new API(authProvider, token)
+  const api = new API(endpoint, token)
   try {
     const user = await api.fetchAccount()
     const emails = await api.fetchEmails()
 
     return new Account(
-      authProvider.getAccountType(),
       user.login,
-      authProvider.getEndpoint(),
+      endpoint,
       token,
       emails,
       user.avatar_url,
@@ -1878,7 +1900,7 @@ export async function fetchUser(
       user.plan?.name
     )
   } catch (e) {
-    log.warn(`fetchUser: failed with endpoint ${authProvider}`, e)
+    log.warn(`fetchUser: failed with endpoint ${endpoint}`, e)
     throw e
   }
 }
@@ -1976,6 +1998,42 @@ export function getAccountForEndpoint(
   endpoint: string
 ): Account | null {
   return accounts.find(a => a.endpoint === endpoint) || null
+}
+
+export function getOAuthAuthorizationURL(
+  endpoint: string,
+  state: string
+): string {
+  const urlBase = getHTMLURL(endpoint)
+  const scope = encodeURIComponent(oauthScopes.join(' '))
+  return `${urlBase}/login/oauth/authorize?client_id=${ClientID}&scope=${scope}&state=${state}`
+}
+
+export async function requestOAuthToken(
+  endpoint: string,
+  code: string
+): Promise<string | null> {
+  try {
+    const urlBase = getHTMLURL(endpoint)
+    const response = await request(
+      urlBase,
+      null,
+      'POST',
+      'login/oauth/access_token',
+      {
+        client_id: ClientID,
+        client_secret: ClientSecret,
+        code: code,
+      }
+    )
+    tryUpdateEndpointVersionFromResponse(endpoint, response)
+
+    const result = await parsedResponse<IAPIAccessToken>(response)
+    return result.access_token
+  } catch (e) {
+    log.warn(`requestOAuthToken: failed with endpoint ${endpoint}`, e)
+    return null
+  }
 }
 
 function tryUpdateEndpointVersionFromResponse(

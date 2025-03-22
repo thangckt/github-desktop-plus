@@ -1625,17 +1625,6 @@ export class Dispatcher {
   }
 
   /**
-   * Launch a sign in dialog for authenticating a user with
-   * Bitbucket.
-   */
-  public async showBitbucketSignInDialog(
-    resultCallback?: (result: SignInResult) => void
-  ): Promise<void> {
-    this.appStore._beginBitbucketSignIn(resultCallback)
-    this.appStore._showPopup({ type: PopupType.SignIn })
-  }
-
-  /**
    * Show a dialog that helps the user create a fork of
    * their local repo.
    */

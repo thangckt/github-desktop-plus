@@ -2,7 +2,6 @@ import * as Path from 'path'
 import {
   AccountsStore,
   CloningRepositoriesStore,
-  getAuthProvider,
   GitHubUserStore,
   GitStore,
   IssuesStore,
@@ -105,6 +104,7 @@ import {
   IAPIFullRepository,
   IAPIComment,
   IAPIRepoRuleset,
+  deleteToken,
 } from '../api'
 import { shell } from '../app-shell'
 import {
@@ -5986,12 +5986,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return this.signInStore.beginEnterpriseSignIn(resultCallback)
   }
 
-  public _beginBitbucketSignIn(
-    resultCallback?: (result: SignInResult) => void
-  ) {
-    return this.signInStore.beginBitbucketSignIn(resultCallback)
-  }
-
   public _setSignInEndpoint(url: string): Promise<void> {
     return this.signInStore.setEndpoint(url)
   }
@@ -6063,7 +6057,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       `[AppStore] removing account ${account.login} (${account.name}) from store`
     )
     await this.accountsStore.removeAccount(account)
-    await getAuthProvider(account).deleteToken(account)
+    await deleteToken(account)
   }
 
   private async _addAccount(account: Account): Promise<void> {

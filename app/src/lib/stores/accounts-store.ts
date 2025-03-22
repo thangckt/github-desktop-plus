@@ -1,21 +1,10 @@
 import { IDataStore, ISecureStore } from './stores'
 import { getKeyForAccount } from '../auth'
-import { Account, AccountType } from '../../models/account'
-import {
-  fetchUser,
-  EmailVisibility,
-  getEnterpriseAPIURL,
-  getDotComAPIEndpoint,
-} from '../api'
-import { assertNever, fatalError } from '../fatal-error'
+import { Account } from '../../models/account'
+import { fetchUser, EmailVisibility, getEnterpriseAPIURL } from '../api'
+import { fatalError } from '../fatal-error'
 import { TypedBaseStore } from './base-store'
 import { isGHE } from '../endpoint-capabilities'
-import {
-  GitHubDotComAuthProvider,
-  GitHubEnterpriseAuthProvider,
-} from '../auth-providers/github-auth'
-import { BitbucketAuthProvider } from '../auth-providers/bitbucket-auth'
-import { OAuthProvider } from '../auth-providers'
 
 /** The data-only interface for storage. */
 interface IEmail {
@@ -48,7 +37,6 @@ function isKeyChainError(e: any) {
 
 /** The data-only interface for storage. */
 interface IAccount {
-  readonly type?: AccountType
   readonly token: string
   readonly login: string
   readonly endpoint: string
@@ -215,7 +203,6 @@ export class AccountsStore extends TypedBaseStore<ReadonlyArray<Account>> {
     const accountsWithTokens = []
     for (const account of rawAccounts) {
       const accountWithoutToken = new Account(
-        account.type ?? getMigratedAccountType(account.endpoint),
         account.login,
         account.endpoint,
         '',
@@ -263,24 +250,5 @@ async function updatedAccount(account: Account): Promise<Account> {
     )
   }
 
-  return fetchUser(getAuthProvider(account), account.token)
-}
-
-function getMigratedAccountType(endpoint: string): AccountType {
-  return endpoint === getDotComAPIEndpoint()
-    ? 'GitHubDotCom'
-    : 'GitHubEnterprise'
-}
-
-export function getAuthProvider(account: Account): OAuthProvider {
-  switch (account.type) {
-    case 'GitHubDotCom':
-      return new GitHubDotComAuthProvider()
-    case 'GitHubEnterprise':
-      return new GitHubEnterpriseAuthProvider(account.endpoint)
-    case 'Bitbucket':
-      return new BitbucketAuthProvider()
-    default:
-      assertNever(account.type, `Unknown account type: ${account}`)
-  }
+  return fetchUser(account.endpoint, account.token)
 }
