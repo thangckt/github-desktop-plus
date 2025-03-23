@@ -45,6 +45,7 @@ export function gitHubRepoFixture({
   }/${owner}/${name}`
   return new GitHubRepository(
     name,
+    'github',
     new Owner(
       owner,
       endpoint !== undefined ? endpoint : getDotComAPIEndpoint(),

@@ -78,7 +78,9 @@ interface IFetchAllOptions<T> {
    * Optional, see `getNextPagePathFromLink` for the default
    * implementation.
    */
-  getNextPagePath?: (response: Response) => string | null
+  getNextPagePath?: (
+    response: Response
+  ) => string | null | Promise<string | null>
 
   /**
    * Whether or not to silently suppress request errors and
@@ -126,6 +128,34 @@ export interface IAPIRepository {
   readonly pushed_at: string
   readonly has_issues: boolean
   readonly archived: boolean
+}
+export interface IBitbucketAPIRepositorySummary {
+  readonly uuid: string
+  readonly full_name: string
+  readonly name: string
+}
+function summaryToIAPIRepository(
+  repo: IBitbucketAPIRepositorySummary
+): IAPIRepository {
+  return {
+    clone_url: `https://bitbucket.org/${repo.full_name}.git`,
+    ssh_url: `git@bitbucket.org:logicommerce/core.git`,
+    html_url: `https://bitbucket.org/${repo.full_name}`,
+    name: repo.name,
+    owner: {
+      id: 0,
+      login: repo.full_name.split('/')[0],
+      avatar_url: '',
+      html_url: '',
+      type: 'User',
+    },
+    private: false,
+    fork: false,
+    default_branch: '',
+    pushed_at: '',
+    has_issues: false,
+    archived: false,
+  }
 }
 
 /** Information needed to clone a repository. */
@@ -215,6 +245,27 @@ export interface IAPIIdentity {
   readonly avatar_url: string
   readonly html_url: string
   readonly type: GitHubAccountType
+}
+export interface IBitbucketAPIIdentity {
+  readonly uuid: string
+  readonly display_name: string
+  readonly links: {
+    readonly avatar: {
+      readonly href: string
+    }
+    readonly html: {
+      readonly href: string
+    }
+  }
+}
+function toIAPIIdentity(identity: IBitbucketAPIIdentity): IAPIIdentity {
+  return {
+    id: 0,
+    login: identity.display_name,
+    avatar_url: identity.links.avatar.href,
+    html_url: identity.links.html.href,
+    type: 'User',
+  }
 }
 
 /**
@@ -594,6 +645,24 @@ interface IAPIPullRequestRef {
    */
   readonly repo: IAPIRepository | null
 }
+interface IBitbucketAPIPullRequestRef {
+  readonly branch: {
+    readonly name: string
+  }
+  readonly commit: {
+    readonly hash: string
+  }
+  readonly repository: IBitbucketAPIRepositorySummary
+}
+function toIAPIPullRequestRef(
+  ref: IBitbucketAPIPullRequestRef
+): IAPIPullRequestRef {
+  return {
+    ref: ref.branch.name,
+    sha: ref.commit.hash,
+    repo: summaryToIAPIRepository(ref.repository),
+  }
+}
 
 /** Information about a pull request as returned by the GitHub API. */
 export interface IAPIPullRequest {
@@ -607,6 +676,31 @@ export interface IAPIPullRequest {
   readonly body: string
   readonly state: 'open' | 'closed'
   readonly draft?: boolean
+}
+interface IBitbucketAPIPullRequest {
+  readonly id: number
+  readonly title: string
+  readonly created_on: string
+  readonly updated_on: string
+  readonly author: IBitbucketAPIIdentity
+  readonly source: IBitbucketAPIPullRequestRef
+  readonly destination: IBitbucketAPIPullRequestRef
+  readonly description: string
+  readonly state: 'OPEN' | 'MERGED' | 'DECLINED'
+  readonly type: 'pullrequest'
+}
+function toIAPIPullRequest(pr: IBitbucketAPIPullRequest): IAPIPullRequest {
+  return {
+    number: pr.id,
+    title: pr.title,
+    created_at: pr.created_on,
+    updated_at: pr.updated_on,
+    user: toIAPIIdentity(pr.author),
+    head: toIAPIPullRequestRef(pr.source),
+    base: toIAPIPullRequestRef(pr.destination),
+    body: pr.description,
+    state: pr.state === 'OPEN' ? 'open' : 'closed',
+  }
 }
 
 /** Information about a pull request review as returned by the GitHub API. */
@@ -644,117 +738,6 @@ interface IAPIAccessToken {
 interface IAPIMentionablesResponse {
   readonly etag: string | undefined
   readonly users: ReadonlyArray<IAPIMentionableUser>
-}
-
-/**
- * Parses the Link header from GitHub and returns the 'next' path
- * if one is present.
- *
- * If no link rel next header is found this method returns null.
- */
-function getNextPagePathFromLink(response: Response): string | null {
-  const linkHeader = response.headers.get('Link')
-
-  if (!linkHeader) {
-    return null
-  }
-
-  for (const part of linkHeader.split(',')) {
-    // https://github.com/philschatz/octokat.js/blob/5658abe442e8bf405cfda1c72629526a37554613/src/plugins/pagination.js#L17
-    const match = part.match(/<([^>]+)>; rel="([^"]+)"/)
-
-    if (match && match[2] === 'next') {
-      const nextURL = URL.parse(match[1])
-      return nextURL.path || null
-    }
-  }
-
-  return null
-}
-
-/**
- * Parses the 'next' Link header from GitHub using
- * `getNextPagePathFromLink`. Unlike `getNextPagePathFromLink`
- * this method will attempt to double the page size when
- * the current page index and the page size allows for it
- * leading to a ramp up in page size.
- *
- * This might sound confusing, and it is, but the primary use
- * case for this is when retrieving updated PRs. By specifying
- * an initial page size of, for example, 10 this method will
- * increase the page size to 20 once the second page has been
- * loaded. See the table below for an example. The ramp-up
- * will stop at a page size of 100 since that's the maximum
- * that the GitHub API supports.
- *
- * ```
- * |-----------|------|-----------|-----------------|
- * | Request # | Page | Page size | Retrieved items |
- * |-----------|------|-----------|-----------------|
- * | 1         | 1    | 10        | 10              |
- * | 2         | 2    | 10        | 20              |
- * | 3         | 2    | 20        | 40              |
- * | 4         | 2    | 40        | 80              |
- * | 5         | 2    | 80        | 160             |
- * | 6         | 3    | 80        | 240             |
- * | 7         | 4    | 80        | 320             |
- * | 8         | 5    | 80        | 400             |
- * | 9         | 5    | 100       | 500             |
- * |-----------|------|-----------|-----------------|
- * ```
- * This algorithm means we can have the best of both worlds.
- * If there's a small number of changed pull requests since
- * our last update we'll do small requests that use minimal
- * bandwidth but if we encounter a repository where a lot
- * of PRs have changed since our last fetch (like a very
- * active repository or one we haven't fetched in a long time)
- * we'll spool up our page size in just a few requests and load
- * in bulk.
- *
- * As an example I used a very active internal repository and
- * asked for all PRs updated in the last 24 hours which was 320.
- * With the previous regime of fetching with a page size of 10
- * that obviously took 32 requests. With this new regime it
- * would take 7.
- */
-export function getNextPagePathWithIncreasingPageSize(response: Response) {
-  const nextPath = getNextPagePathFromLink(response)
-
-  if (!nextPath) {
-    return null
-  }
-
-  const { pathname, query } = URL.parse(nextPath, true)
-  const { per_page, page } = query
-
-  const pageSize = typeof per_page === 'string' ? parseInt(per_page, 10) : NaN
-  const pageNumber = typeof page === 'string' ? parseInt(page, 10) : NaN
-
-  if (!pageSize || !pageNumber) {
-    return nextPath
-  }
-
-  // Confusing, but we're looking at the _next_ page path here
-  // so the current is whatever came before it.
-  const currentPage = pageNumber - 1
-
-  // Number of received items thus far
-  const received = currentPage * pageSize
-
-  // Can't go above 100, that's the max the API will allow.
-  const nextPageSize = Math.min(100, pageSize * 2)
-
-  // Have we received exactly the amount of items
-  // such that doubling the page size and loading the
-  // second page would seamlessly fit? No sense going
-  // above 100 since that's the max the API supports
-  if (pageSize !== nextPageSize && received % nextPageSize === 0) {
-    query.per_page = `${nextPageSize}`
-    query.page = `${received / nextPageSize + 1}`
-    return URL.format({ pathname, query })
-  }
-
-  return nextPath
 }
 
 /**
@@ -797,7 +780,10 @@ export class API {
 
   /** Create a new API client from the given account. */
   public static fromAccount(account: Account): API {
-    return new API(account.endpoint, account.token)
+    return account.isBitbucketAccount
+      ? // eslint-disable-next-line @typescript-eslint/no-use-before-define -- a necessary evil if we want to minimize the diff in other files
+        new BitbucketAPI(account.token)
+      : new API(account.endpoint, account.token)
   }
 
   private endpoint: string
@@ -1189,7 +1175,7 @@ export class API {
         // ramp up the page size (see getNextPagePathWithIncreasingPageSize)
         // if it turns out there's a lot of updated PRs.
         perPage: 10,
-        getNextPagePath: getNextPagePathWithIncreasingPageSize,
+        getNextPagePath: this.getNextPagePathWithIncreasingPageSize,
         continue(results) {
           if (results.length >= maxResults) {
             throw new MaxResultsError('got max pull requests, aborting')
@@ -1708,7 +1694,7 @@ export class API {
    * pages when available, buffers all items and returns them in
    * one array when done.
    */
-  private async fetchAll<T>(path: string, options?: IFetchAllOptions<T>) {
+  protected async fetchAll<T>(path: string, options?: IFetchAllOptions<T>) {
     const buf = new Array<T>()
     const opts: IFetchAllOptions<T> = { perPage: 100, ...options }
     const params = { per_page: `${opts.perPage}` }
@@ -1729,15 +1715,15 @@ export class API {
       }
 
       nextPath = opts.getNextPagePath
-        ? opts.getNextPagePath(response)
-        : getNextPagePathFromLink(response)
+        ? await opts.getNextPagePath(response)
+        : await this.getNextPagePathFromLink(response)
     } while (nextPath && (!opts.continue || (await opts.continue(buf))))
 
     return buf
   }
 
   /** Make an authenticated request to the client's endpoint with its token. */
-  private async request(
+  protected async request(
     method: HTTPMethod,
     path: string,
     options: {
@@ -1857,6 +1843,152 @@ export class API {
       log.warn(`fetchUser: failed with endpoint ${this.endpoint}`, e)
       throw e
     }
+  }
+
+  /**
+   * Parses the Link header from GitHub and returns the 'next' path
+   * if one is present.
+   *
+   * If no link rel next header is found this method returns null.
+   */
+  protected getNextPagePathFromLink(
+    response: Response
+  ): string | null | Promise<string | null> {
+    const linkHeader = response.headers.get('Link')
+
+    if (!linkHeader) {
+      return null
+    }
+
+    for (const part of linkHeader.split(',')) {
+      // https://github.com/philschatz/octokat.js/blob/5658abe442e8bf405cfda1c72629526a37554613/src/plugins/pagination.js#L17
+      const match = part.match(/<([^>]+)>; rel="([^"]+)"/)
+
+      if (match && match[2] === 'next') {
+        const nextURL = URL.parse(match[1])
+        return nextURL.path || null
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Parses the 'next' Link header from GitHub using
+   * `getNextPagePathFromLink`. Unlike `getNextPagePathFromLink`
+   * this method will attempt to double the page size when
+   * the current page index and the page size allows for it
+   * leading to a ramp up in page size.
+   *
+   * This might sound confusing, and it is, but the primary use
+   * case for this is when retrieving updated PRs. By specifying
+   * an initial page size of, for example, 10 this method will
+   * increase the page size to 20 once the second page has been
+   * loaded. See the table below for an example. The ramp-up
+   * will stop at a page size of 100 since that's the maximum
+   * that the GitHub API supports.
+   *
+   * ```
+   * |-----------|------|-----------|-----------------|
+   * | Request # | Page | Page size | Retrieved items |
+   * |-----------|------|-----------|-----------------|
+   * | 1         | 1    | 10        | 10              |
+   * | 2         | 2    | 10        | 20              |
+   * | 3         | 2    | 20        | 40              |
+   * | 4         | 2    | 40        | 80              |
+   * | 5         | 2    | 80        | 160             |
+   * | 6         | 3    | 80        | 240             |
+   * | 7         | 4    | 80        | 320             |
+   * | 8         | 5    | 80        | 400             |
+   * | 9         | 5    | 100       | 500             |
+   * |-----------|------|-----------|-----------------|
+   * ```
+   * This algorithm means we can have the best of both worlds.
+   * If there's a small number of changed pull requests since
+   * our last update we'll do small requests that use minimal
+   * bandwidth but if we encounter a repository where a lot
+   * of PRs have changed since our last fetch (like a very
+   * active repository or one we haven't fetched in a long time)
+   * we'll spool up our page size in just a few requests and load
+   * in bulk.
+   *
+   * As an example I used a very active internal repository and
+   * asked for all PRs updated in the last 24 hours which was 320.
+   * With the previous regime of fetching with a page size of 10
+   * that obviously took 32 requests. With this new regime it
+   * would take 7.
+   */
+  public async getNextPagePathWithIncreasingPageSize(response: Response) {
+    const nextPath = await this.getNextPagePathFromLink(response)
+
+    if (!nextPath) {
+      return null
+    }
+
+    const { pathname, query } = URL.parse(nextPath, true)
+    const { per_page, page } = query
+
+    const pageSize = typeof per_page === 'string' ? parseInt(per_page, 10) : NaN
+    const pageNumber = typeof page === 'string' ? parseInt(page, 10) : NaN
+
+    if (!pageSize || !pageNumber) {
+      return nextPath
+    }
+
+    // Confusing, but we're looking at the _next_ page path here
+    // so the current is whatever came before it.
+    const currentPage = pageNumber - 1
+
+    // Number of received items thus far
+    const received = currentPage * pageSize
+
+    // Can't go above 100, that's the max the API will allow.
+    const nextPageSize = Math.min(100, pageSize * 2)
+
+    // Have we received exactly the amount of items
+    // such that doubling the page size and loading the
+    // second page would seamlessly fit? No sense going
+    // above 100 since that's the max the API supports
+    if (pageSize !== nextPageSize && received % nextPageSize === 0) {
+      query.per_page = `${nextPageSize}`
+      query.page = `${received / nextPageSize + 1}`
+      return URL.format({ pathname, query })
+    }
+
+    return nextPath
+  }
+}
+
+export class BitbucketAPI extends API {
+  /** Create a new API client for the endpoint, authenticated with the App Password. */
+  public constructor(appPassword: string) {
+    super(getBitbucketAPIEndpoint(), appPassword)
+  }
+
+  public override async fetchAllOpenPullRequests(
+    owner: string,
+    name: string
+  ): Promise<IAPIPullRequest[]> {
+    const url = urlWithQueryString(
+      `repositories/${owner}/${name}/pullrequests`,
+      {
+        state: 'OPEN',
+      }
+    )
+    try {
+      const prs = await this.fetchAll<IBitbucketAPIPullRequest>(url)
+      return prs.map(toIAPIPullRequest)
+    } catch (e) {
+      log.warn(`failed fetching open PRs for repository ${owner}/${name}`, e)
+      throw e
+    }
+  }
+
+  protected override async getNextPagePathFromLink(
+    response: Response
+  ): Promise<string | null> {
+    const responseBody = await response.json()
+    return responseBody.next || null
   }
 }
 
@@ -1990,6 +2122,10 @@ export function getDotComAPIEndpoint(): string {
   }
 
   return 'https://api.github.com'
+}
+
+export function getBitbucketAPIEndpoint(): string {
+  return 'https://api.bitbucket.org/2.0'
 }
 
 /** Get the account for the endpoint. */

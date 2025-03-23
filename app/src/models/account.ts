@@ -1,4 +1,8 @@
-import { getDotComAPIEndpoint, IAPIEmail } from '../lib/api'
+import {
+  getBitbucketAPIEndpoint,
+  getDotComAPIEndpoint,
+  IAPIEmail,
+} from '../lib/api'
 
 /**
  * Returns a value indicating whether two account instances
@@ -66,5 +70,9 @@ export class Account {
    */
   public get friendlyName(): string {
     return this.name !== '' ? this.name : this.login
+  }
+
+  public get isBitbucketAccount(): boolean {
+    return this.endpoint === getBitbucketAPIEndpoint()
   }
 }

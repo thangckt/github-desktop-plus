@@ -11,6 +11,13 @@ const desktopUrl = 'https://github.com/desktop/desktop'
 export const DesktopFakeRepository = new Repository(
   '',
   -1,
-  new GitHubRepository('desktop', desktopOwner, -1, false, desktopUrl),
+  new GitHubRepository(
+    'desktop',
+    'github',
+    desktopOwner,
+    -1,
+    false,
+    desktopUrl
+  ),
   true
 )

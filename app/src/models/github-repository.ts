@@ -3,6 +3,8 @@ import { Owner } from './owner'
 
 export type GitHubRepositoryPermission = 'read' | 'write' | 'admin' | null
 
+export type RepoType = 'github' | 'bitbucket'
+
 /** A GitHub repository. */
 export class GitHubRepository {
   /**
@@ -14,6 +16,7 @@ export class GitHubRepository {
 
   public constructor(
     public readonly name: string,
+    public readonly type: RepoType,
     public readonly owner: Owner,
     /**
      * The ID of the repository in the app's local database. This is no relation
