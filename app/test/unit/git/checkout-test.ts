@@ -36,15 +36,7 @@ describe('git/checkout', () => {
       isGone: false,
       upstreamWithoutRemote: null,
       type: BranchType.Local,
-      tip: {
-        sha: '',
-        author: {
-          name: '',
-          email: '',
-          date: new Date(),
-          tzOffset: 0,
-        },
-      },
+      tip: { sha: '' },
       remoteName: null,
       upstreamRemoteName: null,
       isDesktopForkRemoteBranch: false,

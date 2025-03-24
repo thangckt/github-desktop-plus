@@ -24,13 +24,16 @@ import { LinkButton } from '../lib/link-button'
 import { Foldout, FoldoutType } from '../../lib/app-state'
 import { IAvatarUser, getAvatarUserFromAuthor } from '../../models/avatar'
 import { showContextualMenu } from '../../lib/menu-item'
-import { Account } from '../../models/account'
+import { Account, isEnterpriseAccount } from '../../models/account'
 import {
   CommitMessageAvatar,
   CommitMessageAvatarWarningType,
 } from './commit-message-avatar'
-import { getDotComAPIEndpoint } from '../../lib/api'
-import { isAttributableEmailFor, lookupPreferredEmail } from '../../lib/email'
+import {
+  getStealthEmailForUser,
+  isAttributableEmailFor,
+  lookupPreferredEmail,
+} from '../../lib/email'
 import { setGlobalConfigValue } from '../../lib/git/config'
 import { Popup, PopupType } from '../../models/popup'
 import { RepositorySettingsTab } from '../repository-settings/repository-settings'
@@ -55,6 +58,7 @@ import { RepoRulesetsForBranchLink } from '../repository-rules/repo-rulesets-for
 import { RepoRulesMetadataFailureList } from '../repository-rules/repo-rules-failure-list'
 import { formatCommitMessage } from '../../lib/format-commit-message'
 import { useRepoRulesLogic } from '../../lib/helpers/repo-rules'
+import { isDotCom } from '../../lib/endpoint-capabilities'
 
 const addAuthorIcon: OcticonSymbolVariant = {
   w: 18,
@@ -69,11 +73,20 @@ const addAuthorIcon: OcticonSymbolVariant = {
   ],
 }
 
+interface ICreateCommitOptions {
+  warnUnknownAuthors: boolean
+  warnFilesNotVisible: boolean
+}
+
 interface ICommitMessageProps {
   readonly onCreateCommit: (context: ICommitContext) => Promise<boolean>
   readonly branch: string | null
   readonly commitAuthor: CommitIdentity | null
   readonly anyFilesSelected: boolean
+  readonly filesToBeCommittedCount?: number
+  /** Whether the user can see all the files to commit in the changes list. They
+   * may not be able to if the list is filtered */
+  readonly showPromptForCommittingFileHiddenByFilter?: boolean
   readonly isShowingModal: boolean
   readonly isShowingFoldout: boolean
 
@@ -161,7 +174,8 @@ interface ICommitMessageProps {
   readonly onCommitSpellcheckEnabledChanged: (enabled: boolean) => void
   readonly onStopAmending: () => void
   readonly onShowCreateForkDialog: () => void
-
+  readonly onFilesToCommitNotVisible?: (onCommitAnyway: () => {}) => void
+  readonly onSuccessfulCommitCreated?: () => void
   readonly accounts: ReadonlyArray<Account>
 }
 
@@ -498,26 +512,24 @@ export class CommitMessage extends React.Component<
       : this.state.summary
   }
 
-  private forceCreateCommit = async () => {
-    return this.createCommit(false)
-  }
-
-  private async createCommit(warnUnknownAuthors: boolean = true) {
+  private async createCommit(options?: ICreateCommitOptions) {
     const { description } = this.state
 
     if (!this.canCommit() && !this.canAmend()) {
       return
     }
 
-    if (warnUnknownAuthors) {
+    if (options?.warnUnknownAuthors !== false) {
       const unknownAuthors = this.props.coAuthors.filter(
         (author): author is UnknownAuthor => !isKnownAuthor(author)
       )
 
       if (unknownAuthors.length > 0) {
-        this.props.onConfirmCommitWithUnknownCoAuthors(
-          unknownAuthors,
-          this.forceCreateCommit
+        this.props.onConfirmCommitWithUnknownCoAuthors(unknownAuthors, () =>
+          this.createCommit({
+            warnUnknownAuthors: false,
+            warnFilesNotVisible: options?.warnFilesNotVisible === true,
+          })
         )
         return
       }
@@ -532,11 +544,26 @@ export class CommitMessage extends React.Component<
       amend: this.props.commitToAmend !== null,
     }
 
+    if (
+      options?.warnFilesNotVisible !== false &&
+      this.props.showPromptForCommittingFileHiddenByFilter === true &&
+      this.props.onFilesToCommitNotVisible
+    ) {
+      this.props.onFilesToCommitNotVisible(() =>
+        this.createCommit({
+          warnUnknownAuthors: options?.warnUnknownAuthors === true,
+          warnFilesNotVisible: false,
+        })
+      )
+      return
+    }
+
     const timer = startTimer('create commit', this.props.repository)
     const commitCreated = await this.props.onCreateCommit(commitContext)
     timer.done()
 
     if (commitCreated) {
+      this.props.onSuccessfulCommitCreated?.()
       this.clearCommitMessage()
     }
   }
@@ -610,7 +637,22 @@ export class CommitMessage extends React.Component<
         : undefined
 
     const repositoryAccount = this.props.repositoryAccount
-    const accountEmails = repositoryAccount?.emails.map(e => e.email) ?? []
+    const accountEmails =
+      repositoryAccount?.emails.filter(e => e.verified).map(e => e.email) ?? []
+
+    if (repositoryAccount && isDotCom(repositoryAccount.endpoint)) {
+      const { id, login, endpoint } = repositoryAccount
+      const stealthEmail = getStealthEmailForUser(id, login, endpoint)
+
+      if (
+        !accountEmails
+          .map(x => x.toLowerCase())
+          .includes(stealthEmail.toLowerCase())
+      ) {
+        accountEmails.push(stealthEmail)
+      }
+    }
+
     const email = commitAuthor?.email
 
     let warningType: CommitMessageAvatarWarningType = 'none'
@@ -634,7 +676,7 @@ export class CommitMessage extends React.Component<
         user={avatarUser}
         email={commitAuthor?.email}
         isEnterpriseAccount={
-          repositoryAccount?.endpoint !== getDotComAPIEndpoint()
+          repositoryAccount !== null && isEnterpriseAccount(repositoryAccount)
         }
         warningType={warningType}
         emailRuleFailures={this.state.repoRuleCommitAuthorFailures}
@@ -1125,11 +1167,33 @@ export class CommitMessage extends React.Component<
       return verb
     }
 
+    /** N.B. For screen reader users, this string literal is important! This was
+     * moved into a string literal because when it was JSX it was interpreted
+     * as three separate strings "Verb" and "Count" and "to" and even tho
+     * visually it was correctly adding spacings, for screen reader users it was
+     * not and putting them all to together as one word. */
+    const action = `${verb} ${this.getFilesToBeCommittedButtonText()}to `
+
     return (
       <>
-        <span>{verb} to</span> <strong>{branch}</strong>
+        <span>{action}</span> <strong>{branch}</strong>
       </>
     )
+  }
+
+  private getFilesToBeCommittedButtonText() {
+    const { filesToBeCommittedCount } = this.props
+
+    if (
+      filesToBeCommittedCount === undefined ||
+      filesToBeCommittedCount === 0
+    ) {
+      return ''
+    }
+
+    const pluralizedFile = filesToBeCommittedCount > 1 ? 'files' : 'file'
+
+    return `${filesToBeCommittedCount} ${pluralizedFile} `
   }
 
   private getCommittingButtonTitle() {
@@ -1308,13 +1372,11 @@ export class CommitMessage extends React.Component<
     const { placeholder, isCommitting, commitSpellcheckEnabled } = this.props
 
     return (
-      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
       <div
         role="group"
         aria-label="Create commit"
         className={className}
         onContextMenu={this.onContextMenu}
-        onKeyDown={this.onKeyDown}
       >
         <div className={summaryClassName}>
           {this.renderAvatar()}

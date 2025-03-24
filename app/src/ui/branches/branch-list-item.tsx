@@ -18,13 +18,12 @@ interface IBranchListItemProps {
   /** Specifies whether this item is currently selected */
   readonly isCurrentBranch: boolean
 
-  /** The date may be null if we haven't loaded the tip commit yet. */
-  readonly lastCommitDate: Date | null
-
   readonly isLocalOnly: boolean
 
   /** The characters in the branch name to highlight */
   readonly matches: IMatches
+
+  readonly authorDate: Date | undefined
 
   /** When a drag element has landed on a branch that is not current */
   readonly onDropOntoBranch?: (branchName: string) => void
@@ -93,7 +92,8 @@ export class BranchListItem extends React.Component<
   }
 
   public render() {
-    const { lastCommitDate, isCurrentBranch, isLocalOnly, name } = this.props
+    const { authorDate, isCurrentBranch, isLocalOnly, name } = this.props
+
     function getIcon() {
       if (isLocalOnly) {
         return octicons.upload
@@ -106,6 +106,10 @@ export class BranchListItem extends React.Component<
     })
 
     return (
+      /**
+       * This a11y linter is a false-positive as the element is a drop target
+       * facilitating our drag and drop functionality for cherry-picking.
+       */
       // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div
         className={className}
@@ -122,10 +126,10 @@ export class BranchListItem extends React.Component<
         >
           <HighlightText text={name} highlight={this.props.matches.title} />
         </TooltippedContent>
-        {lastCommitDate && (
+        {authorDate && (
           <RelativeTime
             className="description"
-            date={lastCommitDate}
+            date={authorDate}
             onlyRelative={true}
           />
         )}

@@ -76,3 +76,17 @@ export class Account {
     return this.endpoint === getBitbucketAPIEndpoint()
   }
 }
+
+/**
+ * Whether or not the given account is a GitHub.com account as opposed to
+ * a GitHub Enteprise account.
+ */
+export const isDotComAccount = (account: Account) =>
+  account.endpoint === getDotComAPIEndpoint()
+
+/**
+ * Whether or not the given account is a GitHub Enterprise account (as opposed to
+ * a GitHub.com account)
+ */
+export const isEnterpriseAccount = (account: Account) =>
+  !isDotComAccount(account)
