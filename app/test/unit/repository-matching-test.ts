@@ -191,6 +191,7 @@ describe('repository-matching', () => {
     const repositoryWithoutCloneURL: GitHubRepository = {
       dbID: 1,
       name: 'desktop',
+      type: 'github',
       fullName: 'shiftkey/desktop',
       cloneURL: null,
       owner: {

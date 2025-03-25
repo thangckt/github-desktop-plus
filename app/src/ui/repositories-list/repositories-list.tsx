@@ -243,11 +243,15 @@ export class RepositoriesList extends React.Component<
       this.getGroupLabel(groups[group].identifier)
 
   public render() {
-    const groups = this.getRepositoryGroups(
+    let groups = this.getRepositoryGroups(
       this.props.repositories,
       this.props.localRepositoryStateLookup,
       this.props.recentRepositories
     )
+
+    if (!this.props.showRecentRepositories) {
+      groups = groups.filter(group => group.identifier.kind !== 'recent')
+    }
 
     const selectedItem = this.getSelectedListItem(
       groups,
@@ -287,7 +291,7 @@ export class RepositoriesList extends React.Component<
           onClick={this.onNewRepositoryButtonClick}
           ariaExpanded={this.state.newRepositoryMenuExpanded}
           onKeyDown={this.onNewRepositoryButtonKeyDown}
-      >
+        >
           Add
           <Octicon symbol={octicons.triangleDown} />
         </Button>

@@ -472,6 +472,7 @@ export function showTestUI(
       repository.id,
       new GitHubRepository(
         repository.gitHubRepository.name,
+        repository.gitHubRepository.type,
         repository.gitHubRepository.owner,
         repository.gitHubRepository.dbID,
         repository.gitHubRepository.isPrivate,

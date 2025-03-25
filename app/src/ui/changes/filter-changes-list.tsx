@@ -121,7 +121,8 @@ interface IFilterChangesListProps {
   readonly isShowingFoldout: boolean
   readonly onDiscardChangesFromFiles: (
     files: ReadonlyArray<WorkingDirectoryFileChange>,
-    isDiscardingAllChanges: boolean
+    isDiscardingAllChanges: boolean,
+    permanentlyDelete: boolean
   ) => void
 
   /** Callback that fires on page scroll to pass the new scrollTop location */
@@ -447,6 +448,15 @@ export class FilterChangesList extends React.Component<
   private onDiscardAllChanges = () => {
     this.props.onDiscardChangesFromFiles(
       this.props.workingDirectory.files,
+      true,
+      false
+    )
+  }
+
+  private onPermanentlyDiscardAllChanges = () => {
+    this.props.onDiscardChangesFromFiles(
+      this.props.workingDirectory.files,
+      true,
       true
     )
   }
@@ -483,7 +493,8 @@ export class FilterChangesList extends React.Component<
 
         this.props.onDiscardChangesFromFiles(
           modifiedFiles,
-          discardingAllChanges
+          discardingAllChanges,
+          false
         )
       }
     }
@@ -527,6 +538,13 @@ export class FilterChangesList extends React.Component<
       {
         label: __DARWIN__ ? 'Discard All Changes…' : 'Discard all changes…',
         action: this.onDiscardAllChanges,
+        enabled: hasLocalChanges,
+      },
+      {
+        label: __DARWIN__
+          ? 'Permanently Discard All Changes…'
+          : 'Permanently discard all changes…',
+        action: this.onPermanentlyDiscardAllChanges,
         enabled: hasLocalChanges,
       },
       {
