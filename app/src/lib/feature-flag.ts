@@ -25,7 +25,7 @@ function enableDevelopmentFeatures(): boolean {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore: this will be used again in the future
 function enableBetaFeatures(): boolean {
-  return enableDevelopmentFeatures() || __RELEASE_CHANNEL__ === 'beta'
+  return true
 }
 
 /**
@@ -102,5 +102,5 @@ export const enableCustomIntegration = () => true
 export const enableResizingToolbarButtons = () => true
 export const enableGitConfigParameters = enableBetaFeatures
 
-export const enableFilteredChangesList = enableDevelopmentFeatures
-export const enableMultipleEnterpriseAccounts = enableDevelopmentFeatures
+export const enableFilteredChangesList = enableBetaFeatures
+export const enableMultipleEnterpriseAccounts = enableBetaFeatures
