@@ -140,10 +140,11 @@ jobs:
           echo "---"
 
       # GitHubDesktop-linux-<arch>-<old_version>.<ext> -> GitHubDesktopPlus-<release_tag>-linux-<arch>.<ext>
+      # GitHubDesktop-linux-<arch>-<old_version>-beta1.<ext> -> GitHubDesktopPlus-<release_tag>-linux-<arch>.<ext>
       - name: Rename artifacts
         run: |
           for file in $(find ./artifacts -type f -name "GitHubDesktop-linux-*"); do
-            new_name=$(echo "$file" | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
+            new_name=$(echo "$file" | sed -E "s/GitHubDesktop-linux-(.*)-[0-9]+\\.[0-9]+(?:-beta[0-9]+)?\\.[0-9]+\\.(.*)/GitHubDesktopPlus-${{ env.RELEASE_TAG }}-linux-\\1.\\2/")
             new_name=$(echo $new_name | sed -E "s/linux-amd64/linux-x86_64/")
             new_name=$(echo $new_name | sed -E "s/linux-aarch64/linux-arm64/")
             mv --verbose "$file" "$new_name"
