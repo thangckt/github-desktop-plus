@@ -380,7 +380,6 @@ export interface IAppState {
 
   readonly underlineLinks: boolean
 
-  readonly canFilterChanges: boolean
   readonly updateState: IUpdateState
 }
 
@@ -768,6 +767,12 @@ export interface IChangesState {
    * Repo rules that apply to the current branch.
    */
   readonly currentRepoRulesInfo: RepoRulesInfo
+
+  /** The text entered into the compare branch filter text box */
+  readonly filterText: string
+
+  /** The state of the changes list filter of included changes. */
+  readonly includedChangesInCommitFilter: boolean
 }
 
 /**
