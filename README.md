@@ -6,7 +6,6 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 ### General:
 
-- [ ] Customizable **keyboard shortcuts**.
 - [x] Red color for destructive action buttons.
 - [x] Add **icons** to some similar-looking buttons for faster visual recognition.
 - [ ] Bitbucket integration:
