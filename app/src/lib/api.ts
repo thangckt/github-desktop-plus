@@ -298,6 +298,17 @@ interface IAPIFullIdentity {
     readonly name: string
   }
 }
+function toIAPIFullIdentity(identity: IBitbucketAPIIdentity): IAPIFullIdentity {
+  return {
+    id: 0,
+    login: identity.display_name,
+    avatar_url: identity.links.avatar.href,
+    html_url: identity.links.html.href,
+    name: identity.display_name,
+    email: null,
+    type: 'User',
+  }
+}
 
 /** The users we get from the mentionables endpoint. */
 export interface IAPIMentionableUser {
@@ -347,6 +358,19 @@ export interface IAPIEmail {
   readonly verified: boolean
   readonly primary: boolean
   readonly visibility: EmailVisibility
+}
+export interface IBitbucketAPIEmail {
+  readonly email: string
+  readonly is_primary: boolean
+  readonly is_confirmed: boolean
+}
+function toIAPIEmail(email: IBitbucketAPIEmail): IAPIEmail {
+  return {
+    email: email.email,
+    verified: email.is_confirmed,
+    primary: email.is_primary,
+    visibility: 'public',
+  }
 }
 
 /** Information about an issue as returned by the GitHub API. */
@@ -1750,7 +1774,7 @@ export class API {
       method,
       path,
       options.body,
-      options.customHeaders,
+      { ...this.getExtraHeaders(), ...options.customHeaders },
       options.reloadCache
     )
 
@@ -1770,6 +1794,10 @@ export class API {
     tryUpdateEndpointVersionFromResponse(this.endpoint, response)
 
     return response
+  }
+
+  protected getExtraHeaders(): Object {
+    return {}
   }
 
   /**
@@ -1977,6 +2005,13 @@ export class BitbucketAPI extends API {
     super(getBitbucketAPIEndpoint(), appPassword)
   }
 
+  protected override getExtraHeaders(): Object {
+    const basicAuth = Buffer.from(`${username}:${this.token}`)
+    return {
+      Authorization: `Basic ${basicAuth.toString('base64')}`,
+    }
+  }
+
   public override async fetchAllOpenPullRequests(
     owner: string,
     name: string
@@ -1994,6 +2029,18 @@ export class BitbucketAPI extends API {
       log.warn(`failed fetching open PRs for repository ${owner}/${name}`, e)
       throw e
     }
+  }
+
+  public override async fetchAccount(): Promise<IAPIFullIdentity> {
+    const response = await this.request('GET', 'user')
+    return toIAPIFullIdentity(
+      await parsedResponse<IBitbucketAPIIdentity>(response)
+    )
+  }
+
+  public override async fetchEmails(): Promise<ReadonlyArray<IAPIEmail>> {
+    const emails = await this.fetchAll<IBitbucketAPIEmail>('user/emails')
+    return emails.map(toIAPIEmail)
   }
 
   protected override async getNextPagePathFromLink(
@@ -2028,7 +2075,10 @@ export async function fetchUser(
   endpoint: string,
   token: string
 ): Promise<Account> {
-  const api = new API(endpoint, token)
+  const api =
+    endpoint === getBitbucketAPIEndpoint()
+      ? new BitbucketAPI(token)
+      : new API(endpoint, token)
   try {
     const user = await api.fetchAccount()
     const emails = await api.fetchEmails()

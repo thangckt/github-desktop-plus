@@ -6019,8 +6019,18 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return this.signInStore.beginEnterpriseSignIn(resultCallback)
   }
 
+  public _beginBitbucketSignIn(
+    resultCallback?: (result: SignInResult) => void
+  ) {
+    return this.signInStore.beginBitbucketSignIn(resultCallback)
+  }
+
   public _setSignInEndpoint(url: string): Promise<void> {
     return this.signInStore.setEndpoint(url)
+  }
+
+  public _verifyAndSetAppPassword(appPassword: string): Promise<boolean> {
+    return this.signInStore.bitbucketSignIn(appPassword)
   }
 
   public _requestBrowserAuthentication() {

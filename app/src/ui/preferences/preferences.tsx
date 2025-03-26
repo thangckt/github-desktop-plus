@@ -376,6 +376,11 @@ export class Preferences extends React.Component<
     this.props.dispatcher.showEnterpriseSignInDialog()
   }
 
+  private onBitbucketSignIn = () => {
+    this.props.onDismissed()
+    this.props.dispatcher.showBitbucketSignInDialog()
+  }
+
   private onLogout = (account: Account) => {
     this.props.dispatcher.removeAccount(account)
   }
@@ -399,6 +404,7 @@ export class Preferences extends React.Component<
             accounts={this.props.accounts}
             onDotComSignIn={this.onDotComSignIn}
             onEnterpriseSignIn={this.onEnterpriseSignIn}
+            onBitbucketSignIn={this.onBitbucketSignIn}
             onLogout={this.onLogout}
           />
         )

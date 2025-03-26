@@ -13,6 +13,7 @@ import {
   getEnterpriseAPIURL,
   requestOAuthToken,
   getOAuthAuthorizationURL,
+  getBitbucketAPIEndpoint,
 } from '../../lib/api'
 
 import { TypedBaseStore } from './base-store'
@@ -28,6 +29,7 @@ import { AccountsStore } from './accounts-store'
  */
 export enum SignInStep {
   EndpointEntry = 'EndpointEntry',
+  AppPasswordEntry = 'AppPasswordEntry',
   ExistingAccountWarning = 'ExistingAccountWarning',
   Authentication = 'Authentication',
   TwoFactorAuthentication = 'TwoFactorAuthentication',
@@ -40,6 +42,7 @@ export enum SignInStep {
  */
 export type SignInState =
   | IEndpointEntryState
+  | IAppPasswordEntryState
   | IExistingAccountWarning
   | IAuthenticationState
   | ISuccessState
@@ -99,6 +102,11 @@ export interface IExistingAccountWarning extends ISignInState {
  */
 export interface IEndpointEntryState extends ISignInState {
   readonly kind: SignInStep.EndpointEntry
+  readonly resultCallback: (result: SignInResult) => void
+}
+
+export interface IAppPasswordEntryState extends ISignInState {
+  readonly kind: SignInStep.AppPasswordEntry
   readonly resultCallback: (result: SignInResult) => void
 }
 
@@ -377,6 +385,30 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
       loading: false,
       resultCallback: resultCallback ?? noop,
     })
+  }
+
+  public beginBitbucketSignIn(resultCallback?: (result: SignInResult) => void) {
+    if (this.state !== null) {
+      this.reset()
+    }
+
+    this.setState({
+      kind: SignInStep.AppPasswordEntry,
+      error: null,
+      loading: false,
+      resultCallback: resultCallback ?? noop,
+    })
+  }
+
+  public async bitbucketSignIn(appPassword: string) {
+    try {
+      const account = await fetchUser(getBitbucketAPIEndpoint(), appPassword)
+      this.emitAuthenticate(account)
+      return true
+    } catch (e) {
+      console.error(e)
+      return false
+    }
   }
 
   /**

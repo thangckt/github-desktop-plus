@@ -97,6 +97,8 @@ export function enableImagePreviewsForDDSFiles(): boolean {
   return enableBetaFeatures()
 }
 
+export const enableBitbucketIntegration = enableDevelopmentFeatures
+
 export const enableCustomIntegration = () => true
 
 export const enableResizingToolbarButtons = () => true

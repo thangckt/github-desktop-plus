@@ -1547,6 +1547,10 @@ export class Dispatcher {
     this.appStore._beginDotComSignIn(resultCallback)
   }
 
+  public async verifyAndSetAppPassword(appPassword: string): Promise<boolean> {
+    return this.appStore._verifyAndSetAppPassword(appPassword)
+  }
+
   public beginBrowserBasedSignIn(
     endpoint: string,
     resultCallback?: (result: SignInResult) => void
@@ -1623,6 +1627,17 @@ export class Dispatcher {
       this.appStore._setSignInEndpoint(endpoint)
     }
 
+    this.appStore._showPopup({ type: PopupType.SignIn })
+  }
+
+  /**
+   * Launch a sign in dialog for authenticating a user with
+   * Bitbucket
+   */
+  public async showBitbucketSignInDialog(
+    resultCallback?: (result: SignInResult) => void
+  ): Promise<void> {
+    this.appStore._beginBitbucketSignIn(resultCallback)
     this.appStore._showPopup({ type: PopupType.SignIn })
   }
 

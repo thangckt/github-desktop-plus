@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {
   Account,
+  isBitbucketAccount,
   isDotComAccount,
   isEnterpriseAccount,
 } from '../../models/account'
@@ -12,7 +13,10 @@ import { Row } from '../lib/row'
 import { DialogContent, DialogPreferredFocusClassName } from '../dialog'
 import { Avatar } from '../lib/avatar'
 import { CallToAction } from '../lib/call-to-action'
-import { enableMultipleEnterpriseAccounts } from '../../lib/feature-flag'
+import {
+  enableMultipleEnterpriseAccounts,
+  enableBitbucketIntegration,
+} from '../../lib/feature-flag'
 import { getHTMLURL } from '../../lib/api'
 
 interface IAccountsProps {
@@ -20,18 +24,21 @@ interface IAccountsProps {
 
   readonly onDotComSignIn: () => void
   readonly onEnterpriseSignIn: () => void
+  readonly onBitbucketSignIn: () => void
   readonly onLogout: (account: Account) => void
 }
 
 enum SignInType {
   DotCom,
   Enterprise,
+  Bitbucket,
 }
 
 export class Accounts extends React.Component<IAccountsProps, {}> {
   public render() {
     const { accounts } = this.props
     const dotComAccount = accounts.find(isDotComAccount)
+    const bitbucketAccount = accounts.find(isBitbucketAccount)
 
     return (
       <DialogContent className="accounts-tab">
@@ -44,6 +51,15 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
         {enableMultipleEnterpriseAccounts()
           ? this.renderMultipleEnterpriseAccounts()
           : this.renderSingleEnterpriseAccount()}
+
+        {enableBitbucketIntegration() && (
+          <>
+            <h2>Bitbucket</h2>
+            {bitbucketAccount
+              ? this.renderAccount(bitbucketAccount, SignInType.Bitbucket)
+              : this.renderSignIn(SignInType.Bitbucket)}
+          </>
+        )}
       </DialogContent>
     )
   }
@@ -126,6 +142,10 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
     this.props.onEnterpriseSignIn()
   }
 
+  private onBitbucketSignIn = () => {
+    this.props.onBitbucketSignIn()
+  }
+
   private renderSignIn(type: SignInType) {
     const signInTitle = __DARWIN__ ? 'Sign Into' : 'Sign into'
     switch (type) {
@@ -153,6 +173,17 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
             <div>
               If you are using GitHub Enterprise at work, sign in to it to get
               access to your repositories.
+            </div>
+          </CallToAction>
+        )
+      case SignInType.Bitbucket:
+        return (
+          <CallToAction
+            actionTitle={signInTitle + ' Bitbucket'}
+            onAction={this.onBitbucketSignIn}
+          >
+            <div>
+              Sign in to your Bitbucket account to access your repositories.
             </div>
           </CallToAction>
         )

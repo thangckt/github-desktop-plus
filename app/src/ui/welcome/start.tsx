@@ -67,6 +67,10 @@ export class Start extends React.Component<IStartProps, {}> {
                 Sign in to GitHub Enterprise
               </Button>
             )}
+            <p className="welcome-text">
+              If you use Bitbucket, you can configure your account later from
+              the app settings. <br /> For now, click "Skip this step" below.
+            </p>
           </div>
           <div className="skip-action-container">
             <p className="welcome-text">

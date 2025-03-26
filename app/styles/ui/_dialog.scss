@@ -592,6 +592,11 @@ dialog {
       }
     }
 
+    .app-password-note {
+      font-size: var(--font-size-sm);
+      margin-top: var(--spacing);
+    }
+
     .forgot-password-row,
     .what-is-this-row {
       font-size: var(--font-size-sm);
