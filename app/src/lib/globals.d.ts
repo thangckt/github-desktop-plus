@@ -11,6 +11,12 @@ declare const __OAUTH_CLIENT_ID__: string | undefined
 /** The OAuth secret the app should use. */
 declare const __OAUTH_SECRET__: string | undefined
 
+/** The OAuth client id the app should use for Bitbucket */
+declare const __OAUTH_CLIENT_ID_BITBUCKET__: string | undefined
+
+/** The OAuth secret the app should use for Bitbucket */
+declare const __OAUTH_SECRET_BITBUCKET__: string | undefined
+
 /** Is the app being built to run on Darwin? */
 declare const __DARWIN__: boolean
 

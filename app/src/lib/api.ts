@@ -96,10 +96,26 @@ interface IFetchAllOptions<T> {
 
 const ClientID = process.env.TEST_ENV ? '' : __OAUTH_CLIENT_ID__
 const ClientSecret = process.env.TEST_ENV ? '' : __OAUTH_SECRET__
+const ClientIDBitbucket = process.env.TEST_ENV
+  ? ''
+  : __OAUTH_CLIENT_ID_BITBUCKET__
+const ClientSecretBitbucket = process.env.TEST_ENV
+  ? ''
+  : __OAUTH_SECRET_BITBUCKET__
 
 if (!ClientID || !ClientID.length || !ClientSecret || !ClientSecret.length) {
   log.warn(
     `DESKTOP_OAUTH_CLIENT_ID and/or DESKTOP_OAUTH_CLIENT_SECRET is undefined. You won't be able to authenticate new users.`
+  )
+}
+if (
+  !ClientIDBitbucket ||
+  !ClientIDBitbucket.length ||
+  !ClientSecretBitbucket ||
+  !ClientSecretBitbucket.length
+) {
+  log.warn(
+    `DESKTOP_OAUTH_CLIENT_ID_BITBUCKET and/or DESKTOP_OAUTH_CLIENT_SECRET_BITBUCKET is undefined. You won't be able to authenticate new users.`
   )
 }
 
@@ -811,7 +827,7 @@ export class API {
   }
 
   private endpoint: string
-  private token: string
+  protected token: string
 
   /** Create a new API client for the endpoint, authenticated with the token. */
   public constructor(endpoint: string, token: string) {
@@ -2006,9 +2022,8 @@ export class BitbucketAPI extends API {
   }
 
   protected override getExtraHeaders(): Object {
-    const basicAuth = Buffer.from(`${username}:${this.token}`)
     return {
-      Authorization: `Basic ${basicAuth.toString('base64')}`,
+      Authorization: `Bearer ${this.token}`,
     }
   }
 
@@ -2209,6 +2224,10 @@ export function getOAuthAuthorizationURL(
     `/login/oauth/authorize?client_id=${ClientID}&scope=${scope}&state=${state}`,
     urlBase
   ).toString()
+}
+
+export function getBitbucketOAuthAuthorizationURL(): string {
+  return `https://bitbucket.org/site/oauth2/authorize?client_id=${ClientIDBitbucket}&response_type=token`
 }
 
 export async function requestOAuthToken(
