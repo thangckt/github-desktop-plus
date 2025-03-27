@@ -275,7 +275,7 @@ async function handleCommandLineArguments(argv: string[]) {
 
     if (matchingUrl) {
       handleAppURL(matchingUrl)
-    } else {
+    } else if (__WIN32__) {
       log.error(`Encountered --protocol-launcher without app url`)
     }
     // If --protocol-launcher is present we always want to bail and not
