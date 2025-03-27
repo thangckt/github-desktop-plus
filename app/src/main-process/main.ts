@@ -249,7 +249,7 @@ async function handleCommandLineArguments(argv: string[]) {
   // line arguments might be added by Chromium
   // (https://electronjs.org/docs/api/app#event-second-instance).
 
-  if (__WIN32__ && args['protocol-launcher'] === true) {
+  if (__LINUX__ || (__WIN32__ && args['protocol-launcher'] === true)) {
     // On Windows we'll end up getting called with something like
     // `--protocol-launcher --allow-file-access-from-files x-github-client://..`
     // which minimist naturally interprets as
