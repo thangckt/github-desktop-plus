@@ -161,7 +161,7 @@ function summaryToIAPIRepository(
 ): IAPIRepository {
   return {
     clone_url: `https://bitbucket.org/${repo.full_name}.git`,
-    ssh_url: `git@bitbucket.org:logicommerce/core.git`,
+    ssh_url: `git@bitbucket.org:${repo.full_name}.git`,
     html_url: `https://bitbucket.org/${repo.full_name}`,
     name: repo.name,
     owner: {
@@ -224,6 +224,59 @@ export interface IAPIFullRepository extends IAPIRepository {
    * through the `/repos/user/name` endpoint or similar.
    */
   readonly permissions?: IAPIRepositoryPermissions
+}
+export interface IBitbucketAPIRepository
+  extends IBitbucketAPIRepositorySummary {
+  readonly owner: IBitbucketAPIIdentity
+  readonly is_private: boolean
+  readonly parent?: IBitbucketAPIRepository
+  readonly has_issues: boolean
+  readonly updated_on: string
+  readonly mainbranch: {
+    readonly name: string
+  }
+  readonly links: {
+    readonly html: {
+      readonly href: string
+    }
+    readonly clone: ReadonlyArray<{
+      readonly name: string
+      readonly href: string
+    }>
+  }
+}
+function toIAPIRepository(repo: IBitbucketAPIRepository): IAPIRepository {
+  return {
+    clone_url:
+      repo.links.clone.filter(c => c.name === 'https')[0]?.href ||
+      `https://bitbucket.org/${repo.full_name}.git`,
+    ssh_url:
+      repo.links.clone.filter(c => c.name === 'ssh')[0]?.href ||
+      `git@bitbucket.org:${repo.full_name}.git`,
+    html_url: repo.links.html.href,
+    name: repo.name,
+    owner: toIAPIIdentity(repo.owner),
+    private: repo.is_private,
+    fork: false,
+    default_branch: repo.mainbranch?.name,
+    pushed_at: repo.updated_on,
+    has_issues: repo.has_issues,
+    archived: false,
+  }
+}
+function toIAPIFullRepository(
+  repo: IBitbucketAPIRepository
+): IAPIFullRepository {
+  return {
+    ...toIAPIRepository(repo),
+    parent: repo.parent ? toIAPIRepository(repo.parent) : undefined,
+    permissions: {
+      // Let's be optimistic
+      admin: true,
+      push: true,
+      pull: true,
+    },
+  }
 }
 
 /*
@@ -2077,6 +2130,34 @@ export class BitbucketAPI extends API {
     const emails = await this.fetchAll<IBitbucketAPIEmail>('user/emails')
     return emails.map(toIAPIEmail)
   }
+
+  public async fetchRepository(
+    owner: string,
+    name: string
+  ): Promise<IAPIFullRepository | null> {
+    try {
+      const response = await this.request(
+        'GET',
+        `repositories/${owner}/${name}`
+      )
+      if (response.status === HttpStatusCode.NotFound) {
+        log.warn(`fetchRepository: '${owner}/${name}' returned a 404`)
+        return null
+      }
+      const repo = await parsedResponse<IBitbucketAPIRepository>(response)
+      return toIAPIFullRepository(repo)
+    } catch (e) {
+      log.warn(`fetchRepository: an error occurred for '${owner}/${name}'`, e)
+      return null
+    }
+  }
+
+  public override async fetchProtectedBranches() {
+    // This could be implemented with GET /repositories/{workspace}/{repo_slug}/branch-restrictions,
+    // but it would require increasing the OAuth scope to admin:repository, and currently this is
+    // only being used for metrics collection, so it's not necessary.
+    return []
+  }
 }
 
 export async function deleteToken(account: Account) {
@@ -2137,6 +2218,8 @@ export function getEndpointForRepository(url: string): string {
   const parsed = URL.parse(url)
   if (parsed.hostname === 'github.com') {
     return getDotComAPIEndpoint()
+  } else if (parsed.hostname === 'bitbucket.org') {
+    return getBitbucketAPIEndpoint()
   } else {
     return `${parsed.protocol}//${parsed.hostname}/api`
   }
@@ -2163,6 +2246,8 @@ export function getHTMLURL(endpoint: string): string {
   // We need to normalize them.
   if (endpoint === getDotComAPIEndpoint() && !envEndpoint) {
     return 'https://github.com'
+  } else if (endpoint === getBitbucketAPIEndpoint()) {
+    return 'https://bitbucket.org'
   } else {
     if (isGHE(endpoint)) {
       const url = new window.URL(endpoint)

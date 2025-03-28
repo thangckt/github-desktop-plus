@@ -124,7 +124,8 @@ export class RepositoriesStore extends TypedBaseStore<
     }
 
     // TODO: There may be a better way to check this
-    const isBitbucket = repo.htmlURL?.includes('bitbucket.org') ?? false
+    const isBitbucket =
+      repo.htmlURL && new URL(repo.htmlURL).host === 'bitbucket.org'
 
     const ghRepo = new GitHubRepository(
       repo.name,
