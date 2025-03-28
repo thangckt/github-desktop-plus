@@ -44,6 +44,9 @@
   }
 
   .accounts-tab {
+    h2:not(:first-child) {
+      margin-top: var(--spacing-double);
+    }
     .account-info {
       .user-info-container {
         display: flex;
