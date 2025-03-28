@@ -80,8 +80,6 @@ export class SignIn extends React.Component<ISignInProps, {}> {
     switch (state.kind) {
       case SignInStep.EndpointEntry:
         return this.renderEndpointEntryStep(state)
-      case SignInStep.AppPasswordEntry:
-        return null
       case SignInStep.ExistingAccountWarning:
         return this.renderExistingAccountWarningStep(state)
       case SignInStep.Authentication:

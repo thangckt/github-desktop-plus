@@ -1,5 +1,9 @@
 import { Disposable } from 'event-kit'
-import { Account, isDotComAccount } from '../../models/account'
+import {
+  Account,
+  isBitbucketAccount,
+  isDotComAccount,
+} from '../../models/account'
 import { fatalError } from '../fatal-error'
 import {
   validateURL,
@@ -29,7 +33,6 @@ import { AccountsStore } from './accounts-store'
  */
 export enum SignInStep {
   EndpointEntry = 'EndpointEntry',
-  AppPasswordEntry = 'AppPasswordEntry',
   ExistingAccountWarning = 'ExistingAccountWarning',
   Authentication = 'Authentication',
   TwoFactorAuthentication = 'TwoFactorAuthentication',
@@ -42,7 +45,6 @@ export enum SignInStep {
  */
 export type SignInState =
   | IEndpointEntryState
-  | IAppPasswordEntryState
   | IExistingAccountWarning
   | IAuthenticationState
   | ISuccessState
@@ -102,11 +104,6 @@ export interface IExistingAccountWarning extends ISignInState {
  */
 export interface IEndpointEntryState extends ISignInState {
   readonly kind: SignInStep.EndpointEntry
-  readonly resultCallback: (result: SignInResult) => void
-}
-
-export interface IAppPasswordEntryState extends ISignInState {
-  readonly kind: SignInStep.AppPasswordEntry
   readonly resultCallback: (result: SignInResult) => void
 }
 
@@ -392,22 +389,25 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
       this.reset()
     }
 
-    this.setState({
-      kind: SignInStep.AppPasswordEntry,
-      error: null,
-      loading: false,
-      resultCallback: resultCallback ?? noop,
-    })
-  }
-
-  public async bitbucketSignIn(appPassword: string) {
-    try {
-      const account = await fetchUser(getBitbucketAPIEndpoint(), appPassword)
-      this.emitAuthenticate(account)
-      return true
-    } catch (e) {
-      console.error(e)
-      return false
+    const endpoint = getBitbucketAPIEndpoint()
+    const existingAccount = this.accounts.find(isBitbucketAccount)
+    if (existingAccount) {
+      this.setState({
+        kind: SignInStep.ExistingAccountWarning,
+        endpoint,
+        existingAccount,
+        error: null,
+        loading: false,
+        resultCallback: resultCallback ?? noop,
+      })
+    } else {
+      this.setState({
+        kind: SignInStep.Authentication,
+        endpoint,
+        error: null,
+        loading: false,
+        resultCallback: resultCallback ?? noop,
+      })
     }
   }
 

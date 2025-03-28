@@ -6029,10 +6029,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return this.signInStore.setEndpoint(url)
   }
 
-  public _verifyAndSetAppPassword(appPassword: string): Promise<boolean> {
-    return this.signInStore.bitbucketSignIn(appPassword)
-  }
-
   public _requestBrowserAuthentication() {
     this.signInStore.authenticateWithBrowser()
   }

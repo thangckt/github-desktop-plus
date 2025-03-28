@@ -2016,9 +2016,8 @@ export class API {
 }
 
 export class BitbucketAPI extends API {
-  /** Create a new API client for the endpoint, authenticated with the App Password. */
-  public constructor(appPassword: string) {
-    super(getBitbucketAPIEndpoint(), appPassword)
+  public constructor(token: string) {
+    super(getBitbucketAPIEndpoint(), token)
   }
 
   protected override getExtraHeaders(): Object {

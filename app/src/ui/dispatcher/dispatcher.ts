@@ -1547,10 +1547,6 @@ export class Dispatcher {
     this.appStore._beginDotComSignIn(resultCallback)
   }
 
-  public async verifyAndSetAppPassword(appPassword: string): Promise<boolean> {
-    return this.appStore._verifyAndSetAppPassword(appPassword)
-  }
-
   public beginBrowserBasedSignIn(
     endpoint: string,
     resultCallback?: (result: SignInResult) => void

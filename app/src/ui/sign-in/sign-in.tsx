@@ -6,7 +6,6 @@ import {
   IEndpointEntryState,
   IAuthenticationState,
   IExistingAccountWarning,
-  IAppPasswordEntryState,
 } from '../../lib/stores'
 import { assertNever } from '../../lib/fatal-error'
 import { Row } from '../lib/row'
@@ -16,7 +15,6 @@ import { Dialog, DialogError, DialogContent, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { Ref } from '../lib/ref'
 import { getHTMLURL } from '../../lib/api'
-import { LinkButton } from '../lib/link-button'
 
 interface ISignInProps {
   readonly dispatcher: Dispatcher
@@ -28,8 +26,6 @@ interface ISignInProps {
 
 interface ISignInState {
   readonly endpoint: string
-  readonly appPassword: string
-  readonly appPasswordError: string | null
 }
 
 const SignInWithBrowserTitle = __DARWIN__
@@ -54,8 +50,6 @@ export class SignIn extends React.Component<ISignInProps, ISignInState> {
 
     this.state = {
       endpoint: '',
-      appPassword: '',
-      appPasswordError: null,
     }
   }
 
@@ -95,17 +89,6 @@ export class SignIn extends React.Component<ISignInProps, ISignInState> {
       case SignInStep.EndpointEntry:
         this.props.dispatcher.setSignInEndpoint(this.state.endpoint)
         break
-      case SignInStep.AppPasswordEntry:
-        this.props.dispatcher
-          .verifyAndSetAppPassword(this.state.appPassword)
-          .then(success =>
-            this.setState({
-              appPasswordError: success
-                ? null
-                : 'Invalid app password, make sure you copied it correctly',
-            })
-          )
-        break
       case SignInStep.ExistingAccountWarning:
         this.props.dispatcher
           .removeAccount(state.existingAccount)
@@ -124,10 +107,6 @@ export class SignIn extends React.Component<ISignInProps, ISignInState> {
 
   private onEndpointChanged = (endpoint: string) => {
     this.setState({ endpoint })
-  }
-
-  private onAppPasswordChanged = (appPassword: string) => {
-    this.setState({ appPassword })
   }
 
   private renderFooter(): JSX.Element | null {
@@ -149,10 +128,6 @@ export class SignIn extends React.Component<ISignInProps, ISignInState> {
       case SignInStep.EndpointEntry:
         disableSubmit = this.state.endpoint.length === 0
         primaryButtonText = 'Continue'
-        break
-      case SignInStep.AppPasswordEntry:
-        disableSubmit = this.state.appPassword.length === 0
-        primaryButtonText = 'Verify'
         break
       case SignInStep.ExistingAccountWarning:
         primaryButtonText = continueWithBrowserLabel
@@ -204,41 +179,6 @@ export class SignIn extends React.Component<ISignInProps, ISignInState> {
     )
   }
 
-  private renderAppPasswordEntryStep(state: IAppPasswordEntryState) {
-    return (
-      <DialogContent>
-        <p>
-          Go to your{' '}
-          <LinkButton uri="https://bitbucket.org/account/settings/app-passwords/">
-            Bitbucket App Passwords settings{' '}
-          </LinkButton>{' '}
-          and create a new App Password. It needs to have the following
-          permissions:
-        </p>
-        <ul>
-          <li>Account: Read</li>
-          <li>Pull requests: Read</li>
-        </ul>
-        <TextBox
-          label="Paste the App Password here:"
-          value={this.state.appPassword}
-          onValueChanged={this.onAppPasswordChanged}
-          placeholder="App password"
-        />
-        {this.state.appPasswordError ? (
-          <DialogError>{this.state.appPasswordError}</DialogError>
-        ) : null}
-        <div className="app-password-note">
-          <span className="warning-icon">⚠️</span> Note: This is only for
-          showing PRs and other advanced features in Bitbucket repositories
-          inside GitHub Desktop. You still need to set up SSH or HTTPS
-          authentication for cloning and pushing to your Bitbucket repositories,
-          as usual.
-        </div>
-      </DialogContent>
-    )
-  }
-
   private renderAuthenticationStep(state: IAuthenticationState) {
     const credentialHelperInfo =
       this.props.isCredentialHelperSignIn && this.props.credentialHelperUrl ? (
@@ -268,8 +208,6 @@ export class SignIn extends React.Component<ISignInProps, ISignInState> {
     switch (state.kind) {
       case SignInStep.EndpointEntry:
         return this.renderEndpointEntryStep(state)
-      case SignInStep.AppPasswordEntry:
-        return this.renderAppPasswordEntryStep(state)
       case SignInStep.ExistingAccountWarning:
         return this.renderExistingAccountWarningStep(state)
       case SignInStep.Authentication:
