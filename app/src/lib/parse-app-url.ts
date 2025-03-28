@@ -76,8 +76,8 @@ export function parseAppURL(url: string): URLActionType {
   const actionName = hostname.toLowerCase()
   if (actionName === 'oauth') {
     const code = getQueryStringValue(query, 'code')
-    const state = getQueryStringValue(query, 'state')
-    if (code != null && state != null) {
+    const state = getQueryStringValue(query, 'state') ?? ''
+    if (code != null) {
       return { name: 'oauth', code, state }
     } else {
       return unknown

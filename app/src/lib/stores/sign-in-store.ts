@@ -18,6 +18,8 @@ import {
   requestOAuthToken,
   getOAuthAuthorizationURL,
   getBitbucketAPIEndpoint,
+  getBitbucketOAuthAuthorizationURL,
+  requestOAuthTokenBitbucket,
 } from '../../lib/api'
 
 import { TypedBaseStore } from './base-store'
@@ -131,6 +133,7 @@ export interface IAuthenticationState extends ISignInState {
   readonly oauthState?: {
     state: string
     endpoint: string
+    oauthProvider: 'github' | 'bitbucket'
     onAuthCompleted: (account: Account) => void
     onAuthError: (error: Error) => void
   }
@@ -292,6 +295,7 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     new Promise<Account>((resolve, reject) => {
       const { endpoint, resultCallback } = currentState
       log.info('[SignInStore] initializing OAuth flow')
+      const isBitbucket = endpoint === getBitbucketAPIEndpoint()
       this.setState({
         kind: SignInStep.Authentication,
         endpoint,
@@ -299,13 +303,18 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
         error: null,
         loading: true,
         oauthState: {
+          oauthProvider: isBitbucket ? 'bitbucket' : 'github',
           state: csrfToken,
           endpoint,
           onAuthCompleted: resolve,
           onAuthError: reject,
         },
       })
-      shell.openExternal(getOAuthAuthorizationURL(endpoint, csrfToken))
+      if (isBitbucket) {
+        shell.openExternal(getBitbucketOAuthAuthorizationURL())
+      } else {
+        shell.openExternal(getOAuthAuthorizationURL(endpoint, csrfToken))
+      }
     })
       .then(account => {
         if (!this.state || this.state.kind !== SignInStep.Authentication) {
@@ -344,7 +353,10 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
       return
     }
 
-    if (this.state.oauthState.state !== action.state) {
+    if (
+      this.state.oauthState.oauthProvider === 'github' &&
+      this.state.oauthState.state !== action.state
+    ) {
       log.warn(
         'requestAuthenticatedUser was not called with valid OAuth state. This is likely due to a browser reloading the callback URL. Contact GitHub Support if you believe this is an error'
       )
@@ -352,7 +364,10 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     }
 
     const { endpoint } = this.state
-    const token = await requestOAuthToken(endpoint, action.code)
+    const token =
+      this.state.oauthState.oauthProvider === 'github'
+        ? await requestOAuthToken(endpoint, action.code)
+        : await requestOAuthTokenBitbucket(action.code)
 
     if (token) {
       const account = await fetchUser(endpoint, token)
