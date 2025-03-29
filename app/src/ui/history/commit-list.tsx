@@ -31,6 +31,7 @@ import { Emoji } from '../../lib/emoji'
 import { Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
 import { AppFileStatusKind } from '../../models/status'
+import { GitHubRepository } from '../../models/github-repository'
 
 const RowHeight = 50
 
@@ -677,15 +678,7 @@ export class CommitList extends React.Component<
       this.props.canResetToCommits === true && isResettableCommit
     const canBeCheckedOut = row > 0 //Cannot checkout the current commit
 
-    let viewOnGitHubLabel = 'View on GitHub'
     const gitHubRepository = this.props.repository?.gitHubRepository
-
-    if (
-      gitHubRepository &&
-      gitHubRepository.endpoint !== getDotComAPIEndpoint()
-    ) {
-      viewOnGitHubLabel = 'View on GitHub Enterprise'
-    }
 
     const items: IMenuItem[] = []
 
@@ -797,13 +790,31 @@ export class CommitList extends React.Component<
         enabled: commit.tags.length > 0,
       },
       {
-        label: viewOnGitHubLabel,
+        label: gitHubRepository
+          ? this.getViewOnGitHubLabel(gitHubRepository)
+          : 'Not uploaded to GitHub',
         action: () => this.props.onViewCommitOnGitHub?.(commit.sha),
         enabled: !isLocal && !!gitHubRepository,
       }
     )
 
     return items
+  }
+
+  private getViewOnGitHubLabel(gitHubRepository: GitHubRepository) {
+    switch (gitHubRepository.type) {
+      case 'github':
+        return gitHubRepository.endpoint === getDotComAPIEndpoint()
+          ? 'View on GitHub'
+          : 'View on GitHub Enterprise'
+      case 'bitbucket':
+        return 'View on Bitbucket'
+      default:
+        assertNever(
+          gitHubRepository.type,
+          `Unknown type: ${gitHubRepository.type}`
+        )
+    }
   }
 
   private canCherryPick(): boolean {

@@ -1,10 +1,13 @@
 import { IMenuItem } from '../../lib/menu-item'
 import { clipboard } from 'electron'
+import { RepoType } from '../../models/github-repository'
+import { assertNever } from '../../lib/fatal-error'
 
 interface IBranchContextMenuConfig {
   name: string
   nameWithoutRemote: string
   isLocal: boolean
+  repoType: RepoType | undefined
   onRenameBranch?: (branchName: string) => void
   onViewPullRequestOnGitHub?: () => void
   onMakeDefaultBranch?: (branchName: string) => void
@@ -18,6 +21,7 @@ export function generateBranchContextMenuItems(
     name,
     nameWithoutRemote,
     isLocal,
+    repoType,
     onRenameBranch,
     onViewPullRequestOnGitHub,
     onMakeDefaultBranch,
@@ -38,9 +42,9 @@ export function generateBranchContextMenuItems(
     action: () => clipboard.writeText(name),
   })
 
-  if (onViewPullRequestOnGitHub !== undefined) {
+  if (onViewPullRequestOnGitHub !== undefined && repoType !== undefined) {
     items.push({
-      label: 'View Pull Request on GitHub',
+      label: getViewPullRequestLabel(repoType),
       action: () => onViewPullRequestOnGitHub(),
     })
   }
@@ -62,4 +66,15 @@ export function generateBranchContextMenuItems(
   }
 
   return items
+}
+
+function getViewPullRequestLabel(repoType: RepoType): string {
+  switch (repoType) {
+    case 'github':
+      return 'View Pull Request on GitHub'
+    case 'bitbucket':
+      return 'View Pull Request on Bitbucket'
+    default:
+      return assertNever(repoType, `Unknown repo type: ${repoType}`)
+  }
 }

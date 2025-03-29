@@ -1,5 +1,6 @@
 import * as crypto from 'crypto'
 import { GitHubRepository } from '../models/github-repository'
+import { assertNever } from './fatal-error'
 
 /** Method to create the url for viewing a commit on dotcom */
 export function createCommitURL(
@@ -14,11 +15,29 @@ export function createCommitURL(
   }
 
   if (filePath === undefined) {
-    return `${baseURL}/commit/${SHA}`
+    switch (gitHubRepository.type) {
+      case 'github':
+        return `${baseURL}/commit/${SHA}`
+      case 'bitbucket':
+        return `${baseURL}/commits/${SHA}`
+      default:
+        assertNever(
+          gitHubRepository.type,
+          `Unknown type: ${gitHubRepository.type}`
+        )
+    }
   }
 
   const fileHash = crypto.createHash('sha256').update(filePath).digest('hex')
-  const fileSuffix = '#diff-' + fileHash
-
-  return `${baseURL}/commit/${SHA}${fileSuffix}`
+  switch (gitHubRepository.type) {
+    case 'github':
+      return `${baseURL}/commit/${SHA}#diff-${fileHash}`
+    case 'bitbucket':
+      return `${baseURL}/commits/${SHA}#chg-${filePath}`
+    default:
+      assertNever(
+        gitHubRepository.type,
+        `Unknown type: ${gitHubRepository.type}`
+      )
+  }
 }

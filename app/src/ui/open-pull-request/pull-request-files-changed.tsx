@@ -25,6 +25,8 @@ import { clamp } from '../../lib/clamp'
 import { getDotComAPIEndpoint } from '../../lib/api'
 import { createCommitURL } from '../../lib/commit-url'
 import { DiffOptions } from '../diff/diff-options'
+import { assertNever } from '../../lib/fatal-error'
+import { GitHubRepository } from '../../models/github-repository'
 
 interface IPullRequestFilesChangedProps {
   readonly repository: Repository
@@ -130,6 +132,22 @@ export class PullRequestFilesChanged extends React.Component<
     this.props.dispatcher.resetPullRequestFileListWidth()
   }
 
+  private getViewOnGitHubLabel(gitHubRepository: GitHubRepository) {
+    switch (gitHubRepository.type) {
+      case 'github':
+        return gitHubRepository.endpoint !== getDotComAPIEndpoint()
+          ? 'View on GitHub Enterprise'
+          : 'View on GitHub'
+      case 'bitbucket':
+        return 'View on Bitbucket'
+      default:
+        assertNever(
+          gitHubRepository.type,
+          `Unknown type: ${gitHubRepository.type}`
+        )
+    }
+  }
+
   private onViewOnGitHub = (file: CommittedFileChange) => {
     const { nonLocalCommitSHA, repository, dispatcher } = this.props
     const { gitHubRepository } = repository
@@ -212,11 +230,11 @@ export class PullRequestFilesChanged extends React.Component<
 
     const { nonLocalCommitSHA } = this.props
     const { gitHubRepository } = repository
-    const isEnterprise =
-      gitHubRepository && gitHubRepository.endpoint !== getDotComAPIEndpoint()
 
     items.push({
-      label: `View on GitHub${isEnterprise ? ' Enterprise' : ''}`,
+      label: gitHubRepository
+        ? this.getViewOnGitHubLabel(gitHubRepository)
+        : 'No remote',
       action: () => this.onViewOnGitHub(file),
       enabled: nonLocalCommitSHA !== null && gitHubRepository !== null,
     })

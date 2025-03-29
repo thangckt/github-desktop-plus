@@ -38,6 +38,8 @@ import { ExpandableCommitSummary } from './expandable-commit-summary'
 import { DiffHeader } from '../diff/diff-header'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { assertNever } from '../../lib/fatal-error'
+import { GitHubRepository } from '../../models/github-repository'
 
 interface ISelectedCommitsProps {
   readonly repository: Repository
@@ -430,18 +432,12 @@ export class SelectedCommits extends React.Component<
       { type: 'separator' },
     ]
 
-    let viewOnGitHubLabel = 'View on GitHub'
     const gitHubRepository = repository.gitHubRepository
 
-    if (
-      gitHubRepository &&
-      gitHubRepository.endpoint !== getDotComAPIEndpoint()
-    ) {
-      viewOnGitHubLabel = 'View on GitHub Enterprise'
-    }
-
     items.push({
-      label: viewOnGitHubLabel,
+      label: gitHubRepository
+        ? getViewOnGitHubLabel(gitHubRepository)
+        : 'Not uploaded to GitHub',
       action: () => this.onViewOnGitHub(selectedCommits[0].sha, file),
       enabled:
         selectedCommits.length === 1 &&
@@ -470,4 +466,20 @@ function NoCommitSelected() {
       No commit selected
     </div>
   )
+}
+
+function getViewOnGitHubLabel(gitHubRepository: GitHubRepository) {
+  switch (gitHubRepository.type) {
+    case 'github':
+      return gitHubRepository.endpoint === getDotComAPIEndpoint()
+        ? 'View on GitHub'
+        : 'View on GitHub Enterprise'
+    case 'bitbucket':
+      return 'View on Bitbucket'
+    default:
+      assertNever(
+        gitHubRepository.type,
+        `Unknown type: ${gitHubRepository.type}`
+      )
+  }
 }

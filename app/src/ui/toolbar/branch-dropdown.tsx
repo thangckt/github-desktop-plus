@@ -311,6 +311,7 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
       name,
       nameWithoutRemote,
       isLocal: type === BranchType.Local,
+      repoType: this.props.repository.gitHubRepository?.type,
       onRenameBranch: this.onRenameBranch,
       onViewPullRequestOnGitHub: this.props.currentPullRequest
         ? this.onViewPullRequestOnGithub

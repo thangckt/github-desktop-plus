@@ -298,6 +298,7 @@ export class BranchList extends React.Component<
       name,
       nameWithoutRemote,
       isLocal,
+      repoType: this.props.repository.gitHubRepository?.type,
       onRenameBranch,
       onMakeDefaultBranch:
         nameWithoutRemote === this.props.defaultBranch?.name
