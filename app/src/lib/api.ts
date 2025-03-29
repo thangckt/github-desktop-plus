@@ -483,6 +483,11 @@ function toIAPIIssue(issue: IBitbucketAPIIssue): IAPIIssue {
 
 /** The combined state of a ref. */
 export type APIRefState = 'failure' | 'pending' | 'success' | 'error'
+export type BitbucketAPIRefState =
+  | 'FAILED'
+  | 'INPROGRESS'
+  | 'STOPPED'
+  | 'SUCCESSFUL'
 
 /** The overall status of a check run */
 export enum APICheckStatus {
@@ -513,6 +518,36 @@ export interface IAPIRefStatusItem {
   readonly description: string
   readonly context: string
   readonly id: number
+}
+export interface IBitbucketAPICommitStatus {
+  readonly state: BitbucketAPIRefState
+  readonly url: string
+  readonly description: string
+  readonly name: string
+}
+function toIAPIRefStatusItem(
+  id: number,
+  status: IBitbucketAPICommitStatus
+): IAPIRefStatusItem {
+  return {
+    state: mapRefState(status.state),
+    target_url: status.url,
+    description: status.description,
+    context: status.name,
+    id,
+  }
+}
+function mapRefState(state: BitbucketAPIRefState): APIRefState {
+  switch (state) {
+    case 'FAILED':
+      return 'failure'
+    case 'INPROGRESS':
+      return 'pending'
+    case 'STOPPED':
+      return 'error'
+    case 'SUCCESSFUL':
+      return 'success'
+  }
 }
 
 /** The API response to a ref status request. */
@@ -2219,7 +2254,7 @@ export class BitbucketAPI extends API {
     return emails.map(toIAPIEmail)
   }
 
-  public async fetchRepository(
+  public override async fetchRepository(
     owner: string,
     name: string
   ): Promise<IAPIFullRepository | null> {
@@ -2251,7 +2286,7 @@ export class BitbucketAPI extends API {
     return null
   }
 
-  public async fetchIssues(
+  public override async fetchIssues(
     owner: string,
     name: string,
     state: 'open' | 'closed' | 'all',
@@ -2281,6 +2316,57 @@ export class BitbucketAPI extends API {
       log.warn(`fetchIssues: failed for repository ${owner}/${name}`, e)
       throw e
     }
+  }
+
+  public override async fetchCombinedRefStatus(
+    owner: string,
+    name: string,
+    ref: string
+  ): Promise<IAPIRefStatus | null> {
+    const match = ref.match(/refs\/pull\/(\d+)\/head/)
+    if (!match) {
+      log.warn(`unexpected ref format for Bitbucket PR check runs: ${ref}`)
+      return null
+    }
+    const path = `repositories/${owner}/${name}/pullrequests/${match[1]}/statuses`
+
+    try {
+      const statuses = await this.fetchAll<IBitbucketAPICommitStatus>(path)
+      const checkRuns = statuses.map((status, index) =>
+        toIAPIRefStatusItem(index, status)
+      )
+      return {
+        state: this.getCombinedRefStatus(checkRuns),
+        total_count: checkRuns.length,
+        statuses: checkRuns,
+      }
+    } catch (err) {
+      log.debug(
+        `Failed fetching check runs for ref ${ref} (${owner}/${name})`,
+        err
+      )
+      return null
+    }
+  }
+
+  private getCombinedRefStatus(
+    checkRuns: ReadonlyArray<IAPIRefStatusItem>
+  ): APIRefState {
+    // https://docs.github.com/en/rest/commits/statuses?apiVersion=2022-11-28#get-the-combined-status-for-a-specific-reference
+    if (checkRuns.some(cr => cr.state === 'failure' || cr.state === 'error')) {
+      return 'failure'
+    }
+    if (
+      checkRuns.length === 0 ||
+      checkRuns.some(cr => cr.state === 'pending')
+    ) {
+      return 'pending'
+    }
+    return 'success'
+  }
+
+  public override async fetchRefCheckRuns(): Promise<IAPIRefCheckRuns | null> {
+    return null
   }
 }
 
