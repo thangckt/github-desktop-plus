@@ -38,6 +38,7 @@ import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
 import * as octicons from '../octicons/octicons.generated'
 import { OcticonSymbol } from '../octicons/octicons.generated'
 import { stash } from '../octicons'
+import { assertNever } from '../../lib/fatal-error'
 
 function formatMenuItemLabel(text: string) {
   if (__WIN32__ || __LINUX__) {
@@ -287,20 +288,29 @@ export class NoChanges extends React.Component<
     this.props.dispatcher.incrementMetric('suggestedStepOpenWorkingDirectory')
 
   private renderViewInBrowser() {
-    const isGitHub = isRepositoryWithGitHubRepository(this.props.repository)
+    const isGitHubOrBitbucket = isRepositoryWithGitHubRepository(
+      this.props.repository
+    )
     const hasOriginUrl = hasDefaultRemoteUrl(this.props.repository)
 
     // early exit if not a GitHub repository and no default remote URL set
-    if (!isGitHub && !hasOriginUrl) {
+    if (!isGitHubOrBitbucket && !hasOriginUrl) {
       return null
     }
 
-    const browserTarget = isGitHub ? 'on Github ' : ''
+    const isGitHub = this.props.repository.gitHubRepository?.type === 'github'
+    const isBitbucket =
+      this.props.repository.gitHubRepository?.type === 'bitbucket'
+    const [browserTarget, icon] = isGitHub
+      ? ['on Github', octicons.markGithub]
+      : isBitbucket
+      ? ['on Bitbucket', octicons.repo]
+      : ['in your browser', octicons.globe]
 
     return this.renderMenuBackedAction(
       'view-repository-in-browser',
-      'Open the repository page ' + browserTarget + 'in your Browser',
-      isGitHub ? octicons.markGithub : octicons.globe,
+      'Open the repository page ' + browserTarget,
+      icon,
       undefined,
       this.onViewInBrowserClicked
     )
@@ -568,13 +578,11 @@ export class NoChanges extends React.Component<
       return null
     }
 
-    const isGitHub = this.props.repository.gitHubRepository !== null
-
     const description = (
       <>
         The current branch (<Ref>{tip.branch.name}</Ref>) has{' '}
         {aheadBehind.behind === 1 ? 'a commit' : 'commits'} on{' '}
-        {isGitHub ? 'GitHub' : 'the remote'} that{' '}
+        {this.getRemoteName(this.props.repository.gitHubRepository?.type)} that{' '}
         {aheadBehind.behind === 1 ? 'does not' : 'do not'} exist on your
         machine.
       </>
@@ -608,6 +616,19 @@ export class NoChanges extends React.Component<
     )
   }
 
+  private getRemoteName(remoteType: 'github' | 'bitbucket' | undefined) {
+    switch (remoteType) {
+      case 'github':
+        return 'GitHub'
+      case 'bitbucket':
+        return 'Bitbucket'
+      case undefined:
+        return 'the remote'
+      default:
+        assertNever(remoteType, `Unknown remote type: ${remoteType}`)
+    }
+  }
+
   private renderPushBranchAction(
     tip: IValidBranch,
     remote: IRemote,
@@ -621,8 +642,6 @@ export class NoChanges extends React.Component<
       log.error(`Could not find matching menu item for ${itemId}`)
       return null
     }
-
-    const isGitHub = this.props.repository.gitHubRepository !== null
 
     const itemsToPushTypes = []
     const itemsToPushDescriptions = []
@@ -645,7 +664,9 @@ export class NoChanges extends React.Component<
 
     const description = `You have ${itemsToPushDescriptions.join(
       ' and '
-    )} waiting to be pushed to ${isGitHub ? 'GitHub' : 'the remote'}.`
+    )} waiting to be pushed to ${this.getRemoteName(
+      this.props.repository.gitHubRepository?.type
+    )}.`
 
     const discoverabilityContent = (
       <>

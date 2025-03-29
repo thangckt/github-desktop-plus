@@ -2502,11 +2502,18 @@ export class AppStore extends TypedBaseStore<IAppState> {
       askForConfirmationOnForcePush,
     } = this
 
+    const isGitHub =
+      selectedRepository instanceof Repository &&
+      isRepositoryWithGitHubRepository(selectedRepository)
+
     const labels: MenuLabelsEvent = {
       selectedShell: useCustomShell ? null : selectedShell,
       selectedExternalEditor: useCustomEditor ? null : selectedExternalEditor,
       askForConfirmationOnRepositoryRemoval,
       askForConfirmationOnForcePush,
+      gitHubRepositoryType: isGitHub
+        ? selectedRepository.gitHubRepository.type
+        : null,
     }
 
     if (state === null) {
@@ -2537,11 +2544,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const askForConfirmationWhenStashingAllChanges =
       changesState.stashEntry !== null
 
-    let isGitHub = false
-    if (selectedRepository instanceof Repository) {
-      isGitHub = isRepositoryWithGitHubRepository(selectedRepository)
-    }
-
     updatePreferredAppMenuItemLabels({
       ...labels,
       contributionTargetDefaultBranch,
@@ -2549,7 +2551,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       isStashedChangesVisible,
       hasCurrentPullRequest: currentPullRequest !== null,
       askForConfirmationWhenStashingAllChanges,
-      isGitHub,
+      gitHubRepositoryType: isGitHub
+        ? selectedRepository.gitHubRepository.type
+        : null,
     })
   }
 
@@ -6508,7 +6512,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
-    const showPrUrl = `${baseRepoUrl}/pull/${pr.pullRequestNumber}`
+    const showPrUrl =
+      pr.base.gitHubRepository.type === 'bitbucket'
+        ? `${baseRepoUrl}/pull-requests/${pr.pullRequestNumber}`
+        : `${baseRepoUrl}/pull/${pr.pullRequestNumber}`
 
     await this._openInBrowser(showPrUrl)
   }
@@ -6584,7 +6591,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
-    const { parent, owner, name, htmlURL } = gitHubRepository
+    const { parent, owner, name, htmlURL, type } = gitHubRepository
+    const isBitbucket = type === 'bitbucket'
     const isForkContributingToParent =
       isForkedRepositoryContributingToParent(repository)
 
@@ -6592,11 +6600,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
       isForkContributingToParent && parent !== null
         ? `${parent.owner.login}:${parent.name}:`
         : ''
+    const dots = isBitbucket ? '' : '...'
     const encodedBaseBranch =
       baseBranch !== undefined
         ? baseForkPreface +
           encodeURIComponent(baseBranch.nameWithoutRemote) +
-          '...'
+          dots
         : ''
 
     const compareForkPreface = isForkContributingToParent
@@ -6610,7 +6619,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       )
 
     const compareString = `${encodedBaseBranch}${encodedCompareBranch}`
-    const baseURL = `${htmlURL}/pull/new/${compareString}`
+    const baseURL = isBitbucket
+      ? `${htmlURL}/pull-requests/new?source=${encodedCompareBranch}&dest=${encodedBaseBranch}`
+      : `${htmlURL}/pull/new/${compareString}`
 
     await this._openInBrowser(baseURL)
   }

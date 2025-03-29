@@ -1,15 +1,11 @@
 import * as React from 'react'
 import { IAvatarUser } from '../../models/avatar'
 import { Octicon, OcticonSymbolVariant } from '../octicons'
-import {
-  API,
-  getBitbucketAPIEndpoint,
-  getDotComAPIEndpoint,
-  getHTMLURL,
-} from '../../lib/api'
+import { API, getDotComAPIEndpoint, getHTMLURL } from '../../lib/api'
 import { TooltippedContent } from './tooltipped-content'
 import { TooltipDirection } from './tooltip'
 import {
+  isBitbucket,
   isGHE,
   isGHES,
   supportsAvatarsAPI,
@@ -245,7 +241,7 @@ function getAvatarUrlCandidates(
   const { email, avatarURL } = user
   const ep = user.endpoint ?? getDotComAPIEndpoint()
 
-  if (ep === getBitbucketAPIEndpoint() && avatarURL) {
+  if (isBitbucket(ep) && avatarURL) {
     const resolvedAvatarURL = resolveBitbucketAvatarURL(avatarURL)
     if (resolvedAvatarURL) {
       candidates.push(resolvedAvatarURL)

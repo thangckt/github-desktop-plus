@@ -62,7 +62,7 @@ export type MenuLabelsEvent = {
   readonly askForConfirmationWhenStashingAllChanges?: boolean
 
   /**
-   * Whether or not the current repository is a GitHub repository.
+   * Text to display in the button for the "View on Browser" item.
    */
-  readonly isGitHub?: boolean
+  readonly gitHubRepositoryType: 'github' | 'bitbucket' | null
 }

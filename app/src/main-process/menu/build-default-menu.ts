@@ -8,6 +8,7 @@ import { MenuLabelsEvent } from '../../models/menu-labels'
 import * as ipcWebContents from '../ipc-webcontents'
 import { mkdir } from 'fs/promises'
 import { buildTestMenu } from './build-test-menu'
+import { assertNever } from '../../lib/fatal-error'
 
 const createPullRequestLabel = __DARWIN__
   ? 'Create Pull Request'
@@ -45,7 +46,7 @@ export function buildDefaultMenu({
   isForcePushForCurrentRepository = false,
   isStashedChangesVisible = false,
   askForConfirmationWhenStashingAllChanges = true,
-  isGitHub = false,
+  gitHubRepositoryType,
 }: MenuLabelsEvent): Electron.Menu {
   contributionTargetDefaultBranch = truncateWithEllipsis(
     contributionTargetDefaultBranch,
@@ -320,9 +321,9 @@ export function buildDefaultMenu({
       separator,
       {
         id: 'view-repository-in-browser',
-        label: __DARWIN__
-          ? `View ${isGitHub ? 'on GitHub' : 'in your Browser'}`
-          : `&View ${isGitHub ? 'on GitHub' : 'in your Browser'}`,
+        label:
+          (__DARWIN__ ? 'View ' : '&View ') +
+          getViewOnBrowserLabel(gitHubRepositoryType),
         accelerator: 'CmdOrCtrl+Shift+G',
         click: emit('view-repository-in-browser'),
       },
@@ -639,6 +640,21 @@ function findClosestValue(arr: Array<number>, value: number) {
       ? current
       : previous
   })
+}
+
+function getViewOnBrowserLabel(
+  gitHubRepositoryType: 'github' | 'bitbucket' | null
+) {
+  switch (gitHubRepositoryType) {
+    case 'github':
+      return 'on GitHub'
+    case 'bitbucket':
+      return 'on Bitbucket'
+    case null:
+      return 'in your browser'
+    default:
+      assertNever(gitHubRepositoryType, `Unknown type: ${gitHubRepositoryType}`)
+  }
 }
 
 /**

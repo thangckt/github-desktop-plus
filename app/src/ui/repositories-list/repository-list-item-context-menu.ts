@@ -55,7 +55,9 @@ export const generateRepositoryListContextMenu = (
     },
     { type: 'separator' },
     {
-      label: `View ${isGitHub ? 'on GitHub' : 'in your Browser'}`,
+      label: getViewOnBrowserLabel(
+        isGitHub ? repository.gitHubRepository.type : null
+      ),
       action: () => config.onViewInBrowser(repository),
       enabled: isGitHub || hasOriginUrl,
     },
@@ -82,6 +84,17 @@ export const generateRepositoryListContextMenu = (
   ]
 
   return items
+}
+
+function getViewOnBrowserLabel(repoType: 'github' | 'bitbucket' | null) {
+  switch (repoType) {
+    case 'github':
+      return 'View on GitHub'
+    case 'bitbucket':
+      return 'View on Bitbucket'
+    default:
+      return 'View in your browser'
+  }
 }
 
 const buildAliasMenuItems = (

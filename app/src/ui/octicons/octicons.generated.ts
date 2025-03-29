@@ -3650,6 +3650,7 @@ export const repo: OcticonSymbolVariants = {
     ],
     h: 16,
     w: 16,
+    mult: 0.9375,
   },
   '24': {
     p: [
@@ -3658,6 +3659,7 @@ export const repo: OcticonSymbolVariants = {
     ],
     h: 24,
     w: 24,
+    mult: 0.9375,
   },
 }
 export const repoClone: OcticonSymbolVariants = {

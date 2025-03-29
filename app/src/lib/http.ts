@@ -186,10 +186,17 @@ export async function parsedResponse<T>(response: Response): Promise<T> {
  */
 export function urlWithQueryString(
   url: string,
-  params: { [key: string]: string }
+  params: { [key: string]: string | string[] }
 ): string {
   const qs = Object.keys(params)
-    .map(key => `${key}=${encodeURIComponent(params[key])}`)
+    .flatMap(key => {
+      const value = params[key]
+      if (Array.isArray(value)) {
+        return value.map(v => `${key}=${encodeURIComponent(v)}`)
+      } else {
+        return `${key}=${encodeURIComponent(value)}`
+      }
+    })
     .join('&')
 
   if (!qs.length) {

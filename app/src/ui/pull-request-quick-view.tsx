@@ -9,6 +9,8 @@ import { Octicon } from './octicons'
 import * as octicons from './octicons/octicons.generated'
 import classNames from 'classnames'
 import { Emoji } from '../lib/emoji'
+import { RepoType } from '../models/github-repository'
+import { assertNever } from '../lib/fatal-error'
 
 /**
  * The max height of the visible quick view card is 556 (500 for scrollable
@@ -168,11 +170,24 @@ export class PullRequestQuickView extends React.Component<
           onClick={this.onViewOnGitHub}
           role="link"
         >
-          View on GitHub
+          {this.getViewOnGitHubLabel(
+            this.props.pullRequest.base.gitHubRepository.type
+          )}
           <Octicon symbol={octicons.linkExternal} />
         </Button>
       </header>
     )
+  }
+
+  private getViewOnGitHubLabel(repoType: RepoType): string {
+    switch (repoType) {
+      case 'github':
+        return 'View on GitHub'
+      case 'bitbucket':
+        return 'View on Bitbucket'
+      default:
+        assertNever(repoType, `Unknown repo type: ${repoType}`)
+    }
   }
 
   private renderPRStatus(isDraft: boolean) {

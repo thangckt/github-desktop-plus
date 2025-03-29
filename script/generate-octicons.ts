@@ -92,6 +92,7 @@ function getSizeMultiplier(icon: string) {
     case 'file-diff':
       return 14 / 16
     case 'file-directory':
+    case 'repo':
     case 'trash':
       return 15 / 16
     default:

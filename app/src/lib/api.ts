@@ -455,6 +455,31 @@ export interface IAPIIssue {
   readonly state: 'open' | 'closed'
   readonly updated_at: string
 }
+export interface IBitbucketAPIIssue {
+  readonly id: number
+  readonly title: string
+  readonly state:
+    | 'submitted'
+    | 'new'
+    | 'open'
+    | 'resolved'
+    | 'on hold'
+    | 'invalid'
+    | 'duplicate'
+    | 'wontfix'
+    | 'closed'
+  readonly updated_on: string
+}
+function toIAPIIssue(issue: IBitbucketAPIIssue): IAPIIssue {
+  return {
+    number: issue.id,
+    title: issue.title,
+    state: ['submitted', 'new', 'open'].includes(issue.state)
+      ? 'open'
+      : 'closed',
+    updated_at: issue.updated_on,
+  }
+}
 
 /** The combined state of a ref. */
 export type APIRefState = 'failure' | 'pending' | 'success' | 'error'
@@ -1994,6 +2019,14 @@ export class API {
       API.emitTokenInvalidated(this.endpoint, this.token)
     }
 
+    // TODO: Improve this check. What happens if auth fails?
+    if (
+      this.endpoint === getBitbucketAPIEndpoint() &&
+      response.status === 401
+    ) {
+      API.emitTokenInvalidated(this.endpoint, this.token)
+    }
+
     tryUpdateEndpointVersionFromResponse(this.endpoint, response)
 
     return response
@@ -2119,6 +2152,61 @@ export class BitbucketAPI extends API {
     }
   }
 
+  public override async fetchUpdatedPullRequests(
+    owner: string,
+    name: string,
+    since: Date,
+    maxResults = 320
+  ) {
+    const sinceTime = since.getTime()
+    const url = urlWithQueryString(
+      `repositories/${owner}/${name}/pullrequests`,
+      {
+        state: ['OPEN', 'MERGED', 'DECLINED', 'SUPERSEDED'],
+        sort: '-updated_on',
+      }
+    )
+
+    try {
+      const prs = await this.fetchAll<IBitbucketAPIPullRequest>(url, {
+        // We use a page size smaller than our default 100 here because we
+        // expect that the majority use case will return much less than
+        // 100 results. Given that as long as _any_ PR has changed we'll
+        // get the full list back (PRs doesn't support ?since=) we want
+        // to keep this number fairly conservative in order to not use
+        // up bandwidth needlessly while balancing it such that we don't
+        // have to use a lot of requests to update our database. We then
+        // ramp up the page size (see getNextPagePathWithIncreasingPageSize)
+        // if it turns out there's a lot of updated PRs.
+        perPage: 10,
+        getNextPagePath: getNextPagePathWithIncreasingPageSize,
+        continue(results) {
+          if (results.length >= maxResults) {
+            throw new MaxResultsError('got max pull requests, aborting')
+          }
+
+          // Given that we sort the results in descending order by their
+          // updated_at field we can safely say that if the last item
+          // is modified after our sinceTime then haven't reached the
+          // end of updated PRs.
+          const last = results.at(-1)
+          return last !== undefined && Date.parse(last.updated_on) > sinceTime
+        },
+        // We can't ignore errors here as that might mean that we haven't
+        // retrieved enough pages to fully capture the changes since the
+        // last time we updated. Ignoring errors here would mean that we'd
+        // store an incorrect lastUpdated field in the database.
+        suppressErrors: false,
+      })
+      return prs
+        .filter(pr => Date.parse(pr.updated_on) >= sinceTime)
+        .map(toIAPIPullRequest)
+    } catch (e) {
+      log.warn(`failed fetching updated PRs for repository ${owner}/${name}`, e)
+      throw e
+    }
+  }
+
   public override async fetchAccount(): Promise<IAPIFullIdentity> {
     const response = await this.request('GET', 'user')
     return toIAPIFullIdentity(
@@ -2157,6 +2245,42 @@ export class BitbucketAPI extends API {
     // but it would require increasing the OAuth scope to admin:repository, and currently this is
     // only being used for metrics collection, so it's not necessary.
     return []
+  }
+
+  public override async getFetchPollInterval(): Promise<number | null> {
+    return null
+  }
+
+  public async fetchIssues(
+    owner: string,
+    name: string,
+    state: 'open' | 'closed' | 'all',
+    _since: Date | null
+  ): Promise<ReadonlyArray<IAPIIssue>> {
+    // TODO: I didn't find a way to filter issues by by date (since), feel free to
+    // implement this if you know how to do it.
+    const QUERY_ALL = ''
+    const QUERY_OPEN = 'state="new" OR state="open" OR state="submitted"'
+    const QUERY_CLOSED =
+      'state="resolved" OR state="invalid" OR state="on hold" OR state="duplicate" OR state="wontfix" OR state="closed"'
+    const query =
+      state === 'all' ? QUERY_ALL : state === 'open' ? QUERY_OPEN : QUERY_CLOSED
+
+    const params: { [key: string]: string } = {
+      q: query,
+    }
+
+    const url = urlWithQueryString(
+      `repositories/${owner}/${name}/issues`,
+      params
+    )
+    try {
+      const issues = await this.fetchAll<IBitbucketAPIIssue>(url)
+      return issues.map(toIAPIIssue)
+    } catch (e) {
+      log.warn(`fetchIssues: failed for repository ${owner}/${name}`, e)
+      throw e
+    }
   }
 }
 

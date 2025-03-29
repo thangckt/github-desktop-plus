@@ -30,6 +30,7 @@ import { ForcePushBranchState } from '../../lib/rebase'
 import { PushPullButtonDropDown } from './push-pull-button-dropdown'
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
 import { enableResizingToolbarButtons } from '../../lib/feature-flag'
+import { assertNever } from '../../lib/fatal-error'
 
 export const DropdownItemClassName = 'push-pull-dropdown-item'
 
@@ -463,9 +464,8 @@ export class PushPullButton extends React.Component<
     }
 
     if (aheadBehind === null) {
-      const isGitHubRepository = repository.gitHubRepository !== null
       return this.publishBranchButton(
-        isGitHubRepository,
+        repository.gitHubRepository?.type ?? null,
         this.push,
         this.props.shouldNudge
       )
@@ -566,13 +566,11 @@ export class PushPullButton extends React.Component<
   }
 
   private publishBranchButton(
-    isGitHub: boolean,
+    repoType: 'github' | 'bitbucket' | null,
     onClick: () => void,
     shouldNudge: boolean
   ) {
-    const description = isGitHub
-      ? 'Publish this branch to GitHub'
-      : 'Publish this branch to the remote'
+    const description = 'Publish this branch ' + this.getToRemoteLabel(repoType)
 
     const className = classNames(
       this.defaultDropdownProps().className,
@@ -595,6 +593,19 @@ export class PushPullButton extends React.Component<
         ])}
       />
     )
+  }
+
+  private getToRemoteLabel(repoType: 'github' | 'bitbucket' | null) {
+    switch (repoType) {
+      case 'github':
+        return 'to GitHub'
+      case 'bitbucket':
+        return 'to Bitbucket'
+      case null:
+        return 'to the remote'
+      default:
+        assertNever(repoType, `Unknown repo type: ${repoType}`)
+    }
   }
 
   private fetchButton(
