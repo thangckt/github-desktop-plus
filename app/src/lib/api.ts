@@ -125,6 +125,11 @@ if (
   )
 }
 
+const BitbucketBasicAuth = () =>
+  Buffer.from(`${ClientIDBitbucket}:${ClientSecretBitbucket}`).toString(
+    'base64'
+  )
+
 export type GitHubAccountType = 'User' | 'Organization'
 
 /** The OAuth scopes we want to request */
@@ -1063,7 +1068,7 @@ export class API {
       : new API(account.endpoint, account.token)
   }
 
-  private endpoint: string
+  protected endpoint: string
   protected token: string
 
   /** Create a new API client for the endpoint, authenticated with the token. */
@@ -1277,6 +1282,11 @@ export class API {
         error
       )
     }
+  }
+
+  public async refreshToken(): Promise<string> {
+    // No special handling on GitHub
+    return this.token
   }
 
   /** Fetch the logged in account. */
@@ -2158,8 +2168,34 @@ export class API {
 }
 
 export class BitbucketAPI extends API {
+  private apiRefreshToken: string
+
   public constructor(token: string) {
-    super(getBitbucketAPIEndpoint(), token)
+    const [actualToken, refreshToken] = token.split(' ')
+    super(getBitbucketAPIEndpoint(), actualToken)
+    this.apiRefreshToken = refreshToken
+  }
+
+  public override async refreshToken(): Promise<string> {
+    try {
+      const response = await fetch(
+        'https://bitbucket.org/site/oauth2/access_token',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${BitbucketBasicAuth()}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `grant_type=refresh_token&refresh_token=${this.apiRefreshToken}`,
+        }
+      )
+
+      const result = await parsedResponse<IBitbucketAPIAccessToken>(response)
+      return `${result.access_token} ${result.refresh_token}`
+    } catch (e) {
+      log.warn('refreshOAuthTokenBitbucket failed', e)
+      return this.token
+    }
   }
 
   protected override getExtraHeaders(): Object {
@@ -2412,6 +2448,7 @@ export async function fetchUser(
       ? new BitbucketAPI(token)
       : new API(endpoint, token)
   try {
+    token = await api.refreshToken()
     const user = await api.fetchAccount()
     const emails = await api.fetchEmails()
 
@@ -2581,16 +2618,13 @@ export async function requestOAuthToken(
 export async function requestOAuthTokenBitbucket(
   code: string
 ): Promise<string | null> {
-  const basicAuth = Buffer.from(
-    `${ClientIDBitbucket}:${ClientSecretBitbucket}`
-  ).toString('base64')
   try {
     const response = await fetch(
       'https://bitbucket.org/site/oauth2/access_token',
       {
         method: 'POST',
         headers: {
-          Authorization: `Basic ${basicAuth}`,
+          Authorization: `Basic ${BitbucketBasicAuth()}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `grant_type=authorization_code&code=${code}`,
@@ -2598,7 +2632,7 @@ export async function requestOAuthTokenBitbucket(
     )
 
     const result = await parsedResponse<IBitbucketAPIAccessToken>(response)
-    return result.access_token
+    return `${result.access_token} ${result.refresh_token}`
   } catch (e) {
     log.warn('requestOAuthTokenBitbucket failed', e)
     return null
