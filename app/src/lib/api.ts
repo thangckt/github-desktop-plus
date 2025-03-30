@@ -2282,6 +2282,19 @@ export class BitbucketAPI extends API {
     return []
   }
 
+  public async fetchPushControl(): Promise<IAPIPushControl> {
+    return {
+      pattern: null,
+      required_signatures: false,
+      required_status_checks: [],
+      required_approving_review_count: 0,
+      required_linear_history: false,
+      allow_actor: true,
+      allow_deletions: true,
+      allow_force_pushes: true,
+    }
+  }
+
   public override async getFetchPollInterval(): Promise<number | null> {
     return null
   }
