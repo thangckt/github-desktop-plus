@@ -97,7 +97,7 @@ export function enableImagePreviewsForDDSFiles(): boolean {
   return enableBetaFeatures()
 }
 
-export const enableBitbucketIntegration = enableDevelopmentFeatures
+export const enableBitbucketIntegration = enableBetaFeatures
 
 export const enableCustomIntegration = () => true
 

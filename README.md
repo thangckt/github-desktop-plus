@@ -9,9 +9,10 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 - [x] Red color for destructive action buttons.
 - [x] Add **icons** to some similar-looking buttons for faster visual recognition.
 - [ ] Bitbucket integration:
-  - [ ] Correctly set repository owner (instead of "Other").
-  - [ ] Create pull requests.
-  - [ ] View pull requests status, including checks.
+  - Correctly set repository owner (instead of "Other").
+  - Preview and create pull requests.
+  - View pull requests status, including checks.
+  - Open a commit or PR in Bitbucket (web browser).
 - [ ] Jira integration:
   - [ ] Create and view Jira issues.
   - [ ] Create branches from Jira issues.
