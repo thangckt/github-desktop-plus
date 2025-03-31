@@ -3,7 +3,12 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Dispatcher } from '../dispatcher'
 import { Row } from '../lib/row'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
-import { Account, isEnterpriseAccount } from '../../models/account'
+import {
+  Account,
+  isBitbucketAccount,
+  isDotComAccount,
+  isEnterpriseAccount,
+} from '../../models/account'
 import { getHTMLURL } from '../../lib/api'
 import { Ref } from '../lib/ref'
 
@@ -56,8 +61,12 @@ export class InvalidatedToken extends React.Component<IInvalidatedTokenProps> {
       dispatcher.showEnterpriseSignInDialog(
         getHTMLURL(this.props.account.endpoint)
       )
-    } else {
+    } else if (isDotComAccount(account)) {
       dispatcher.showDotComSignInDialog()
+    } else if (isBitbucketAccount(account)) {
+      dispatcher.showBitbucketSignInDialog()
+    } else {
+      console.error('Unknown sign-in dialog for account:', account)
     }
   }
 }
