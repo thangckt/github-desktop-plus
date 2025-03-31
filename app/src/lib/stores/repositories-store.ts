@@ -123,10 +123,7 @@ export class RepositoriesStore extends TypedBaseStore<
       )
     }
 
-    // TODO: There may be a better way to check this
-    const isBitbucket =
-      repo.htmlURL && new URL(repo.htmlURL).host === 'bitbucket.org'
-
+    const isBitbucket = repo.htmlURL && this.isBitbucketUrl(repo.htmlURL)
     const ghRepo = new GitHubRepository(
       repo.name,
       isBitbucket ? 'bitbucket' : 'github',
@@ -144,6 +141,15 @@ export class RepositoriesStore extends TypedBaseStore<
     // Dexie gets confused if we return a non-promise value (e.g. if this function
     // didn't need to await for the parent repo or the owner)
     return Promise.resolve(ghRepo)
+  }
+
+  private isBitbucketUrl(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url)
+      return parsedUrl.host === 'bitbucket.org'
+    } catch (e) {
+      return false
+    }
   }
 
   private async toRepository(repo: IDatabaseRepository) {

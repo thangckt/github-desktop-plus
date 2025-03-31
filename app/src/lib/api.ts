@@ -2061,7 +2061,7 @@ export class API {
       response.headers.has('X-GitHub-Request-Id') &&
       !response.headers.has('X-GitHub-OTP')
     ) {
-      API.emitTokenInvalidated(this.endpoint, this.token)
+      API.emitTokenInvalidated(this.endpoint, this.getInvalidatedToken())
     }
 
     // TODO: Improve this check. What happens if auth fails?
@@ -2069,12 +2069,16 @@ export class API {
       this.endpoint === getBitbucketAPIEndpoint() &&
       response.status === 401
     ) {
-      API.emitTokenInvalidated(this.endpoint, this.token)
+      API.emitTokenInvalidated(this.endpoint, this.getInvalidatedToken())
     }
 
     tryUpdateEndpointVersionFromResponse(this.endpoint, response)
 
     return response
+  }
+
+  protected getInvalidatedToken(): string {
+    return this.token
   }
 
   protected getExtraHeaders(): Object {
@@ -2202,6 +2206,10 @@ export class BitbucketAPI extends API {
     return {
       Authorization: `Bearer ${this.token}`,
     }
+  }
+
+  protected getInvalidatedToken(): string {
+    return `${this.token} ${this.apiRefreshToken}`
   }
 
   public override async fetchAllOpenPullRequests(
