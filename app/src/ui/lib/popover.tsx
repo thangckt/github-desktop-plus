@@ -103,6 +103,11 @@ export class Popover extends React.Component<IPopoverProps, IPopoverState> {
     this.focusTrapOptions = {
       allowOutsideClick: true,
       escapeDeactivates: true,
+      fallbackFocus() {
+        return document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : document.body
+      },
       onDeactivate: this.props.onMousedownOutside ?? this.props.onClickOutside,
     }
 
