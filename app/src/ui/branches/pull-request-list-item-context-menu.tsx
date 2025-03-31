@@ -1,7 +1,10 @@
+import { assertNever } from '../../lib/fatal-error'
 import { IMenuItem } from '../../lib/menu-item'
+import { RepoType } from '../../models/github-repository'
 
 interface IPullRequestContextMenuConfig {
   onViewPullRequestOnGitHub?: () => void
+  repoType: RepoType
 }
 
 export function generatePullRequestContextMenuItems(
@@ -12,10 +15,21 @@ export function generatePullRequestContextMenuItems(
 
   if (onViewPullRequestOnGitHub !== undefined) {
     items.push({
-      label: 'View Pull Request on GitHub',
+      label: getViewPullRequestLabel(config.repoType),
       action: () => onViewPullRequestOnGitHub(),
     })
   }
 
   return items
+}
+
+function getViewPullRequestLabel(repoType: RepoType): string {
+  switch (repoType) {
+    case 'github':
+      return 'View Pull Request on GitHub'
+    case 'bitbucket':
+      return 'View Pull Request on Bitbucket'
+    default:
+      assertNever(repoType, `Unknown repo type: ${repoType}`)
+  }
 }

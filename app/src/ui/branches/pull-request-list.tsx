@@ -219,6 +219,7 @@ export class PullRequestList extends React.Component<
       onViewPullRequestOnGitHub: () => {
         this.props.dispatcher.showPullRequestByPR(item.pullRequest)
       },
+      repoType: this.props.repository.gitHubRepository.type,
     })
 
     showContextualMenu(items)
