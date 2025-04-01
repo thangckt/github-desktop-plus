@@ -8,7 +8,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 - [x] Red color for destructive action buttons.
 - [x] Add **icons** to some similar-looking buttons for faster visual recognition.
-- [ ] Bitbucket integration:
+- [x] Bitbucket integration:
   - Correctly set repository owner (instead of "Other").
   - Preview and create pull requests.
   - View pull requests status, including checks.
