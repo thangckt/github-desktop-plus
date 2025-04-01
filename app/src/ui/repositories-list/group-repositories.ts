@@ -11,7 +11,7 @@ import { caseInsensitiveCompare, compare } from '../../lib/compare'
 import { IFilterListGroup, IFilterListItem } from '../lib/filter-list'
 import { IAheadBehind } from '../../models/branch'
 import { assertNever } from '../../lib/fatal-error'
-import { isDotCom } from '../../lib/endpoint-capabilities'
+import { isBitbucket, isDotCom } from '../../lib/endpoint-capabilities'
 import { Owner } from '../../models/owner'
 import { enableMultipleEnterpriseAccounts } from '../../lib/feature-flag'
 
@@ -68,7 +68,8 @@ const getHostForRepository = (repo: RepositoryWithGitHubRepository) =>
 
 const getGroupForRepository = (repo: Repositoryish): RepositoryListGroup => {
   if (repo instanceof Repository && isRepositoryWithGitHubRepository(repo)) {
-    return isDotCom(repo.gitHubRepository.endpoint)
+    return isDotCom(repo.gitHubRepository.endpoint) ||
+      isBitbucket(repo.gitHubRepository.endpoint)
       ? { kind: 'dotcom', owner: repo.gitHubRepository.owner }
       : { kind: 'enterprise', host: getHostForRepository(repo) }
   }
