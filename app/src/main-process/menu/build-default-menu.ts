@@ -10,12 +10,6 @@ import { mkdir } from 'fs/promises'
 import { buildTestMenu } from './build-test-menu'
 import { assertNever } from '../../lib/fatal-error'
 
-const createPullRequestLabel = __DARWIN__
-  ? 'Create Pull Request'
-  : 'Create &pull request'
-const showPullRequestLabel = __DARWIN__
-  ? 'View Pull Request on GitHub'
-  : 'View &pull request on GitHub'
 const defaultBranchNameValue = __DARWIN__ ? 'Default Branch' : 'default branch'
 const confirmRepositoryRemovalLabel = __DARWIN__ ? 'Remove…' : '&Remove…'
 const repositoryRemovalLabel = __DARWIN__ ? 'Remove' : '&Remove'
@@ -56,6 +50,13 @@ export function buildDefaultMenu({
   const removeRepoLabel = askForConfirmationOnRepositoryRemoval
     ? confirmRepositoryRemovalLabel
     : repositoryRemovalLabel
+
+  const createPullRequestLabel = __DARWIN__
+    ? 'Create Pull Request'
+    : 'Create &pull request'
+  const showPullRequestLabel =
+    (__DARWIN__ ? 'View Pull Request ' : 'View &pull request ') +
+    onGithubLabel(gitHubRepositoryType)
 
   const pullRequestLabel = hasCurrentPullRequest
     ? showPullRequestLabel
@@ -323,7 +324,7 @@ export function buildDefaultMenu({
         id: 'view-repository-in-browser',
         label:
           (__DARWIN__ ? 'View ' : '&View ') +
-          getViewOnBrowserLabel(gitHubRepositoryType),
+          onGithubLabel(gitHubRepositoryType),
         accelerator: 'CmdOrCtrl+Shift+G',
         click: emit('view-repository-in-browser'),
       },
@@ -356,9 +357,9 @@ export function buildDefaultMenu({
       separator,
       {
         id: 'create-issue-in-repository-on-github',
-        label: __DARWIN__
-          ? 'Create Issue on GitHub'
-          : 'Create &issue on GitHub',
+        label:
+          (__DARWIN__ ? 'Create Issue ' : 'Create &issue ') +
+          onGithubLabel(gitHubRepositoryType),
         accelerator: 'CmdOrCtrl+I',
         click: emit('create-issue-in-repository-on-github'),
       },
@@ -451,13 +452,15 @@ export function buildDefaultMenu({
     },
     separator,
     {
-      label: __DARWIN__ ? 'Compare on GitHub' : 'Compare on &GitHub',
+      label: 'Compare ' + onGithubLabel(gitHubRepositoryType),
       id: 'compare-on-github',
       accelerator: 'CmdOrCtrl+Shift+C',
       click: emit('compare-on-github'),
     },
     {
-      label: __DARWIN__ ? 'View Branch on GitHub' : 'View branch on GitHub',
+      label:
+        (__DARWIN__ ? 'View Branch ' : 'View branch ') +
+        onGithubLabel(gitHubRepositoryType),
       id: 'branch-on-github',
       accelerator: 'CmdOrCtrl+Alt+B',
       click: emit('branch-on-github'),
@@ -642,9 +645,7 @@ function findClosestValue(arr: Array<number>, value: number) {
   })
 }
 
-function getViewOnBrowserLabel(
-  gitHubRepositoryType: 'github' | 'bitbucket' | null
-) {
+function onGithubLabel(gitHubRepositoryType: 'github' | 'bitbucket' | null) {
   switch (gitHubRepositoryType) {
     case 'github':
       return 'on GitHub'

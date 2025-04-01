@@ -691,11 +691,27 @@ export class App extends React.Component<IAppProps, IAppState> {
       return
     }
 
-    const urlEncodedBranchName = encodeURIComponent(
+    let urlEncodedBranchName = encodeURIComponent(
       branchTip.branch.upstreamWithoutRemote
     )
 
-    const url = `${htmlURL}/${view}/${urlEncodedBranchName}`
+    const repoType = state.repository.gitHubRepository?.type ?? 'github'
+    if (repoType === 'bitbucket' && view === 'compare') {
+      urlEncodedBranchName = urlEncodedBranchName + encodeURIComponent('\r')
+    }
+
+    const VIEW_REWRITE = {
+      github: {
+        tree: 'tree',
+        compare: 'compare',
+      },
+      bitbucket: {
+        tree: 'src',
+        compare: 'branches/compare',
+      },
+    }
+
+    const url = `${htmlURL}/${VIEW_REWRITE[repoType][view]}/${urlEncodedBranchName}`
     this.props.dispatcher.openInBrowser(url)
   }
 

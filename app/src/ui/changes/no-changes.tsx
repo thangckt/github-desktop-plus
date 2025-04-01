@@ -496,11 +496,15 @@ export class NoChanges extends React.Component<
       </>
     )
 
+    const remoteName = this.getRemoteName(
+      this.props.repository.gitHubRepository?.type
+    )
+
     return (
       <MenuBackedSuggestedAction
         key="publish-repository-action"
-        title="Publish your repository to GitHub"
-        description="This repository is currently only available on your local machine. By publishing it on GitHub you can share it, and collaborate with others."
+        title={`Publish your repository to ${remoteName}`}
+        description={`This repository is currently only available on your local machine. By publishing it on ${remoteName} you can share it, and collaborate with others.`}
         discoverabilityContent={discoverabilityContent}
         buttonText="Publish repository"
         icon={octicons.repoPush}
@@ -529,11 +533,13 @@ export class NoChanges extends React.Component<
     }
 
     const isGitHub = this.props.repository.gitHubRepository !== null
+    const toRemoteName =
+      'to ' + this.getRemoteName(this.props.repository.gitHubRepository?.type)
 
     const description = (
       <>
         The current branch (<Ref>{tip.branch.name}</Ref>) hasn't been published
-        to the remote yet. By publishing it {isGitHub ? 'to GitHub' : ''} you
+        to the remote yet. By publishing it {isGitHub ? toRemoteName : ''} you
         can share it, {isGitHub ? 'open a pull request, ' : ''}
         and collaborate with others.
       </>
@@ -712,8 +718,8 @@ export class NoChanges extends React.Component<
     const description = (
       <>
         The current branch (<Ref>{tip.branch.name}</Ref>) is already published
-        to GitHub. Create a pull request to propose and collaborate on your
-        changes.
+        to {this.getRemoteName(this.props.repository.gitHubRepository?.type)}.
+        Create a pull request to propose and collaborate on your changes.
       </>
     )
 
@@ -745,8 +751,9 @@ export class NoChanges extends React.Component<
       description: (
         <>
           The current branch (<Ref>{tip.branch.name}</Ref>) is already published
-          to GitHub. Preview the changes this pull request will have before
-          proposing your changes.
+          to {this.getRemoteName(this.props.repository.gitHubRepository?.type)}.
+          Preview the changes this pull request will have before proposing your
+          changes.
         </>
       ),
       id: PullRequestSuggestedNextAction.PreviewPullRequest,
