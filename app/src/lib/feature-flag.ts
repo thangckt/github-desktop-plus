@@ -89,7 +89,7 @@ export function enablePreviousTagSuggestions(): boolean {
 
 /** Should we show a pull-requests quick view? */
 export function enablePullRequestQuickView(): boolean {
-  return enableDevelopmentFeatures()
+  return enableBetaFeatures()
 }
 
 /** Should we support image previews for dds files? */
