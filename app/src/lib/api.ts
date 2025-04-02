@@ -2275,7 +2275,6 @@ export class BitbucketAPI extends API {
   }
 
   protected override checkTokenInvalidated(response: Response) {
-    // TODO: Improve this check. What happens if auth fails?
     if (response.status === 401) {
       API.emitTokenInvalidated(this.endpoint, this.token)
     }
@@ -2440,8 +2439,7 @@ export class BitbucketAPI extends API {
     state: 'open' | 'closed' | 'all',
     _since: Date | null
   ): Promise<ReadonlyArray<IAPIIssue>> {
-    // TODO: I didn't find a way to filter issues by by date (since), feel free to
-    // implement this if you know how to do it.
+    // TODO: I don't have any way to test this since we don't use Bitbucket's built in issue tracker. Feel free to implement date filtering (since) if you need it.
     const QUERY_ALL = ''
     const QUERY_OPEN = 'state="new" OR state="open" OR state="submitted"'
     const QUERY_CLOSED =
