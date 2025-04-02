@@ -679,6 +679,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }, InitialRepositoryIndicatorTimeout)
 
     API.onTokenInvalidated(this.onTokenInvalidated)
+    API.onTokenRefreshed(this.onTokenRefreshed)
 
     this.notificationsStore.onChecksFailedNotification(
       this.onChecksFailedNotification
@@ -763,6 +764,24 @@ export class AppStore extends TypedBaseStore<IAppState> {
       type: PopupType.InvalidatedToken,
       account,
     })
+  }
+
+  private onTokenRefreshed = async (
+    endpoint: string,
+    token: string,
+    refreshToken: string,
+    tokenExpiresAt: number
+  ) => {
+    const account = getAccountForEndpoint(this.accounts, endpoint)
+    if (account === null) {
+      return
+    }
+    const updatedAccount = account.withRefreshToken(
+      token,
+      refreshToken,
+      tokenExpiresAt
+    )
+    await this._updateAccount(updatedAccount)
   }
 
   private onShowInstallingUpdate = () => {
@@ -6101,6 +6120,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
     await this.accountsStore.removeAccount(account)
     await deleteToken(account)
+  }
+
+  public async _updateAccount(account: Account): Promise<void> {
+    log.info(
+      `[AppStore] updating account ${account.login} (${account.name}) in store`
+    )
+    await this.accountsStore.modifyAccount(account)
+    this.emitUpdate()
   }
 
   private async _addAccount(account: Account): Promise<void> {

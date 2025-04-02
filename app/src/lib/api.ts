@@ -1042,6 +1042,12 @@ interface IAPIAliveWebSocket {
 }
 
 type TokenInvalidatedCallback = (endpoint: string, token: string) => void
+type TokenRefreshedCallback = (
+  endpoint: string,
+  token: string,
+  refreshToken: string,
+  expiresAt: number
+) => void
 
 /**
  * An object for making authenticated requests to the GitHub API
@@ -1049,14 +1055,31 @@ type TokenInvalidatedCallback = (endpoint: string, token: string) => void
 export class API {
   private static readonly tokenInvalidatedListeners =
     new Set<TokenInvalidatedCallback>()
+  private static readonly tokenRefreshedListeners =
+    new Set<TokenRefreshedCallback>()
 
   public static onTokenInvalidated(callback: TokenInvalidatedCallback) {
     this.tokenInvalidatedListeners.add(callback)
   }
 
-  private static emitTokenInvalidated(endpoint: string, token: string) {
+  public static onTokenRefreshed(callback: TokenRefreshedCallback) {
+    this.tokenRefreshedListeners.add(callback)
+  }
+
+  protected static emitTokenInvalidated(endpoint: string, token: string) {
     this.tokenInvalidatedListeners.forEach(callback =>
       callback(endpoint, token)
+    )
+  }
+
+  protected static emitTokenRefreshed(
+    endpoint: string,
+    token: string,
+    refreshToken: string,
+    expiresAt: number
+  ) {
+    this.tokenRefreshedListeners.forEach(callback =>
+      callback(endpoint, token, refreshToken, expiresAt)
     )
   }
 
@@ -1064,7 +1087,11 @@ export class API {
   public static fromAccount(account: Account): API {
     return account.isBitbucketAccount
       ? // eslint-disable-next-line @typescript-eslint/no-use-before-define -- a necessary evil if we want to minimize the diff in other files
-        new BitbucketAPI(account.token)
+        new BitbucketAPI(
+          account.token,
+          account.refreshToken,
+          account.tokenExpiresAt
+        )
       : new API(account.endpoint, account.token)
   }
 
@@ -1075,6 +1102,16 @@ export class API {
   public constructor(endpoint: string, token: string) {
     this.endpoint = endpoint
     this.token = token
+  }
+
+  public getToken() {
+    return this.token
+  }
+  public getRefreshToken() {
+    return ''
+  }
+  public getExpiresAt() {
+    return 0
   }
 
   /**
@@ -1284,9 +1321,8 @@ export class API {
     }
   }
 
-  public async refreshToken(): Promise<string> {
+  protected async refreshToken() {
     // No special handling on GitHub
-    return this.token
   }
 
   /** Fetch the logged in account. */
@@ -2041,6 +2077,12 @@ export class API {
       reloadCache?: boolean
     } = {}
   ): Promise<Response> {
+    const expiration = this.getTokenExpiration()
+    if (expiration !== null && expiration.getTime() < Date.now()) {
+      log.warn(`Token expired for endpoint ${this.endpoint}, refreshing token`)
+      await this.refreshToken()
+    }
+
     const response = await request(
       this.endpoint,
       this.token,
@@ -2051,6 +2093,14 @@ export class API {
       options.reloadCache
     )
 
+    this.checkTokenInvalidated(response)
+
+    tryUpdateEndpointVersionFromResponse(this.endpoint, response)
+
+    return response
+  }
+
+  protected checkTokenInvalidated(response: Response) {
     // Only consider invalid token when the status is 401 and the response has
     // the X-GitHub-Request-Id header, meaning it comes from GH(E) and not from
     // any kind of proxy/gateway. For more info see #12943
@@ -2061,24 +2111,12 @@ export class API {
       response.headers.has('X-GitHub-Request-Id') &&
       !response.headers.has('X-GitHub-OTP')
     ) {
-      API.emitTokenInvalidated(this.endpoint, this.getInvalidatedToken())
+      API.emitTokenInvalidated(this.endpoint, this.token)
     }
-
-    // TODO: Improve this check. What happens if auth fails?
-    if (
-      this.endpoint === getBitbucketAPIEndpoint() &&
-      response.status === 401
-    ) {
-      API.emitTokenInvalidated(this.endpoint, this.getInvalidatedToken())
-    }
-
-    tryUpdateEndpointVersionFromResponse(this.endpoint, response)
-
-    return response
   }
 
-  protected getInvalidatedToken(): string {
-    return this.token
+  protected getTokenExpiration(): Date | null {
+    return null
   }
 
   protected getExtraHeaders(): Object {
@@ -2173,14 +2211,22 @@ export class API {
 
 export class BitbucketAPI extends API {
   private apiRefreshToken: string
+  private expiresAt: Date | null = null
 
-  public constructor(token: string) {
-    const [actualToken, refreshToken] = token.split(' ')
-    super(getBitbucketAPIEndpoint(), actualToken)
+  public constructor(token: string, refreshToken: string, expiresAt: number) {
+    super(getBitbucketAPIEndpoint(), token)
     this.apiRefreshToken = refreshToken
+    this.expiresAt = expiresAt ? new Date(expiresAt) : null
   }
 
-  public override async refreshToken(): Promise<string> {
+  public override getRefreshToken() {
+    return this.apiRefreshToken
+  }
+  public override getExpiresAt() {
+    return this.expiresAt?.getTime() ?? 0
+  }
+
+  protected override async refreshToken() {
     try {
       const response = await fetch(
         'https://bitbucket.org/site/oauth2/access_token',
@@ -2195,10 +2241,17 @@ export class BitbucketAPI extends API {
       )
 
       const result = await parsedResponse<IBitbucketAPIAccessToken>(response)
-      return `${result.access_token} ${result.refresh_token}`
+      this.token = result.access_token
+      this.apiRefreshToken = result.refresh_token
+      this.expiresAt = new Date(toExpiresAt(result.expires_in))
+      API.emitTokenRefreshed(
+        this.endpoint,
+        this.token,
+        this.apiRefreshToken,
+        this.expiresAt.getTime()
+      )
     } catch (e) {
       log.warn('refreshOAuthTokenBitbucket failed', e)
-      return this.token
     }
   }
 
@@ -2208,8 +2261,15 @@ export class BitbucketAPI extends API {
     }
   }
 
-  protected getInvalidatedToken(): string {
-    return `${this.token} ${this.apiRefreshToken}`
+  protected override checkTokenInvalidated(response: Response) {
+    // TODO: Improve this check. What happens if auth fails?
+    if (response.status === 401) {
+      API.emitTokenInvalidated(this.endpoint, this.token)
+    }
+  }
+
+  protected override getTokenExpiration(): Date | null {
+    return this.expiresAt
   }
 
   public override async fetchAllOpenPullRequests(
@@ -2449,21 +2509,24 @@ export async function deleteToken(account: Account) {
 /** Fetch the user authenticated by the token. */
 export async function fetchUser(
   endpoint: string,
-  token: string
+  token: string,
+  refreshToken: string,
+  expiresAt: number
 ): Promise<Account> {
   const api =
     endpoint === getBitbucketAPIEndpoint()
-      ? new BitbucketAPI(token)
+      ? new BitbucketAPI(token, refreshToken, expiresAt)
       : new API(endpoint, token)
   try {
-    token = await api.refreshToken()
     const user = await api.fetchAccount()
     const emails = await api.fetchEmails()
 
     return new Account(
       user.login,
       endpoint,
-      token,
+      api.getToken(), // Grab it back from the API because it may have been refreshed
+      api.getRefreshToken(),
+      api.getExpiresAt(),
       emails,
       user.avatar_url,
       user.id,
@@ -2474,6 +2537,10 @@ export async function fetchUser(
     log.warn(`fetchUser: failed with endpoint ${endpoint}`, e)
     throw e
   }
+}
+
+function toExpiresAt(expiresInSeconds: number) {
+  return Date.now() + expiresInSeconds * 900 // 10% safety buffer
 }
 
 /**
@@ -2599,7 +2666,7 @@ export function getBitbucketOAuthAuthorizationURL(): string {
 export async function requestOAuthToken(
   endpoint: string,
   code: string
-): Promise<string | null> {
+): Promise<[string, string, number] | null> {
   try {
     const urlBase = getHTMLURL(endpoint)
     const response = await request(
@@ -2616,7 +2683,7 @@ export async function requestOAuthToken(
     tryUpdateEndpointVersionFromResponse(endpoint, response)
 
     const result = await parsedResponse<IAPIAccessToken>(response)
-    return result.access_token
+    return [result.access_token, '', 0]
   } catch (e) {
     log.warn(`requestOAuthToken: failed with endpoint ${endpoint}`, e)
     return null
@@ -2625,7 +2692,7 @@ export async function requestOAuthToken(
 
 export async function requestOAuthTokenBitbucket(
   code: string
-): Promise<string | null> {
+): Promise<[string, string, number] | null> {
   try {
     const response = await fetch(
       'https://bitbucket.org/site/oauth2/access_token',
@@ -2640,7 +2707,8 @@ export async function requestOAuthTokenBitbucket(
     )
 
     const result = await parsedResponse<IBitbucketAPIAccessToken>(response)
-    return `${result.access_token} ${result.refresh_token}`
+    const expiresAt = toExpiresAt(result.expires_in)
+    return [result.access_token, result.refresh_token, expiresAt]
   } catch (e) {
     log.warn('requestOAuthTokenBitbucket failed', e)
     return null

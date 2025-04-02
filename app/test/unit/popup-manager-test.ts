@@ -206,6 +206,8 @@ describe('PopupManager', () => {
         'test',
         '',
         'deadbeef',
+        '',
+        0,
         [],
         '',
         1,

@@ -364,13 +364,14 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     }
 
     const { endpoint } = this.state
-    const token =
+    const tokenData =
       this.state.oauthState.oauthProvider === 'github'
         ? await requestOAuthToken(endpoint, action.code)
         : await requestOAuthTokenBitbucket(action.code)
 
-    if (token) {
-      const account = await fetchUser(endpoint, token)
+    if (tokenData) {
+      const [token, refreshToken, expiresAt] = tokenData
+      const account = await fetchUser(endpoint, token, refreshToken, expiresAt)
       this.state.oauthState.onAuthCompleted(account)
     } else {
       this.state.oauthState.onAuthError(

@@ -25,7 +25,18 @@ export function accountEquals(x: Account, y: Account) {
 export class Account {
   /** Create an account which can be used to perform unauthenticated API actions */
   public static anonymous(): Account {
-    return new Account('', getDotComAPIEndpoint(), '', [], '', -1, '', 'free')
+    return new Account(
+      '',
+      getDotComAPIEndpoint(),
+      '',
+      '',
+      0,
+      [],
+      '',
+      -1,
+      '',
+      'free'
+    )
   }
 
   private _friendlyEndpoint: string | undefined = undefined
@@ -36,6 +47,8 @@ export class Account {
    * @param login The login name for this account
    * @param endpoint The server for this account - GitHub or a GitHub Enterprise instance
    * @param token The access token used to perform operations on behalf of this account
+   * @param refreshToken The refresh token used to obtain a new access token
+   * @param tokenExpiresAt The expiration time of the access token, in milliseconds since the epoch
    * @param emails The current list of email addresses associated with the account
    * @param avatarURL The profile URL to render for this account
    * @param id The GitHub.com or GitHub Enterprise database id for this account.
@@ -45,6 +58,8 @@ export class Account {
     public readonly login: string,
     public readonly endpoint: string,
     public readonly token: string,
+    public readonly refreshToken: string,
+    public readonly tokenExpiresAt: number,
     public readonly emails: ReadonlyArray<IAPIEmail>,
     public readonly avatarURL: string,
     public readonly id: number,
@@ -57,6 +72,27 @@ export class Account {
       this.login,
       this.endpoint,
       token,
+      this.refreshToken,
+      this.tokenExpiresAt,
+      this.emails,
+      this.avatarURL,
+      this.id,
+      this.name,
+      this.plan
+    )
+  }
+
+  public withRefreshToken(
+    token: string,
+    refreshToken: string,
+    tokenExpiresAt: number
+  ): Account {
+    return new Account(
+      this.login,
+      this.endpoint,
+      token,
+      refreshToken,
+      tokenExpiresAt,
       this.emails,
       this.avatarURL,
       this.id,

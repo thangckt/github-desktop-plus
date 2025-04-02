@@ -16,6 +16,8 @@ describe('emails', () => {
         'shiftkey',
         getDotComAPIEndpoint(),
         '',
+        '',
+        0,
         [],
         '',
         1234,
@@ -33,6 +35,8 @@ describe('emails', () => {
         'shiftkey',
         'https://github.example.com/api/v3',
         '',
+        '',
+        0,
         [],
         '',
         1234,
@@ -71,6 +75,8 @@ describe('emails', () => {
         'shiftkey',
         getDotComAPIEndpoint(),
         '',
+        '',
+        0,
         emails,
         '',
         -1,
@@ -107,6 +113,8 @@ describe('emails', () => {
         'shiftkey',
         getDotComAPIEndpoint(),
         '',
+        '',
+        0,
         emails,
         '',
         -1,
@@ -143,6 +151,8 @@ describe('emails', () => {
         'shiftkey',
         getDotComAPIEndpoint(),
         '',
+        '',
+        0,
         emails,
         '',
         -1,
@@ -181,6 +191,8 @@ describe('emails', () => {
         'shiftkey',
         getEnterpriseAPIURL('https://github.example.com'),
         '',
+        '',
+        0,
         emails,
         '',
         -1,
@@ -213,6 +225,8 @@ describe('emails', () => {
         'shiftkey',
         getDotComAPIEndpoint(),
         '',
+        '',
+        0,
         emails,
         '',
         -1,
@@ -252,6 +266,8 @@ describe('emails', () => {
         'niik',
         endpoint,
         '',
+        '',
+        0,
         emails,
         '',
         123,
@@ -271,7 +287,18 @@ describe('emails', () => {
 
     it('considers stealth emails when account has no emails', () => {
       const endpoint = getDotComAPIEndpoint()
-      const account = new Account('niik', endpoint, '', [], '', 123, '', 'free')
+      const account = new Account(
+        'niik',
+        endpoint,
+        '',
+        '',
+        0,
+        [],
+        '',
+        123,
+        '',
+        'free'
+      )
 
       expect(
         isAttributableEmailFor(account, 'niik@users.noreply.github.com')
@@ -283,7 +310,18 @@ describe('emails', () => {
 
     it('considers stealth emails for GitHub Enterprise', () => {
       const endpoint = getDotComAPIEndpoint()
-      const account = new Account('niik', endpoint, '', [], '', 123, '', 'free')
+      const account = new Account(
+        'niik',
+        endpoint,
+        '',
+        '',
+        0,
+        [],
+        '',
+        123,
+        '',
+        'free'
+      )
 
       expect(
         isAttributableEmailFor(account, 'niik@users.noreply.github.com')
@@ -298,6 +336,8 @@ describe('emails', () => {
         'niik',
         getDotComAPIEndpoint(),
         '',
+        '',
+        0,
         [
           {
             email: 'niik@GITHUB.COM',
