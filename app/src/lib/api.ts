@@ -416,6 +416,19 @@ export interface IAPIMentionableUser {
    */
   readonly name: string | null
 }
+interface IBitbucketApiWorkspaceMembership {
+  user: IBitbucketAPIIdentity
+}
+function toIAPIMentionableUser(
+  member: IBitbucketApiWorkspaceMembership
+): IAPIMentionableUser {
+  return {
+    avatar_url: member.user.links.avatar.href,
+    email: null,
+    login: member.user.display_name,
+    name: member.user.display_name,
+  }
+}
 
 /**
  * Error thrown by `fetchUpdatedPullRequests` when receiving more results than
@@ -2356,6 +2369,24 @@ export class BitbucketAPI extends API {
   public override async fetchEmails(): Promise<ReadonlyArray<IAPIEmail>> {
     const emails = await this.fetchAll<IBitbucketAPIEmail>('user/emails')
     return emails.map(toIAPIEmail)
+  }
+
+  public async fetchMentionables(
+    owner: string,
+    name: string
+  ): Promise<IAPIMentionablesResponse | null> {
+    try {
+      const response = await this.fetchAll<IBitbucketApiWorkspaceMembership>(
+        `workspaces/${owner}/members`
+      )
+      return {
+        etag: undefined,
+        users: response.map(member => toIAPIMentionableUser(member)),
+      }
+    } catch (e) {
+      log.warn(`fetchMentionables: failed for ${owner}/${name}`, e)
+      return null
+    }
   }
 
   public override async fetchRepository(
