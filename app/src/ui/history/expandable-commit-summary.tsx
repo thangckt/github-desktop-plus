@@ -105,7 +105,8 @@ function createState(
   const { summary, body } = wrapRichTextCommitMessage(
     getCommitSummary(selectedCommits),
     selectedCommits[0].body,
-    tokenizer
+    tokenizer,
+    200
   )
 
   const hasEmptySummary =
