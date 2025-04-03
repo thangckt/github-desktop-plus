@@ -144,12 +144,12 @@ enum HttpStatusCode {
  * Information about a repository as returned by the GitHub API.
  */
 export interface IAPIRepository {
-  readonly clone_url: string
+  readonly clone_url: string // blank if unknown
   readonly ssh_url: string
   readonly html_url: string
   readonly name: string
   readonly owner: IAPIIdentity
-  readonly private: boolean
+  readonly private: boolean | null // null if unknown
   readonly fork: boolean
   readonly default_branch: string
   readonly pushed_at: string
@@ -160,14 +160,19 @@ export interface IBitbucketAPIRepositorySummary {
   readonly uuid: string
   readonly full_name: string
   readonly name: string
+  readonly links: {
+    readonly html: {
+      readonly href: string
+    }
+  }
 }
 function summaryToIAPIRepository(
   repo: IBitbucketAPIRepositorySummary
 ): IAPIRepository {
   return {
-    clone_url: `https://bitbucket.org/${repo.full_name}.git`,
+    clone_url: '',
     ssh_url: `git@bitbucket.org:${repo.full_name}.git`,
-    html_url: `https://bitbucket.org/${repo.full_name}`,
+    html_url: repo.links.html.href,
     name: repo.name,
     owner: {
       id: 0,
@@ -176,7 +181,7 @@ function summaryToIAPIRepository(
       html_url: '',
       type: 'User',
     },
-    private: false,
+    private: null,
     fork: false,
     default_branch: '',
     pushed_at: '',
