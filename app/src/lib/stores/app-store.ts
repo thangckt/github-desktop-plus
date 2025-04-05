@@ -1789,7 +1789,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
     return (
       !filterTextLowerCase ||
-      commit.summary.toLowerCase().includes(filterTextLowerCase)
+      commit.summary.toLowerCase().includes(filterTextLowerCase) ||
+      commit.body.toLowerCase().includes(filterTextLowerCase) ||
+      commit.tags.some(tag =>
+        tag.toLowerCase().startsWith(filterTextLowerCase)
+      ) ||
+      commit.sha.toLowerCase().startsWith(filterTextLowerCase)
     )
   }
 
