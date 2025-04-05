@@ -215,7 +215,7 @@ export class CompareSidebar extends React.Component<
   }
 
   private renderCommitList() {
-    const { formState, commitSHAs } = this.props.compareState
+    const { formState, filteredCommitSHAs } = this.props.compareState
 
     let emptyListMessage: string | JSX.Element
     if (formState.kind === HistoryTabMode.History) {
@@ -244,7 +244,7 @@ export class CompareSidebar extends React.Component<
         repository={this.props.repository}
         isLocalRepository={this.props.isLocalRepository}
         commitLookup={this.props.commitLookup}
-        commitSHAs={commitSHAs}
+        commitSHAs={filteredCommitSHAs}
         selectedSHAs={this.props.selectedCommitShas}
         shasToHighlight={this.props.shasToHighlight}
         localCommitSHAs={this.props.localCommitSHAs}
@@ -522,7 +522,7 @@ export class CompareSidebar extends React.Component<
       return
     }
 
-    const commits = compareState.commitSHAs
+    const commits = compareState.filteredCommitSHAs
     if (commits.length - end <= CloseToBottomThreshold) {
       if (this.loadingMoreCommitsPromise != null) {
         // as this callback fires for any scroll event we need to guard
@@ -650,13 +650,13 @@ export class CompareSidebar extends React.Component<
   }
 
   private onKeyboardReorder = (toReorder: ReadonlyArray<Commit>) => {
-    const { commitSHAs } = this.props.compareState
+    const { allCommitSHAs } = this.props.compareState
 
     this.setState({
       keyboardReorderData: {
         type: DragType.Commit,
         commits: toReorder,
-        itemIndices: toReorder.map(c => commitSHAs.indexOf(c.sha)),
+        itemIndices: toReorder.map(c => allCommitSHAs.indexOf(c.sha)),
       },
     })
   }

@@ -114,13 +114,13 @@ describe('RepositoryStateCache', () => {
       return {
         formState: newState,
         filterText,
-        commitSHAs: ['deadbeef'],
+        allCommitSHAs: ['deadbeef'],
       }
     })
 
     const { compareState } = cache.get(repository)
     expect(compareState.formState.kind).toBe(HistoryTabMode.History)
     expect(compareState.filterText).toBe(filterText)
-    expect(compareState.commitSHAs).toHaveLength(1)
+    expect(compareState.allCommitSHAs).toHaveLength(1)
   })
 })

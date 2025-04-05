@@ -433,6 +433,8 @@ const BackgroundFetchMinimumInterval = 30 * 60 * 1000
  */
 const InitialRepositoryIndicatorTimeout = 2 * 60 * 1000
 
+const MinimumFilteredCommitsToLoad = 50
+
 const MaxInvalidFoldersToDisplay = 3
 
 const lastThankYouKey = 'version-and-users-of-last-thank-you'
@@ -1546,7 +1548,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
 
       const { compareState } = this.repositoryStateCache.get(repository)
-      const { formState, commitSHAs } = compareState
+      const { formState, allCommitSHAs } = compareState
       const previousTip = compareState.tip
 
       const tipIsUnchanged =
@@ -1557,7 +1559,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       if (
         tipIsUnchanged &&
         formState.kind === HistoryTabMode.History &&
-        commitSHAs.length > 0
+        allCommitSHAs.length > 0
       ) {
         // don't refresh the history view here because we know nothing important
         // has changed and we don't want to rebuild this state
@@ -1571,6 +1573,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
         return
       }
 
+      const filteredCommits = commits.filter(sha =>
+        this.commitIsIncluded(gitStore.commitLookup.get(sha))
+      )
+
       const newState: IDisplayHistory = {
         kind: HistoryTabMode.History,
       }
@@ -1578,13 +1584,20 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.repositoryStateCache.updateCompareState(repository, () => ({
         tip: currentSha,
         formState: newState,
-        commitSHAs: commits,
+        allCommitSHAs: commits,
+        filteredCommitSHAs: filteredCommits,
         filterText: '',
         showBranchList: false,
       }))
       this.updateOrSelectFirstCommit(repository, commits)
 
-      return this.emitUpdate()
+      if (filteredCommits.length > 0) {
+        this.emitUpdate()
+      }
+      if (filteredCommits.length < MinimumFilteredCommitsToLoad) {
+        return this._loadNextCommitBatch(repository, filteredCommits.length)
+      }
+      return
     }
 
     if (action.kind === HistoryTabMode.Compare) {
@@ -1635,7 +1648,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.repositoryStateCache.updateCompareState(repository, () => ({
       formState: newState,
       filterText: comparisonBranch.name,
-      commitSHAs,
+      allCommitSHAs: commitSHAs,
+      filteredCommitSHAs: commitSHAs, // No filtering when comparing branches
     }))
 
     const tip = gitStore.tip
@@ -1713,24 +1727,45 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
-  public async _loadNextCommitBatch(repository: Repository): Promise<void> {
+  public async _loadNextCommitBatch(
+    repository: Repository,
+    alreadyFiltered = 0
+  ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
 
     const state = this.repositoryStateCache.get(repository)
     const { formState } = state.compareState
     if (formState.kind === HistoryTabMode.History) {
-      const commits = state.compareState.commitSHAs
+      const commits = state.compareState.allCommitSHAs
 
       const newCommits = await gitStore.loadCommitBatch('HEAD', commits.length)
-      if (newCommits == null) {
+      if (newCommits == null || newCommits.length === 0) {
         return
       }
+      const newFilteredCommits = newCommits.filter(sha =>
+        this.commitIsIncluded(gitStore.commitLookup.get(sha))
+      )
 
       this.repositoryStateCache.updateCompareState(repository, () => ({
-        commitSHAs: commits.concat(newCommits),
+        allCommitSHAs: commits.concat(newCommits),
+        filteredCommitSHAs:
+          state.compareState.filteredCommitSHAs.concat(newFilteredCommits),
       }))
-      this.emitUpdate()
+
+      const numFilteredCommits = alreadyFiltered + newFilteredCommits.length
+      if (newFilteredCommits.length > 0) {
+        this.emitUpdate()
+      }
+      if (numFilteredCommits < MinimumFilteredCommitsToLoad) {
+        return this._loadNextCommitBatch(repository, numFilteredCommits)
+      }
+      return
     }
+  }
+
+  private commitIsIncluded(commit: Commit | undefined): boolean {
+    const filterText = 'added'
+    return commit != null && commit.summary.toLowerCase().includes(filterText)
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
@@ -3816,7 +3851,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     return this.updateOrSelectFirstCommit(
       repository,
-      state.compareState.commitSHAs
+      state.compareState.allCommitSHAs
     )
   }
 
@@ -7221,8 +7256,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     commits: ReadonlyArray<CommitOneLine>
   ) {
     const { compareState } = this.repositoryStateCache.get(repository)
-    const { commitSHAs } = compareState
-    const commitIndexBySha = new Map(commitSHAs.map((sha, i) => [sha, i]))
+    const { allCommitSHAs } = compareState
+    const commitIndexBySha = new Map(allCommitSHAs.map((sha, i) => [sha, i]))
 
     return commits.toSorted((a, b) =>
       compare(commitIndexBySha.get(b.sha), commitIndexBySha.get(a.sha))
@@ -7241,8 +7276,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     commits: ReadonlyArray<string>
   ) {
     const { compareState } = this.repositoryStateCache.get(repository)
-    const { commitSHAs } = compareState
-    const commitIndexBySha = new Map(commitSHAs.map((sha, i) => [sha, i]))
+    const { allCommitSHAs } = compareState
+    const commitIndexBySha = new Map(allCommitSHAs.map((sha, i) => [sha, i]))
 
     return commits.toSorted((a, b) =>
       compare(commitIndexBySha.get(b), commitIndexBySha.get(a))
