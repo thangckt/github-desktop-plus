@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { SegmentedItem } from './segmented-item'
 import { RadioGroup } from '../radio-group'
+import classNames from 'classnames'
 
 /**
  * An item which is rendered as a choice in the segmented control.
@@ -45,6 +46,8 @@ interface IVerticalSegmentedControlProps<T extends React.Key> {
    * The currently selected item, denoted by its key.
    */
   readonly selectedKey: T
+
+  readonly showRadioButtons?: boolean
 
   /**
    * A function that's called whenever the selected item changes, either
@@ -99,7 +102,9 @@ export class VerticalSegmentedControl<
 
         <RadioGroup<T>
           ariaLabelledBy="vertical-segment-control-label"
-          className="vertical-segmented-control"
+          className={classNames('vertical-segmented-control', {
+            'hide-radio-buttons': this.props.showRadioButtons === false,
+          })}
           selectedKey={this.props.selectedKey}
           radioButtonKeys={this.props.items.map(item => item.key)}
           onSelectionChanged={this.onSelectionChanged}

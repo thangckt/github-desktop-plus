@@ -63,4 +63,8 @@ fieldset.vertical-segmented-control {
       min-width: 0;
     }
   }
+
+  .hide-radio-buttons input[type='radio'] {
+    display: none;
+  }
 }

@@ -37,7 +37,7 @@ import { getAccountForRepository } from '../../lib/get-account-for-repository'
 import { InputError } from '../lib/input-description/input-error'
 import { InputWarning } from '../lib/input-description/input-warning'
 import { parseRepoRules, useRepoRulesLogic } from '../../lib/helpers/repo-rules'
-import { Button } from '../lib/button'
+import { IBranchNamePreset } from '../../models/branch-preset'
 
 interface ICreateBranchProps {
   readonly repository: Repository
@@ -106,6 +106,8 @@ interface ICreateBranchState {
    * start of the create branch operation.
    */
   readonly defaultBranchAtCreateStart: Branch | null
+
+  readonly branchNamePresets: ReadonlyArray<IBranchNamePreset>
 }
 
 /** The Create Branch component. */
@@ -129,6 +131,7 @@ export class CreateBranch extends React.Component<
       isCreatingBranch: false,
       tipAtCreateStart: props.tip,
       defaultBranchAtCreateStart: getBranchForStartPoint(startPoint, props),
+      branchNamePresets: [],
     }
   }
 
@@ -155,6 +158,12 @@ export class CreateBranch extends React.Component<
     if (nextProps.initialName.length > 0) {
       this.checkBranchRules(nextProps.initialName)
     }
+  }
+
+  public componentDidMount() {
+    this.props.dispatcher
+      .getBranchNamePresets()
+      .then(branchNamePresets => this.setState({ branchNamePresets }))
   }
 
   public componentWillUnmount() {
@@ -247,10 +256,42 @@ export class CreateBranch extends React.Component<
     }
   }
 
+  private renderBranchNamePresets() {
+    const branchNamePresets = this.state.branchNamePresets
+    if (branchNamePresets.length === 0) {
+      return null
+    }
+
+    const items: ReadonlyArray<ISegmentedItem<string>> = branchNamePresets.map(
+      preset => ({
+        title: preset.description,
+        key: preset.name,
+      })
+    )
+    const selectedElement = this.state.branchNamePresets.find(preset =>
+      this.state.branchName.startsWith(preset.name)
+    )
+    return (
+      <Row>
+        <VerticalSegmentedControl
+          label="Pick a name preset:"
+          items={items}
+          selectedKey={selectedElement?.name ?? ''}
+          onSelectionChanged={this.onBranchNamePresetsChanged}
+          showRadioButtons={false}
+        />
+      </Row>
+    )
+  }
+
   private onBaseBranchChanged = (startPoint: StartPoint) => {
     this.setState({
       startPoint,
     })
+  }
+
+  private onBranchNamePresetsChanged = (branchName: string) => {
+    this.updateBranchName(branchName)
   }
 
   public render() {
@@ -274,10 +315,13 @@ export class CreateBranch extends React.Component<
             label="Name"
             ariaDescribedBy={hasError ? this.ERRORS_ID : undefined}
             initialValue={this.props.initialName}
+            updateValue={this.state.branchName}
             onValueChange={this.onBranchNameChange}
           />
 
           {this.renderBranchNameErrors()}
+
+          {this.renderBranchNamePresets()}
 
           {renderBranchNameExistsOnRemoteWarning(
             this.state.branchName,
