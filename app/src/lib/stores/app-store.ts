@@ -1587,7 +1587,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
         allCommitSHAs: commits,
         filteredCommitSHAs: filteredCommits,
         filterText: '',
-        showBranchList: false,
+        showBranchList: true,
       }))
       this.updateOrSelectFirstCommit(repository, commits)
 

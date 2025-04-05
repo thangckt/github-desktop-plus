@@ -339,7 +339,7 @@ function getInitialRepositoryState(): IRepositoryState {
       },
       tip: null,
       mergeStatus: null,
-      showBranchList: false,
+      showBranchList: true,
       filterText: '',
       allCommitSHAs: [],
       filteredCommitSHAs: [],

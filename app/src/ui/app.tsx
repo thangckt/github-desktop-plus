@@ -472,7 +472,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         )
         return this.updateBranchWithContributionTargetBranch()
       case 'compare-to-branch':
-        return this.showCompare(false, true)
+        return this.showCompare(false)
       case 'merge-branch':
         this.props.dispatcher.recordMenuInitiatedMerge()
         return this.mergeBranch()
@@ -905,10 +905,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
-  private async showCompare(
-    shouldFocusCompare: boolean,
-    showBranchList: boolean = false
-  ) {
+  private async showCompare(shouldFocusCompare: boolean) {
     const state = this.state.selectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
@@ -923,7 +920,7 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     this.props.dispatcher.updateCompareForm(state.repository, {
       filterText: '',
-      showBranchList,
+      showBranchList: true,
     })
 
     if (shouldFocusCompare) {

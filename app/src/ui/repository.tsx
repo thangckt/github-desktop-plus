@@ -34,7 +34,6 @@ import { DragType } from '../models/drag-drop'
 import { PullRequestSuggestedNextAction } from '../models/pull-request'
 import { clamp } from '../lib/clamp'
 import { Emoji } from '../lib/emoji'
-import { HistorySidebar } from './history/history'
 
 interface IRepositoryViewProps {
   readonly repository: Repository
@@ -134,7 +133,7 @@ export class RepositoryView extends React.Component<
   // the Compare list is rendered.
   private forceCompareListScrollTop: boolean = false
 
-  private readonly historySidebarRef = React.createRef<HistorySidebar>()
+  private readonly historySidebarRef = React.createRef<CompareSidebar>()
   private readonly changesSidebarRef = React.createRef<ChangesSidebar>()
   private readonly compareSidebarRef = React.createRef<CompareSidebar>()
 
@@ -342,8 +341,9 @@ export class RepositoryView extends React.Component<
     this.forceCompareListScrollTop = false
 
     return (
-      <HistorySidebar
+      <CompareSidebar
         ref={this.historySidebarRef}
+        isCompareView={false}
         repository={repository}
         isLocalRepository={remote === null}
         compareState={compareState}
@@ -399,6 +399,7 @@ export class RepositoryView extends React.Component<
     return (
       <CompareSidebar
         ref={this.compareSidebarRef}
+        isCompareView={true}
         repository={repository}
         isLocalRepository={remote === null}
         compareState={compareState}
@@ -474,7 +475,7 @@ export class RepositoryView extends React.Component<
       this.props.state.selectedSection === RepositorySectionTab.History
     ) {
       this.props.dispatcher.updateCompareForm(this.props.repository, {
-        showBranchList: false,
+        showBranchList: true,
       })
     }
   }
@@ -772,7 +773,7 @@ export class RepositoryView extends React.Component<
     )
     if (!!section) {
       this.props.dispatcher.updateCompareForm(this.props.repository, {
-        showBranchList: false,
+        showBranchList: true,
       })
     }
   }

@@ -35,6 +35,7 @@ import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
 
 interface ICompareSidebarProps {
+  readonly isCompareView: boolean
   readonly repository: Repository
   readonly isLocalRepository: boolean
   readonly compareState: ICompareState
@@ -204,13 +205,9 @@ export class CompareSidebar extends React.Component<
     this.resultCount = resultCount
   }
 
-  private viewHistoryForBranch = () => {
-    this.props.dispatcher.executeCompare(this.props.repository, {
-      kind: HistoryTabMode.History,
-    })
-
+  private viewBranchList = () => {
     this.props.dispatcher.updateCompareForm(this.props.repository, {
-      showBranchList: false,
+      showBranchList: true,
     })
   }
 
@@ -459,7 +456,7 @@ export class CompareSidebar extends React.Component<
       const branch = this.state.focusedBranch
 
       if (branch === null) {
-        this.viewHistoryForBranch()
+        this.viewBranchList()
       } else {
         this.props.dispatcher.executeCompare(this.props.repository, {
           kind: HistoryTabMode.Compare,
@@ -561,8 +558,6 @@ export class CompareSidebar extends React.Component<
     this.props.dispatcher.updateCompareForm(this.props.repository, {
       filterText: '',
     })
-
-    this.viewHistoryForBranch()
   }
 
   private onBranchItemClicked = (branch: Branch) => {
