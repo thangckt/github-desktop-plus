@@ -189,6 +189,12 @@ export function buildDefaultMenu({
         click: emit('show-history'),
       },
       {
+        label: __DARWIN__ ? 'Show Compare' : 'Compare',
+        id: 'show-compare',
+        accelerator: 'CmdOrCtrl+3',
+        click: emit('show-compare'),
+      },
+      {
         label: __DARWIN__ ? 'Show Repository List' : 'Repository &list',
         id: 'show-repository-list',
         accelerator: 'CmdOrCtrl+T',

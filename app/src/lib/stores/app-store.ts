@@ -3591,7 +3591,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     if (section === RepositorySectionTab.History) {
       refreshSectionPromise = this.refreshHistorySection(repository)
-    } else if (section === RepositorySectionTab.Changes) {
+    } else if (
+      section === RepositorySectionTab.Changes ||
+      section === RepositorySectionTab.Compare
+    ) {
       refreshSectionPromise = this.refreshChangesSection(repository, {
         includingStatus: false,
         clearPartialState: false,

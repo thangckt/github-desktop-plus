@@ -163,7 +163,7 @@ export class CompareSidebar extends React.Component<
     const placeholderText = getPlaceholderText(this.props.compareState)
 
     return (
-      <div id="compare-view" role="tabpanel" aria-labelledby="history-tab">
+      <div id="compare-view" role="tabpanel" aria-labelledby="compare-tab">
         <div className="compare-form">
           <FancyTextBox
             ariaLabel="Branch filter"

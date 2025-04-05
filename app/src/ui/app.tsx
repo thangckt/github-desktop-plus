@@ -438,6 +438,8 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.showChanges(true)
       case 'show-history':
         return this.showHistory(true)
+      case 'show-compare':
+        return this.showCompare(true)
       case 'choose-repository':
         return this.chooseRepository()
       case 'add-local-repository':
@@ -470,7 +472,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         )
         return this.updateBranchWithContributionTargetBranch()
       case 'compare-to-branch':
-        return this.showHistory(false, true)
+        return this.showCompare(false, true)
       case 'merge-branch':
         this.props.dispatcher.recordMenuInitiatedMerge()
         return this.mergeBranch()
@@ -863,10 +865,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     this.props.dispatcher.showPopup({ type: PopupType.About })
   }
 
-  private async showHistory(
-    shouldFocusHistory: boolean,
-    showBranchList: boolean = false
-  ) {
+  private async showHistory(shouldFocusHistory: boolean) {
     const state = this.state.selectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
@@ -882,11 +881,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       state.repository,
       RepositorySectionTab.History
     )
-
-    await this.props.dispatcher.updateCompareForm(state.repository, {
-      filterText: '',
-      showBranchList,
-    })
 
     if (shouldFocusHistory) {
       this.repositoryViewRef.current?.setFocusHistoryNeeded()
@@ -908,6 +902,32 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     if (shouldFocusChanges) {
       this.repositoryViewRef.current?.setFocusChangesNeeded()
+    }
+  }
+
+  private async showCompare(
+    shouldFocusCompare: boolean,
+    showBranchList: boolean = false
+  ) {
+    const state = this.state.selectedState
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    this.props.dispatcher.closeCurrentFoldout()
+
+    await this.props.dispatcher.changeRepositorySection(
+      state.repository,
+      RepositorySectionTab.Compare
+    )
+
+    this.props.dispatcher.updateCompareForm(state.repository, {
+      filterText: '',
+      showBranchList,
+    })
+
+    if (shouldFocusCompare) {
+      this.repositoryViewRef.current?.setFocusCompareNeeded()
     }
   }
 

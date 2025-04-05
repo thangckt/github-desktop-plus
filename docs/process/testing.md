@@ -182,6 +182,7 @@
 ### View top-level menu
   - [ ] Show Changes (Mac: `⌘1`; Windows: `Ctrl+1`)
   - [ ] Show History (Mac: `⌘2`; Windows: `Ctrl+2`)
+  - [ ] Show Compare (Mac: `⌘3`; Windows: `Ctrl+3`)
   - [ ] Show Repositories List (Mac: `⌘T`; Windows: `Ctrl+T`)
   - [ ] Show Branches List (Mac: `⌘B`; Windows: `Ctrl+B`)
   - [ ] Go to Summary (Mac: `⌘G`; Windows: `Ctrl+G`)
