@@ -838,9 +838,11 @@ export interface ICompareState {
   readonly tip: string | null
 
   /** The SHAs of commits to render in the compare list */
-  readonly filteredCommitSHAs: ReadonlyArray<string>
+  readonly filteredHistoryCommitSHAs: ReadonlyArray<string>
 
-  readonly allCommitSHAs: ReadonlyArray<string>
+  readonly allHistoryCommitSHAs: ReadonlyArray<string>
+
+  readonly compareCommitSHAs: ReadonlyArray<string>
 
   /** The SHAs of commits to highlight in the compare list */
   readonly shasToHighlight: ReadonlyArray<string>

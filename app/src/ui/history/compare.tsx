@@ -83,6 +83,7 @@ export class CompareSidebar extends React.Component<
   ICompareSidebarState
 > {
   private textbox: TextBox | null = null
+  private searchBox: TextBox | null = null
   private readonly loadChangedFilesScheduler = new ThrottledScheduler(200)
   private branchList: BranchList | null = null
   private commitListRef = React.createRef<CommitList>()
@@ -160,6 +161,35 @@ export class CompareSidebar extends React.Component<
   }
 
   public render() {
+    return this.props.isCompareView
+      ? this.renderCompareView()
+      : this.renderHistoryView()
+  }
+
+  private renderHistoryView() {
+    const { filterText } = this.props.compareState
+    return (
+      <div id="compare-view" role="tabpanel" aria-labelledby="compare-tab">
+        <div className="commit-search-form">
+          <FancyTextBox
+            ariaLabel="Commit filter"
+            symbol={octicons.search}
+            displayClearButton={true}
+            placeholder={__DARWIN__ ? 'Search Commits' : 'Search commits'}
+            value={filterText}
+            onRef={this.onSearchBoxRef}
+            onValueChanged={this.onBranchFilterTextChanged}
+            onKeyDown={this.onCommitFilterKeyDown}
+            onSearchCleared={this.handleEscapeCommitSearch}
+          />
+        </div>
+
+        {this.renderCommitList()}
+      </div>
+    )
+  }
+
+  private renderCompareView() {
     const { branches, filterText, showBranchList } = this.props.compareState
     const placeholderText = getPlaceholderText(this.props.compareState)
 
@@ -212,7 +242,8 @@ export class CompareSidebar extends React.Component<
   }
 
   private renderCommitList() {
-    const { formState, filteredCommitSHAs } = this.props.compareState
+    const { formState, filteredHistoryCommitSHAs, compareCommitSHAs } =
+      this.props.compareState
 
     let emptyListMessage: string | JSX.Element
     if (formState.kind === HistoryTabMode.History) {
@@ -241,7 +272,11 @@ export class CompareSidebar extends React.Component<
         repository={this.props.repository}
         isLocalRepository={this.props.isLocalRepository}
         commitLookup={this.props.commitLookup}
-        commitSHAs={filteredCommitSHAs}
+        commitSHAs={
+          this.props.isCompareView
+            ? compareCommitSHAs
+            : filteredHistoryCommitSHAs
+        }
         selectedSHAs={this.props.selectedCommitShas}
         shasToHighlight={this.props.shasToHighlight}
         localCommitSHAs={this.props.localCommitSHAs}
@@ -443,6 +478,15 @@ export class CompareSidebar extends React.Component<
     return item.branch.name
   }
 
+  private onCommitFilterKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    const key = event.key
+    if (key === 'Escape') {
+      this.handleEscapeCommitSearch()
+    }
+  }
+
   private onBranchFilterKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
@@ -485,6 +529,11 @@ export class CompareSidebar extends React.Component<
     }
   }
 
+  private handleEscapeCommitSearch = () => {
+    // TODO: clear the filter text
+    this.searchBox?.blur()
+  }
+
   private handleEscape = () => {
     this.clearFilterState()
     if (this.textbox) {
@@ -511,15 +560,14 @@ export class CompareSidebar extends React.Component<
 
   private onScroll = (start: number, end: number) => {
     const compareState = this.props.compareState
-    const formState = compareState.formState
 
-    if (formState.kind === HistoryTabMode.Compare) {
+    if (this.props.isCompareView) {
       // as the app is currently comparing the current branch to some other
       // branch, everything needed should be loaded
       return
     }
 
-    const commits = compareState.filteredCommitSHAs
+    const commits = compareState.filteredHistoryCommitSHAs
     if (commits.length - end <= CloseToBottomThreshold) {
       if (this.loadingMoreCommitsPromise != null) {
         // as this callback fires for any scroll event we need to guard
@@ -596,6 +644,10 @@ export class CompareSidebar extends React.Component<
     this.textbox = textbox
   }
 
+  private onSearchBoxRef = (textbox: TextBox) => {
+    this.searchBox = textbox
+  }
+
   private onCreateTag = (targetCommitSha: string) => {
     this.props.dispatcher.showCreateTagDialog(
       this.props.repository,
@@ -645,13 +697,13 @@ export class CompareSidebar extends React.Component<
   }
 
   private onKeyboardReorder = (toReorder: ReadonlyArray<Commit>) => {
-    const { allCommitSHAs } = this.props.compareState
+    const { allHistoryCommitSHAs } = this.props.compareState
 
     this.setState({
       keyboardReorderData: {
         type: DragType.Commit,
         commits: toReorder,
-        itemIndices: toReorder.map(c => allCommitSHAs.indexOf(c.sha)),
+        itemIndices: toReorder.map(c => allHistoryCommitSHAs.indexOf(c.sha)),
       },
     })
   }

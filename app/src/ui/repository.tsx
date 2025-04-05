@@ -334,7 +334,7 @@ export class RepositoryView extends React.Component<
     const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
     const scrollTop =
       this.forceCompareListScrollTop ||
-      this.previousSection === RepositorySectionTab.Changes
+      this.previousSection !== RepositorySectionTab.History
         ? this.state.compareListScrollTop
         : undefined
     this.previousSection = RepositorySectionTab.History
@@ -390,10 +390,10 @@ export class RepositoryView extends React.Component<
     const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
     const scrollTop =
       this.forceCompareListScrollTop ||
-      this.previousSection === RepositorySectionTab.Changes
+      this.previousSection !== RepositorySectionTab.Compare
         ? this.state.compareListScrollTop
         : undefined
-    this.previousSection = RepositorySectionTab.History
+    this.previousSection = RepositorySectionTab.Compare
     this.forceCompareListScrollTop = false
 
     return (
