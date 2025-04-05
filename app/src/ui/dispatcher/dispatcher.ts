@@ -125,6 +125,7 @@ import { SignInResult } from '../../lib/stores/sign-in-store'
 import { ICustomIntegration } from '../../lib/custom-integration'
 import { isAbsolute } from 'path'
 import { CLIAction } from '../../lib/cli-action'
+import { IBranchNamePreset } from '../../models/branch-preset'
 
 /**
  * An error handler function.
@@ -1438,6 +1439,12 @@ export class Dispatcher {
   /** Open the URL in a browser */
   public openInBrowser(url: string): Promise<boolean> {
     return this.appStore._openInBrowser(url)
+  }
+
+  public async getBranchNamePresets(): Promise<
+    ReadonlyArray<IBranchNamePreset>
+  > {
+    return this.appStore._getBranchNamePresets()
   }
 
   /** Add the pattern to the repository's gitignore. */
@@ -3303,6 +3310,10 @@ export class Dispatcher {
   /** Set the custom shell info */
   public setCustomShell(customShell: ICustomIntegration) {
     this.appStore._setCustomShell(customShell)
+  }
+
+  public setBranchPresetScript(branchPresetScript: ICustomIntegration) {
+    this.appStore._setBranchPresetScript(branchPresetScript)
   }
 
   public async reorderCommits(

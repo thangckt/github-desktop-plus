@@ -132,6 +132,7 @@ import {
 import {
   findEditorOrDefault,
   getAvailableEditors,
+  launchAndReturnStdout,
   launchCustomExternalEditor,
   launchExternalEditor,
 } from '../editors'
@@ -346,6 +347,10 @@ import {
   migratedCustomIntegration,
 } from '../custom-integration'
 import { updateStore } from '../../ui/lib/update-store'
+import {
+  IBranchNamePreset,
+  parseBranchNamePresets,
+} from '../../models/branch-preset'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -446,6 +451,8 @@ const customEditorKey = 'custom-editor'
 
 export const useCustomShellKey = 'use-custom-shell'
 const customShellKey = 'custom-shell'
+
+const branchPresetScriptKey = 'branch-preset-script'
 
 export const underlineLinksKey = 'underline-links'
 export const underlineLinksDefault = true
@@ -589,6 +596,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private useCustomShell: boolean = false
   private customShell: ICustomIntegration | null = null
+
+  private branchPresetScript: ICustomIntegration | null = null
 
   private showCIStatusPopover: boolean = false
 
@@ -1112,6 +1121,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       customEditor: this.customEditor,
       useCustomShell: this.useCustomShell,
       customShell: this.customShell,
+      branchPresetScript: this.branchPresetScript,
       showCIStatusPopover: this.showCIStatusPopover,
       notificationsEnabled: getNotificationsEnabled(),
       pullRequestSuggestedNextAction: this.pullRequestSuggestedNextAction,
@@ -2419,6 +2429,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.useCustomShell =
       enableCustomIntegration() && getBoolean(useCustomShellKey, false)
     this.customShell = getObject<ICustomIntegration>(customShellKey) ?? null
+
+    this.branchPresetScript =
+      getObject<ICustomIntegration>(branchPresetScriptKey) ?? null
 
     // Migrate custom editor and shell to the new format if needed. This
     // will persist the new format to local storage.
@@ -5833,6 +5846,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return shell.openExternal(url)
   }
 
+  public async _getBranchNamePresets(): Promise<IBranchNamePreset[]> {
+    const { branchPresetScript } = this.getState()
+    if (branchPresetScript === null || branchPresetScript.path === '') {
+      return []
+    }
+    const stdout = await launchAndReturnStdout(branchPresetScript)
+    return parseBranchNamePresets(stdout)
+  }
+
   public async _editGlobalGitConfig() {
     await getGlobalConfigPath()
       .then(p => this._openInExternalEditor(p))
@@ -7607,6 +7629,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public _setCustomShell(customShell: ICustomIntegration) {
     setObject(customShellKey, customShell)
     this.customShell = customShell
+    this.emitUpdate()
+  }
+
+  public _setBranchPresetScript(branchPresetScript: ICustomIntegration) {
+    setObject(branchPresetScriptKey, branchPresetScript)
+    this.branchPresetScript = branchPresetScript
     this.emitUpdate()
   }
 

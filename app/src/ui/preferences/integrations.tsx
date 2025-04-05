@@ -11,6 +11,9 @@ import { enableCustomIntegration } from '../../lib/feature-flag'
 
 const CustomIntegrationValue = 'other'
 
+const BranchPresetScriptDocumentationUrl =
+  'https://github.com/pol-rivero/github-desktop-plus/blob/main/docs/branch-name-presets.md'
+
 interface IIntegrationsPreferencesProps {
   readonly availableEditors: ReadonlyArray<string>
   readonly selectedExternalEditor: string | null
@@ -20,12 +23,16 @@ interface IIntegrationsPreferencesProps {
   readonly customEditor: ICustomIntegration
   readonly useCustomShell: boolean
   readonly customShell: ICustomIntegration
+  readonly branchPresetScript: ICustomIntegration
   readonly onSelectedEditorChanged: (editor: string) => void
   readonly onSelectedShellChanged: (shell: Shell) => void
   readonly onUseCustomEditorChanged: (useCustomEditor: boolean) => void
   readonly onCustomEditorChanged: (customEditor: ICustomIntegration) => void
   readonly onUseCustomShellChanged: (useCustomShell: boolean) => void
   readonly onCustomShellChanged: (customShell: ICustomIntegration) => void
+  readonly onBranchPresetScriptChanged: (
+    branchPresetScript: ICustomIntegration
+  ) => void
 }
 
 interface IIntegrationsPreferencesState {
@@ -35,6 +42,7 @@ interface IIntegrationsPreferencesState {
   readonly customEditor: ICustomIntegration
   readonly useCustomShell: boolean
   readonly customShell: ICustomIntegration
+  readonly branchPresetScript: ICustomIntegration
 }
 
 export class Integrations extends React.Component<
@@ -54,6 +62,7 @@ export class Integrations extends React.Component<
       customEditor: this.props.customEditor,
       useCustomShell: this.props.useCustomShell,
       customShell: this.props.customShell,
+      branchPresetScript: this.props.branchPresetScript,
     }
   }
 
@@ -348,6 +357,40 @@ export class Integrations extends React.Component<
     this.props.onCustomShellChanged(customShell)
   }
 
+  private renderBranchPresetScript() {
+    return (
+      <Row>
+        <CustomIntegrationForm
+          id="branch-preset-script"
+          path={this.state.branchPresetScript.path}
+          arguments={this.state.branchPresetScript.arguments}
+          onPathChanged={this.onBranchPresetPathChanged}
+          onArgumentsChanged={this.onBranchPresetArgumentsChanged}
+        />
+      </Row>
+    )
+  }
+
+  private onBranchPresetPathChanged = (path: string) => {
+    const branchPresetScript: ICustomIntegration = {
+      path,
+      arguments: this.state.branchPresetScript.arguments ?? [],
+    }
+
+    this.setState({ branchPresetScript })
+    this.props.onBranchPresetScriptChanged(branchPresetScript)
+  }
+
+  private onBranchPresetArgumentsChanged = (args: string) => {
+    const branchPresetScript: ICustomIntegration = {
+      path: this.state.branchPresetScript.path ?? '',
+      arguments: args,
+    }
+
+    this.setState({ branchPresetScript })
+    this.props.onBranchPresetScriptChanged(branchPresetScript)
+  }
+
   public render() {
     if (!enableCustomIntegration()) {
       return (
@@ -361,7 +404,7 @@ export class Integrations extends React.Component<
 
     return (
       <DialogContent>
-        <fieldset>
+        <fieldset className="advanced-section">
           <legend>
             <h2>{__DARWIN__ ? 'External Editor' : 'External editor'}</h2>
           </legend>
@@ -369,12 +412,24 @@ export class Integrations extends React.Component<
           {this.state.useCustomEditor && this.renderCustomExternalEditor()}
           {this.renderNoExternalEditorHint()}
         </fieldset>
-        <fieldset>
+        <fieldset className="advanced-section">
           <legend>
             <h2>Shell</h2>
           </legend>
           <Row>{this.renderSelectedShell()}</Row>
           {this.state.useCustomShell && this.renderCustomShell()}
+        </fieldset>
+        <fieldset className="advanced-section">
+          <legend>
+            <h2>Generate branch name presets</h2>
+          </legend>
+          {this.renderBranchPresetScript()}
+          <p>
+            This script will be run to generate suggested branch names.
+            <LinkButton uri={BranchPresetScriptDocumentationUrl}>
+              Click here to learn more.
+            </LinkButton>
+          </p>
         </fieldset>
       </DialogContent>
     )

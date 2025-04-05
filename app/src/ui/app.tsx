@@ -1601,6 +1601,7 @@ export class App extends React.Component<IAppProps, IAppState> {
             customEditor={this.state.customEditor}
             useCustomShell={this.state.useCustomShell}
             customShell={this.state.customShell}
+            branchPresetScript={this.state.branchPresetScript}
             titleBarStyle={this.state.titleBarStyle}
             showRecentRepositories={this.state.showRecentRepositories}
             repositoryIndicatorsEnabled={this.state.repositoryIndicatorsEnabled}

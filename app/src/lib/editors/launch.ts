@@ -52,6 +52,36 @@ async function launchEditor(
   })
 }
 
+async function launchExecutableAndReturnStdout(
+  path: string,
+  args: readonly string[]
+) {
+  const opts: SpawnOptions = {
+    stdio: ['ignore', 'pipe', 'inherit'],
+  }
+
+  return new Promise<string>((resolve, reject) => {
+    const child = spawn(path, args, opts)
+
+    let stdout = ''
+    child.stdout?.on('data', data => {
+      stdout += data.toString()
+    })
+
+    child.on('error', reject)
+    child.on('close', () => resolve(stdout))
+  }).catch((e: unknown) => {
+    log.error(
+      `Error while launching ${path}`,
+      e instanceof Error ? e : undefined
+    )
+    throw new ExternalEditorError(
+      `Something went wrong while trying to start ${path}. Please open Options and try another editor.`,
+      { openPreferences: true }
+    )
+  })
+}
+
 /**
  * Open a given file or folder in the desired external editor.
  *
@@ -83,4 +113,12 @@ export const launchCustomExternalEditor = (
   const editorName = `custom editor at path '${customEditor.path}'`
 
   return launchEditor(customEditor.path, args, editorName, spawnAsDarwinApp)
+}
+
+export async function launchAndReturnStdout(
+  executable: ICustomIntegration
+): Promise<string> {
+  const args = parseCustomIntegrationArguments(executable.arguments)
+
+  return launchExecutableAndReturnStdout(executable.path, args)
 }
