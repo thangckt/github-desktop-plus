@@ -222,7 +222,12 @@ export class Dispatcher {
 
   /** Load the next batch of history for the repository. */
   public loadNextCommitBatch(repository: Repository): Promise<void> {
-    return this.appStore._loadNextCommitBatch(repository)
+    return this.appStore._loadNextCommitBatch(repository, 0)
+  }
+
+  /** Update the commit search filter text. */
+  public setCommitSearchQuery(repository: Repository, text: string): void {
+    this.appStore._updateCommitSearchQuery(repository, text)
   }
 
   /** Load the changed files for the current history selection. */

@@ -41,7 +41,7 @@ describe('GitStore', () => {
       const repo = new Repository(path, -1, null, false)
       const gitStore = new GitStore(repo, shell, statsStore)
 
-      const commits = await gitStore.loadCommitBatch('HEAD', 0)
+      const commits = await gitStore.loadCommitBatch('HEAD', 0, false)
 
       expect(commits).not.toBeNull()
       expect(commits).toHaveLength(100)

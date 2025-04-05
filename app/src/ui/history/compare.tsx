@@ -600,10 +600,8 @@ export class CompareSidebar extends React.Component<
     })
   }
 
-  private onCommitSearchQueryChanged = (commitSearchQuery: string) => {
-    this.props.dispatcher.updateCompareForm(this.props.repository, {
-      commitSearchQuery,
-    })
+  private onCommitSearchQueryChanged = (text: string) => {
+    this.props.dispatcher.setCommitSearchQuery(this.props.repository, text)
   }
 
   private clearFilterState = () => {

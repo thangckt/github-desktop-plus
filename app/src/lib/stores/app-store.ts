@@ -1567,15 +1567,18 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
 
       // load initial group of commits for current branch
-      const commits = await gitStore.loadCommitBatch('HEAD', 0)
+      const commits = await gitStore.loadCommitBatch('HEAD', 0, false)
 
       if (commits === null) {
         return
       }
 
-      const filterLower = compareState.filterText.toLowerCase()
+      const queryTextLowercase = compareState.commitSearchQuery.toLowerCase()
       const filteredCommits = commits.filter(sha =>
-        this.commitIsIncluded(gitStore.commitLookup.get(sha), filterLower)
+        this.commitIsIncluded(
+          gitStore.commitLookup.get(sha),
+          queryTextLowercase
+        )
       )
 
       const newState: IDisplayHistory = {
@@ -1596,7 +1599,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
         this.emitUpdate()
       }
       if (filteredCommits.length < MinimumFilteredCommitsToLoad) {
-        return this._loadNextCommitBatch(repository, filteredCommits.length)
+        return this._loadNextCommitBatch(
+          repository,
+          filteredCommits.length,
+          queryTextLowercase
+        )
       }
       return
     }
@@ -1729,20 +1736,28 @@ export class AppStore extends TypedBaseStore<IAppState> {
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _loadNextCommitBatch(
     repository: Repository,
-    alreadyFiltered = 0
+    alreadyFiltered: number,
+    queryTextLowercase?: string
   ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
 
     const state = this.repositoryStateCache.get(repository)
     const commits = state.compareState.allHistoryCommitSHAs
+    if (queryTextLowercase === undefined) {
+      queryTextLowercase = state.compareState.commitSearchQuery.toLowerCase()
+    }
+    const isSearching = !!queryTextLowercase
 
-    const newCommits = await gitStore.loadCommitBatch('HEAD', commits.length)
+    const newCommits = await gitStore.loadCommitBatch(
+      'HEAD',
+      commits.length,
+      isSearching
+    )
     if (newCommits == null || newCommits.length === 0) {
       return
     }
-    const filterLower = state.compareState.filterText.toLowerCase()
     const newFilteredCommits = newCommits.filter(sha =>
-      this.commitIsIncluded(gitStore.commitLookup.get(sha), filterLower)
+      this.commitIsIncluded(gitStore.commitLookup.get(sha), queryTextLowercase)
     )
 
     this.repositoryStateCache.updateCompareState(repository, () => ({
@@ -1756,7 +1771,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.emitUpdate()
     }
     if (numFilteredCommits < MinimumFilteredCommitsToLoad) {
-      return this._loadNextCommitBatch(repository, numFilteredCommits)
+      return this._loadNextCommitBatch(
+        repository,
+        numFilteredCommits,
+        queryTextLowercase
+      )
     }
     return
   }
@@ -1772,6 +1791,41 @@ export class AppStore extends TypedBaseStore<IAppState> {
       !filterTextLowerCase ||
       commit.summary.toLowerCase().includes(filterTextLowerCase)
     )
+  }
+
+  public async _updateCommitSearchQuery(
+    repository: Repository,
+    query: string
+  ): Promise<void> {
+    const state = this.repositoryStateCache.get(repository)
+    const compareState = state.compareState
+    const isIncrementalSearch = query.startsWith(compareState.commitSearchQuery)
+
+    this.repositoryStateCache.updateCompareState(repository, () => ({
+      commitSearchQuery: query,
+    }))
+
+    const candidateCommitSHAs = isIncrementalSearch
+      ? compareState.filteredHistoryCommitSHAs
+      : compareState.allHistoryCommitSHAs
+    const queryTextLowercase = query.toLowerCase()
+    const filteredCommitSHAs = candidateCommitSHAs.filter(sha => {
+      return this.commitIsIncluded(
+        state.commitLookup.get(sha),
+        queryTextLowercase
+      )
+    })
+    this.repositoryStateCache.updateCompareState(repository, () => ({
+      filteredHistoryCommitSHAs: filteredCommitSHAs,
+    }))
+    this.emitUpdate()
+    if (filteredCommitSHAs.length < MinimumFilteredCommitsToLoad) {
+      return this._loadNextCommitBatch(
+        repository,
+        filteredCommitSHAs.length,
+        queryTextLowercase
+      )
+    }
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */

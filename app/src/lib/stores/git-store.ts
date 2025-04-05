@@ -105,6 +105,7 @@ import { cleanUntrackedFiles } from '../git/clean'
 
 /** The number of commits to load from history per batch. */
 const CommitBatchSize = 100
+const CommitBatchSizeSearch = 500
 
 const LoadingHistoryRequestKey = 'history'
 
@@ -216,7 +217,11 @@ export class GitStore extends BaseStore {
   }
 
   /** Load a batch of commits from the repository, using a given commitish object as the starting point */
-  public async loadCommitBatch(commitish: string, skip: number) {
+  public async loadCommitBatch(
+    commitish: string,
+    skip: number,
+    isSearching: boolean
+  ) {
     if (this.requestsInFight.has(LoadingHistoryRequestKey)) {
       return null
     }
@@ -228,8 +233,9 @@ export class GitStore extends BaseStore {
 
     this.requestsInFight.add(requestKey)
 
+    const batchSize = isSearching ? CommitBatchSizeSearch : CommitBatchSize
     const commits = await this.performFailableOperation(() =>
-      getCommits(this.repository, commitish, CommitBatchSize, skip)
+      getCommits(this.repository, commitish, batchSize, skip)
     )
 
     this.requestsInFight.delete(requestKey)
