@@ -778,16 +778,14 @@ export class CompareSidebar extends React.Component<
 }
 
 function getPlaceholderText(state: ICompareState) {
-  const { branches, formState } = state
+  const { branches } = state
 
   if (!branches.some(b => !b.isDesktopForkRemoteBranch)) {
     return __DARWIN__ ? 'No Branches to Compare' : 'No branches to compare'
-  } else if (formState.kind === HistoryTabMode.History) {
+  } else {
     return __DARWIN__
       ? 'Select Branch to Compare…'
       : 'Select branch to compare…'
-  } else {
-    return undefined
   }
 }
 
