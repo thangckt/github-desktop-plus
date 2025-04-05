@@ -123,6 +123,7 @@ export class MergeCallToActionWithConflicts extends React.Component<
 
     await this.dispatchOperation(selectedOption.id)
 
+    // TODO - search: make sure this switches to the history tab
     dispatcher.executeCompare(repository, {
       kind: HistoryTabMode.History,
     })

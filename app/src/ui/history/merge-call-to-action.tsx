@@ -83,6 +83,7 @@ export class MergeCallToAction extends React.Component<
       kind: HistoryTabMode.History,
     })
 
+    // TODO - search: make sure this switches to the history tab
     this.props.dispatcher.updateCompareForm(this.props.repository, {
       showBranchList: false,
       filterText: '',

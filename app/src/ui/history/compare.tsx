@@ -76,7 +76,7 @@ interface ICompareSidebarState {
 }
 
 /** If we're within this many rows from the bottom, load the next history batch. */
-const CloseToBottomThreshold = 10
+const CloseToBottomThreshold = 30
 
 export class CompareSidebar extends React.Component<
   ICompareSidebarProps,
@@ -167,7 +167,7 @@ export class CompareSidebar extends React.Component<
   }
 
   private renderHistoryView() {
-    const { filterText } = this.props.compareState
+    const { commitSearchQuery } = this.props.compareState
     return (
       <div id="compare-view" role="tabpanel" aria-labelledby="compare-tab">
         <div className="commit-search-form">
@@ -176,9 +176,9 @@ export class CompareSidebar extends React.Component<
             symbol={octicons.search}
             displayClearButton={true}
             placeholder={__DARWIN__ ? 'Search Commits' : 'Search commits'}
-            value={filterText}
+            value={commitSearchQuery}
             onRef={this.onSearchBoxRef}
-            onValueChanged={this.onBranchFilterTextChanged}
+            onValueChanged={this.onCommitSearchQueryChanged}
             onKeyDown={this.onCommitFilterKeyDown}
             onSearchCleared={this.handleEscapeCommitSearch}
           />
@@ -530,7 +530,9 @@ export class CompareSidebar extends React.Component<
   }
 
   private handleEscapeCommitSearch = () => {
-    // TODO: clear the filter text
+    this.props.dispatcher.updateCompareForm(this.props.repository, {
+      commitSearchQuery: '',
+    })
     this.searchBox?.blur()
   }
 
@@ -595,6 +597,12 @@ export class CompareSidebar extends React.Component<
 
     this.props.dispatcher.updateCompareForm(this.props.repository, {
       filterText,
+    })
+  }
+
+  private onCommitSearchQueryChanged = (commitSearchQuery: string) => {
+    this.props.dispatcher.updateCompareForm(this.props.repository, {
+      commitSearchQuery,
     })
   }
 

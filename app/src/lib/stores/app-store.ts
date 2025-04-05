@@ -1573,8 +1573,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
         return
       }
 
+      const filterLower = compareState.filterText.toLowerCase()
       const filteredCommits = commits.filter(sha =>
-        this.commitIsIncluded(gitStore.commitLookup.get(sha))
+        this.commitIsIncluded(gitStore.commitLookup.get(sha), filterLower)
       )
 
       const newState: IDisplayHistory = {
@@ -1739,8 +1740,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (newCommits == null || newCommits.length === 0) {
       return
     }
+    const filterLower = state.compareState.filterText.toLowerCase()
     const newFilteredCommits = newCommits.filter(sha =>
-      this.commitIsIncluded(gitStore.commitLookup.get(sha))
+      this.commitIsIncluded(gitStore.commitLookup.get(sha), filterLower)
     )
 
     this.repositoryStateCache.updateCompareState(repository, () => ({
@@ -1759,9 +1761,17 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return
   }
 
-  private commitIsIncluded(commit: Commit | undefined): boolean {
-    const filterText = 'added'
-    return commit != null && commit.summary.toLowerCase().includes(filterText)
+  private commitIsIncluded(
+    commit: Commit | undefined,
+    filterTextLowerCase: string
+  ): boolean {
+    if (!commit) {
+      return false
+    }
+    return (
+      !filterTextLowerCase ||
+      commit.summary.toLowerCase().includes(filterTextLowerCase)
+    )
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
