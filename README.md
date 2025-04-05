@@ -8,14 +8,12 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 
 - [x] Red color for destructive action buttons.
 - [x] Add **icons** to some similar-looking buttons for faster visual recognition.
+- [ ] Allow generating **branch name presets** by calling an external script (e.g. fetching ticket numbers from an issue tracker). [Click here for more details](docs/branch-name-presets.md).
 - [x] Bitbucket integration:
   - Correctly set repository owner (instead of "Other").
   - Preview and create pull requests.
   - View pull requests status, including checks.
   - Open a commit or PR in Bitbucket (web browser).
-- [ ] Jira integration:
-  - [ ] Create and view Jira issues.
-  - [ ] Create branches from Jira issues.
 
 ### Repositories list:
 
@@ -30,7 +28,7 @@ This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) 
 ### History tab:
 
 - [x] Use a different style for **merge commits**.
-- [ ] **Search commits** by title or message.
+- [x] **Search commits** by title, message, tag, or hash.
 - [x] If a commit modifies only 1 file, allow double-clicking the commit to open the file. For other commits, you can still double-click the file as usual.
 
 ### Changes tab:
@@ -115,7 +113,7 @@ yarn test:docker
 
 While the "official" Linux fork of GitHub Desktop is great, I think it's slow in terms of updates and lacks some advanced features that I'd like. This fork has low code quality requirements compared to the official fork, so I (and hopefully you as well) can add features and improvements quickly.
 
-This fork also focuses on integrating nicely with Atlassian products (Bitbucket, Jira, etc.), since I have to use them for work and haven't found a good desktop client for it.
+This fork also focuses on integrating nicely with Bitbucket, since I have to use them for work and haven't found a good desktop client for it.
 
 ---
 
