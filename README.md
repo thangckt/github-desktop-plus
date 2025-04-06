@@ -2,38 +2,38 @@
 
 This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) for Linux with additional features and improvements.
 
-## Features and Roadmap
+## Extra Features 
 
 ### General:
 
-- [x] Red color for destructive action buttons.
-- [x] Add **icons** to some similar-looking buttons for faster visual recognition.
-- [ ] Allow generating **branch name presets** by calling an external script (e.g. fetching ticket numbers from an issue tracker). [Click here for more details](docs/branch-name-presets.md).
-- [x] Bitbucket integration:
-  - Correctly set repository owner (instead of "Other").
+- Red color for destructive action buttons.
+- Add **icons** to some similar-looking buttons for faster visual recognition.
+- Allow generating **branch name presets** by calling an external script (e.g. fetching ticket numbers from an issue tracker). [Click here for more details](docs/branch-name-presets.md).
+- **Bitbucket** integration:
   - Preview and create pull requests.
   - View pull requests status, including checks.
-  - Open a commit or PR in Bitbucket (web browser).
+  - Display a commit or PR in Bitbucket (web browser).
+  - Correctly set repository owner (instead of displaying "Other").
 
 ### Repositories list:
 
-- [x] **Pull all** button to fetch and pull from all remotes at once.
-- [x] Allow **hiding** the '**Recent**' repositories section.
+- **Pull all** button to fetch and pull from all remotes at once.
+- Allow **hiding** the '**Recent**' repositories section.
 
 ### Branches list:
 
-- [x] Add warning indicator to **local-only branches** (branches that are not on the remote).
-- [x] Allow manually setting which is the **default branch** for a repository (even if it doesn't match the one configured in the remote).
+- Add warning indicator to **local-only branches** (branches that are not on the remote).
+- Allow manually setting which is the **default branch** for a repository (even if it doesn't match the one configured in the remote).
 
 ### History tab:
 
-- [x] Use a different style for **merge commits**.
-- [x] **Search commits** by title, message, tag, or hash.
-- [x] If a commit modifies only 1 file, allow double-clicking the commit to open the file. For other commits, you can still double-click the file as usual.
+- **Search commits** by title, message, tag, or hash.
+- Use a different font style for **merge commits** in order to make them visually distinct, since most of the time they are not as relevant.
+- If a commit modifies only 1 file, allow double-clicking the commit to open the file. For other commits, you can still double-click the file as usual.
 
 ### Changes tab:
 
-- [x] Context menu option to **permanently discard changes** without sending to trash (useful when the there are many changed files and the regular "Discard" is extremely slow).
+- Context menu option to **permanently discard changes** without sending to trash (useful when the there are many changed files and the regular "Discard" is extremely slow).
 
 ## Download and Installation
 
