@@ -67,4 +67,8 @@ fieldset.vertical-segmented-control {
   .hide-radio-buttons input[type='radio'] {
     display: none;
   }
+
+  .vertical-segmented-control-scrollable {
+    overflow-y: auto;
+  }
 }

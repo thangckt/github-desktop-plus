@@ -49,6 +49,8 @@ interface IVerticalSegmentedControlProps<T extends React.Key> {
 
   readonly showRadioButtons?: boolean
 
+  readonly scrollableHeight?: number
+
   /**
    * A function that's called whenever the selected item changes, either
    * as a result of a click using a pointer device or as a result of the user
@@ -99,19 +101,37 @@ export class VerticalSegmentedControl<
     return (
       <fieldset className="vertical-segmented-control" ref={this.onFieldsetRef}>
         <legend id="vertical-segment-control-label">{this.props.label}</legend>
-
-        <RadioGroup<T>
-          ariaLabelledBy="vertical-segment-control-label"
-          className={classNames('vertical-segmented-control', {
-            'hide-radio-buttons': this.props.showRadioButtons === false,
-          })}
-          selectedKey={this.props.selectedKey}
-          radioButtonKeys={this.props.items.map(item => item.key)}
-          onSelectionChanged={this.onSelectionChanged}
-          renderRadioButtonLabelContents={this.renderItem}
-          onRadioButtonDoubleClick={this.onRadioButtonDoubleClick}
-        />
+        {this.props.scrollableHeight
+          ? this.renderScrollable()
+          : this.renderRadioGroup()}
       </fieldset>
+    )
+  }
+
+  private renderScrollable() {
+    return (
+      <div
+        className="vertical-segmented-control-scrollable"
+        style={{ maxHeight: this.props.scrollableHeight }}
+      >
+        {this.renderRadioGroup()}
+      </div>
+    )
+  }
+
+  private renderRadioGroup() {
+    return (
+      <RadioGroup<T>
+        ariaLabelledBy="vertical-segment-control-label"
+        className={classNames('vertical-segmented-control', {
+          'hide-radio-buttons': this.props.showRadioButtons === false,
+        })}
+        selectedKey={this.props.selectedKey}
+        radioButtonKeys={this.props.items.map(item => item.key)}
+        onSelectionChanged={this.onSelectionChanged}
+        renderRadioButtonLabelContents={this.renderItem}
+        onRadioButtonDoubleClick={this.onRadioButtonDoubleClick}
+      />
     )
   }
 }

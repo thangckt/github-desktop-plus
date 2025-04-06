@@ -116,6 +116,7 @@ export class CreateBranch extends React.Component<
   ICreateBranchState
 > {
   private branchRulesDebounceId: number | null = null
+  private readonly branchNameInputRef = React.createRef<RefNameTextBox>()
 
   private readonly ERRORS_ID = 'branch-name-errors'
 
@@ -279,6 +280,7 @@ export class CreateBranch extends React.Component<
           selectedKey={selectedElement?.name ?? ''}
           onSelectionChanged={this.onBranchNamePresetsChanged}
           showRadioButtons={false}
+          scrollableHeight={250}
         />
       </Row>
     )
@@ -291,7 +293,8 @@ export class CreateBranch extends React.Component<
   }
 
   private onBranchNamePresetsChanged = (branchName: string) => {
-    this.updateBranchName(branchName)
+    this.branchNameInputRef.current?.setValue(branchName)
+    this.branchNameInputRef.current?.focus()
   }
 
   public render() {
@@ -312,10 +315,10 @@ export class CreateBranch extends React.Component<
       >
         <DialogContent>
           <RefNameTextBox
+            ref={this.branchNameInputRef}
             label="Name"
             ariaDescribedBy={hasError ? this.ERRORS_ID : undefined}
             initialValue={this.props.initialName}
-            updateValue={this.state.branchName}
             onValueChange={this.onBranchNameChange}
           />
 

@@ -14,8 +14,6 @@ interface IRefNameProps {
    */
   readonly initialValue?: string
 
-  readonly updateValue?: string
-
   /**
    * The label of the text box.
    */
@@ -85,15 +83,13 @@ export class RefNameTextBox extends React.Component<
     }
   }
 
-  public componentWillReceiveProps(nextProps: IRefNameProps) {
-    if (
-      nextProps.updateValue !== undefined &&
-      nextProps.updateValue !== this.state.proposedValue
-    ) {
-      this.setState({
-        proposedValue: nextProps.updateValue,
-        sanitizedValue: sanitizedRefName(nextProps.updateValue),
-      })
+  public setValue(value: string) {
+    this.setState({
+      proposedValue: value,
+      sanitizedValue: sanitizedRefName(value),
+    })
+    if (this.props.onValueChange !== undefined) {
+      this.props.onValueChange(this.state.sanitizedValue)
     }
   }
 

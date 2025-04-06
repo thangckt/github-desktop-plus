@@ -49,6 +49,8 @@ export class RadioButton<T extends React.Key> extends React.Component<
   IRadioButtonProps<T>,
   IRadioButtonState
 > {
+  private readonly inputRef = React.createRef<HTMLInputElement>()
+
   public constructor(props: IRadioButtonProps<T>) {
     super(props)
 
@@ -63,8 +65,11 @@ export class RadioButton<T extends React.Key> extends React.Component<
 
   public render() {
     return (
-      <div className="radio-button-component">
+      // This is just for increasing the click area of the radio button. Keyboard navigation is not affected.
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+      <div className="radio-button-component" onClick={this.onContainerClick}>
         <input
+          ref={this.inputRef}
           type="radio"
           id={this.state.inputId}
           value={this.props.value}
@@ -78,6 +83,10 @@ export class RadioButton<T extends React.Key> extends React.Component<
         </label>
       </div>
     )
+  }
+
+  private onContainerClick = (evt: React.MouseEvent<HTMLDivElement>) => {
+    this.inputRef.current?.click()
   }
 
   private onSelected = (evt: React.FormEvent<HTMLInputElement>) => {
