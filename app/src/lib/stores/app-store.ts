@@ -1535,18 +1535,19 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const cachedState = compareState.formState
     const action =
       initialAction != null ? initialAction : getInitialAction(cachedState)
-    this._executeCompare(repository, action)
+    this._executeCompare(repository, action, true)
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _executeCompare(
     repository: Repository,
-    action: CompareAction
+    action: CompareAction,
+    fromInitialize = false
   ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
     const kind = action.kind
 
-    if (action.kind === HistoryTabMode.History) {
+    if (fromInitialize || action.kind === HistoryTabMode.History) {
       const { tip } = gitStore
 
       let currentSha: string | null = null
