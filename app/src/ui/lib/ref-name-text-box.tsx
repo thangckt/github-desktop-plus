@@ -40,6 +40,11 @@ interface IRefNameProps {
   readonly onValueChange?: (sanitizedValue: string) => void
 
   /**
+   * Called when the user presses a key in the text box.
+   */
+  readonly onKeyDown?: (event: React.KeyboardEvent) => void
+
+  /**
    * Optional verb for the warning message.
    *
    * Warning message: Will be {this.props.warningMessageVerb ?? 'saved '} as{'
@@ -110,6 +115,7 @@ export class RefNameTextBox extends React.Component<
             ` branch-name-error`
           }
           onValueChanged={this.onValueChange}
+          onKeyDown={this.props.onKeyDown}
           onBlur={this.onBlur}
         />
 

@@ -269,15 +269,13 @@ export class CreateBranch extends React.Component<
         key: preset.name,
       })
     )
-    const selectedElement = this.state.branchNamePresets.find(preset =>
-      this.state.branchName.startsWith(preset.name)
-    )
+
     return (
       <Row>
         <VerticalSegmentedControl
-          label="Pick a name preset:"
+          label={`Pick a name preset (quick select with ${getQuickSelectKeys()}):`}
           items={items}
-          selectedKey={selectedElement?.name ?? ''}
+          selectedKey={''}
           onSelectionChanged={this.onBranchNamePresetsChanged}
           showRadioButtons={false}
           scrollableHeight={250}
@@ -320,6 +318,7 @@ export class CreateBranch extends React.Component<
             ariaDescribedBy={hasError ? this.ERRORS_ID : undefined}
             initialValue={this.props.initialName}
             onValueChange={this.onBranchNameChange}
+            onKeyDown={this.onKeyDown}
           />
 
           {this.renderBranchNameErrors()}
@@ -362,6 +361,19 @@ export class CreateBranch extends React.Component<
 
   private onBranchNameChange = (name: string) => {
     this.updateBranchName(name)
+  }
+
+  private onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.ctrlKey || event.metaKey) {
+      const presetNum = Number(event.key)
+      if (isNaN(presetNum) || presetNum > this.state.branchNamePresets.length) {
+        return
+      }
+      const preset = this.state.branchNamePresets[presetNum - 1]
+      if (preset) {
+        this.onBranchNamePresetsChanged(preset.name)
+      }
+    }
   }
 
   private async updateBranchName(branchName: string) {
@@ -736,6 +748,10 @@ export class CreateBranch extends React.Component<
       initialSelectedTab: RepositorySettingsTab.ForkSettings,
     })
   }
+}
+
+function getQuickSelectKeys() {
+  return __DARWIN__ ? '⌘1, ⌘2, …' : 'Ctrl+1, Ctrl+2, …'
 }
 
 /** Reusable snippet */
