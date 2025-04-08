@@ -5,9 +5,15 @@
 const invalidCharacterRegex =
   /[\x00-\x20\x7F~^:?*\[\\|""<>]+|@{|\.\.+|^\.|\.$|\.lock$|\/$/g
 
+const alwaysInvalidCharacters = /[\x00-\x20\x7F~^:?*\[\\|""<>]+/g
+
 /** Sanitize a proposed reference name by replacing illegal characters. */
 export function sanitizedRefName(name: string): string {
   return name.replace(invalidCharacterRegex, '-').replace(/^[-\+]*/g, '')
+}
+
+export function almostSanitizedRefName(name: string): string {
+  return name.replace(alwaysInvalidCharacters, '-').replace(/^[-\+]*/g, '')
 }
 
 /** Validate that a reference does not contain any invalid characters */

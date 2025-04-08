@@ -1,6 +1,9 @@
 import * as React from 'react'
 
-import { sanitizedRefName } from '../../lib/sanitize-ref-name'
+import {
+  almostSanitizedRefName,
+  sanitizedRefName,
+} from '../../lib/sanitize-ref-name'
 import { TextBox } from './text-box'
 import { Ref } from './ref'
 import { InputWarning } from './input-description/input-warning'
@@ -126,20 +129,17 @@ export class RefNameTextBox extends React.Component<
   }
 
   private onValueChange = (proposedValue: string) => {
+    const almostSanitizedValue = almostSanitizedRefName(proposedValue)
     const sanitizedValue = sanitizedRefName(proposedValue)
     const previousSanitizedValue = this.state.sanitizedValue
 
-    this.setState({ proposedValue, sanitizedValue })
+    this.setState({ proposedValue: almostSanitizedValue, sanitizedValue })
 
     if (sanitizedValue === previousSanitizedValue) {
       return
     }
 
-    if (this.props.onValueChange === undefined) {
-      return
-    }
-
-    this.props.onValueChange(sanitizedValue)
+    this.props.onValueChange?.(sanitizedValue)
   }
 
   private onBlur = (proposedValue: string) => {
