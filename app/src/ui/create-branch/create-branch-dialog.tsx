@@ -163,7 +163,7 @@ export class CreateBranch extends React.Component<
 
   public componentDidMount() {
     this.props.dispatcher
-      .getBranchNamePresets()
+      .getBranchNamePresets(this.props.repository)
       .then(branchNamePresets => this.setState({ branchNamePresets }))
   }
 

@@ -1441,10 +1441,11 @@ export class Dispatcher {
     return this.appStore._openInBrowser(url)
   }
 
-  public async getBranchNamePresets(): Promise<
-    ReadonlyArray<IBranchNamePreset>
-  > {
-    return this.appStore._getBranchNamePresets()
+  public async getBranchNamePresets(
+    repository: Repository
+  ): Promise<ReadonlyArray<IBranchNamePreset>> {
+    const repoPath = repository.path
+    return this.appStore._getBranchNamePresets(repoPath)
   }
 
   /** Add the pattern to the repository's gitignore. */

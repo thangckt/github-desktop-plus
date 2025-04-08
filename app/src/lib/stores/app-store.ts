@@ -5851,12 +5851,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return shell.openExternal(url)
   }
 
-  public async _getBranchNamePresets(): Promise<IBranchNamePreset[]> {
+  public async _getBranchNamePresets(
+    repoPath: string
+  ): Promise<IBranchNamePreset[]> {
     const { branchPresetScript } = this.getState()
     if (branchPresetScript === null || branchPresetScript.path === '') {
       return []
     }
-    const stdout = await launchAndReturnStdout(branchPresetScript)
+    const stdout = await launchAndReturnStdout(repoPath, branchPresetScript)
     return parseBranchNamePresets(stdout)
   }
 

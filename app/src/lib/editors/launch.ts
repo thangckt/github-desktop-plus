@@ -116,9 +116,11 @@ export const launchCustomExternalEditor = (
 }
 
 export async function launchAndReturnStdout(
+  fullPath: string,
   executable: ICustomIntegration
 ): Promise<string> {
-  const args = parseCustomIntegrationArguments(executable.arguments)
+  const argv = parseCustomIntegrationArguments(executable.arguments)
+  const args = expandTargetPathArgument(argv, fullPath)
 
   return launchExecutableAndReturnStdout(executable.path, args)
 }
