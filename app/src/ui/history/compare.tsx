@@ -405,6 +405,7 @@ export class CompareSidebar extends React.Component<
         renderBranch={this.renderCompareBranchListItem}
         getBranchAriaLabel={this.getBranchAriaLabel}
         onFilterListResultsChanged={this.filterListResultsChanged}
+        noBranchesMessage={getNoBranchesMessage(this.props.compareState)}
       />
     )
   }
@@ -786,6 +787,15 @@ function getPlaceholderText(state: ICompareState) {
     return __DARWIN__
       ? 'Select Branch to Compare…'
       : 'Select branch to compare…'
+  }
+}
+
+function getNoBranchesMessage(state: ICompareState) {
+  const { branches } = state
+  if (!branches.some(b => !b.isDesktopForkRemoteBranch)) {
+    return 'Create a new branch to start comparing commits.'
+  } else {
+    return undefined
   }
 }
 
