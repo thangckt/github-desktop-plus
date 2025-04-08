@@ -366,6 +366,7 @@ export class Integrations extends React.Component<
           arguments={this.state.branchPresetScript.arguments}
           onPathChanged={this.onBranchPresetPathChanged}
           onArgumentsChanged={this.onBranchPresetArgumentsChanged}
+          hideArgumentsWhenPathEmpty={true}
         />
       </Row>
     )

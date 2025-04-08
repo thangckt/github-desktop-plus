@@ -24,11 +24,13 @@ chmod +x /path/to/your/script.sh
 ### Step 3: Configure GitHub Desktop
 
 1. Open GitHub Desktop.
-2. Open the Preferences window (`Ctrl + ,` on Windows/Linux, `Cmd + ,` on macOS).
-3. Go to the "Integrations" tab.
-4. Under "Generate branch name presets", click "Choose..." to open the file picker and select your script.
-5. Click "Save" to apply the changes.
+1. Open the Preferences window (`Ctrl + ,` on Windows/Linux, `Cmd + ,` on macOS).
+1. Go to the "Integrations" tab.
+1. Under "Generate branch name presets", click "Choose..." to open the file picker and select your script.
+1. Click "Save" to apply the changes.
 
+> [!IMPORTANT]
+> If your script needs to return different values depending on the current repository, make sure that the "Arguments" field contains `%TARGET_PATH%`, which will be replaced with the full path of the repository.
 
 ## Example Scripts
 
@@ -72,4 +74,29 @@ for issue in response.json()['issues']:
     branch_prefix = issue_key + "-"
     preset_description = f"[{issue_key}] {issue_summary}"
     print(branch_prefix, preset_description)
+```
+
+**Example 3: Conditional logic depending on the repository**
+
+```bash
+#!/bin/bash
+REPO_PATH="$1"
+REPO_NAME=$(basename "$REPO_PATH")
+REPO_DIR=$(basename "$(dirname "$REPO_PATH")")
+
+if [[ "$REPO_NAME" == "special-repo" ]]; then
+    echo "special-feature/" "Special feature branch"
+fi
+
+if [[ "$REPO_DIR" == "my-org" ]]; then
+    echo "FEAT-" "New features"
+    echo "FIX-" "Bug fixes"
+else
+    echo "feature/" "New features"
+    echo "bugfix/" "Bug fixes"
+fi
+
+# Common presets in all repositories
+echo "hotfix/" "Hotfix"
+echo "release/" "Release branch"
 ```

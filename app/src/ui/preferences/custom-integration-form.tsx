@@ -15,6 +15,7 @@ interface ICustomIntegrationFormProps {
   readonly id: string
   readonly path: string
   readonly arguments: string
+  readonly hideArgumentsWhenPathEmpty?: boolean
   readonly onPathChanged: (path: string, bundleID?: string) => void
   readonly onArgumentsChanged: (args: string) => void
 }
@@ -64,6 +65,8 @@ export class CustomIntegrationForm extends React.Component<
   }
 
   public render() {
+    const hideArguments =
+      this.props.hideArgumentsWhenPathEmpty && this.state.path === ''
     return (
       <div className="custom-integration-form-container">
         <div className="custom-integration-form-path-container">
@@ -78,14 +81,18 @@ export class CustomIntegrationForm extends React.Component<
           <Button onClick={this.onChoosePath}>Choose…</Button>
         </div>
         {this.renderPathErrors()}
-        <TextBox
-          label="Arguments"
-          value={this.state.arguments}
-          onValueChanged={this.onParamsChanged}
-          placeholder="Command line arguments"
-          ariaDescribedBy={`${this.props.id}-custom-integration-args-error`}
-        />
-        {this.renderArgsErrors()}
+        {!hideArguments && (
+          <>
+            <TextBox
+              label="Arguments"
+              value={this.state.arguments}
+              onValueChanged={this.onParamsChanged}
+              placeholder="Command line arguments"
+              ariaDescribedBy={`${this.props.id}-custom-integration-args-error`}
+            />
+            {this.renderArgsErrors()}
+          </>
+        )}
       </div>
     )
   }
