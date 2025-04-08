@@ -5658,6 +5658,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this._endMultiCommitOperation(repository)
     }
 
+    this._changeRepositorySection(repository, RepositorySectionTab.History)
+
     return this._refreshRepository(repository)
   }
 
