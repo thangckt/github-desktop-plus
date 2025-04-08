@@ -5705,6 +5705,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
     )
 
+    this._changeRepositorySection(repository, RepositorySectionTab.History)
+
     return result || RebaseResult.Error
   }
 
