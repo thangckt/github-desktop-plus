@@ -13,6 +13,7 @@ import { uuid } from './uuid'
 import { GitProtocol } from './remote-parsing'
 import {
   getEndpointVersion,
+  isBitbucket,
   isDotCom,
   isGHE,
   updateEndpointVersion,
@@ -2654,8 +2655,15 @@ export function getEnterpriseAPIURL(endpoint: string): string {
   return `${parsed.protocol}//${parsed.hostname}/api/v3`
 }
 
-export const getAPIEndpoint = (endpoint: string) =>
-  isDotCom(endpoint) ? getDotComAPIEndpoint() : getEnterpriseAPIURL(endpoint)
+export const getAPIEndpoint = (endpoint: string) => {
+  if (isDotCom(endpoint)) {
+    return getDotComAPIEndpoint()
+  }
+  if (isBitbucket(endpoint)) {
+    return getBitbucketAPIEndpoint()
+  }
+  return getEnterpriseAPIURL(endpoint)
+}
 
 /** Get github.com's API endpoint. */
 export function getDotComAPIEndpoint(): string {
