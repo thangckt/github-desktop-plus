@@ -242,12 +242,16 @@ export class CompareSidebar extends React.Component<
   }
 
   private renderCommitList() {
-    const { formState, filteredHistoryCommitSHAs, compareCommitSHAs } =
-      this.props.compareState
+    const {
+      formState,
+      filteredHistoryCommitSHAs,
+      compareCommitSHAs,
+      commitSearchQuery,
+    } = this.props.compareState
 
     let emptyListMessage: string | JSX.Element
     if (formState.kind === HistoryTabMode.History) {
-      emptyListMessage = 'No history'
+      emptyListMessage = commitSearchQuery ? 'No results found' : 'No history'
     } else {
       const currentlyComparedBranchName = formState.comparisonBranch.name
 
