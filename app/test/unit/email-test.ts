@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import {
   lookupPreferredEmail,
   isAttributableEmailFor,
@@ -25,7 +27,8 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe(
+      assert.equal(
+        lookupPreferredEmail(account),
         '1234+shiftkey@users.noreply.github.com'
       )
     })
@@ -44,7 +47,8 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe(
+      assert.equal(
+        lookupPreferredEmail(account),
         '1234+shiftkey@users.noreply.github.example.com'
       )
     })
@@ -84,7 +88,10 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe('my-primary-email@example.com')
+      assert.equal(
+        lookupPreferredEmail(account),
+        'my-primary-email@example.com'
+      )
     })
 
     it('returns the primary if it has null visibility', () => {
@@ -122,7 +129,10 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe('my-primary-email@example.com')
+      assert.equal(
+        lookupPreferredEmail(account),
+        'my-primary-email@example.com'
+      )
     })
 
     it('returns the noreply if there is no public address', () => {
@@ -160,7 +170,8 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe(
+      assert.equal(
+        lookupPreferredEmail(account),
         'shiftkey@users.noreply.github.com'
       )
     })
@@ -200,7 +211,8 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe(
+      assert.equal(
+        lookupPreferredEmail(account),
         'shiftkey@users.noreply.github.example.com'
       )
     })
@@ -234,7 +246,7 @@ describe('emails', () => {
         'free'
       )
 
-      expect(lookupPreferredEmail(account)).toBe('shiftkey@example.com')
+      assert.equal(lookupPreferredEmail(account), 'shiftkey@example.com')
     })
   })
 
@@ -275,14 +287,16 @@ describe('emails', () => {
         'free'
       )
 
-      expect(isAttributableEmailFor(account, 'personal@gmail.com')).toBeTrue()
-      expect(isAttributableEmailFor(account, 'company@github.com')).toBeTrue()
-      expect(
-        isAttributableEmailFor(account, 'niik@users.noreply.github.com')
-      ).toBeTrue()
-      expect(
-        isAttributableEmailFor(account, '123+niik@users.noreply.github.com')
-      ).toBeTrue()
+      assert(isAttributableEmailFor(account, 'personal@gmail.com'))
+      assert(isAttributableEmailFor(account, 'company@github.com'))
+      assert.equal(
+        isAttributableEmailFor(account, 'niik@users.noreply.github.com'),
+        true
+      )
+      assert.equal(
+        isAttributableEmailFor(account, '123+niik@users.noreply.github.com'),
+        true
+      )
     })
 
     it('considers stealth emails when account has no emails', () => {
@@ -300,12 +314,14 @@ describe('emails', () => {
         'free'
       )
 
-      expect(
-        isAttributableEmailFor(account, 'niik@users.noreply.github.com')
-      ).toBeTrue()
-      expect(
-        isAttributableEmailFor(account, '123+niik@users.noreply.github.com')
-      ).toBeTrue()
+      assert.equal(
+        isAttributableEmailFor(account, 'niik@users.noreply.github.com'),
+        true
+      )
+      assert.equal(
+        isAttributableEmailFor(account, '123+niik@users.noreply.github.com'),
+        true
+      )
     })
 
     it('considers stealth emails for GitHub Enterprise', () => {
@@ -323,12 +339,14 @@ describe('emails', () => {
         'free'
       )
 
-      expect(
-        isAttributableEmailFor(account, 'niik@users.noreply.github.com')
-      ).toBeTrue()
-      expect(
-        isAttributableEmailFor(account, '123+niik@users.noreply.github.com')
-      ).toBeTrue()
+      assert.equal(
+        isAttributableEmailFor(account, 'niik@users.noreply.github.com'),
+        true
+      )
+      assert.equal(
+        isAttributableEmailFor(account, '123+niik@users.noreply.github.com'),
+        true
+      )
     })
 
     it('considers email adresses in a case-insensitive manner', () => {
@@ -352,13 +370,15 @@ describe('emails', () => {
         'free'
       )
 
-      expect(isAttributableEmailFor(account, 'niik@github.com')).toBeTrue()
-      expect(
-        isAttributableEmailFor(account, 'niik@users.noreply.github.com')
-      ).toBeTrue()
-      expect(
-        isAttributableEmailFor(account, '123+niik@users.noreply.github.com')
-      ).toBeTrue()
+      assert(isAttributableEmailFor(account, 'niik@github.com'))
+      assert.equal(
+        isAttributableEmailFor(account, 'niik@users.noreply.github.com'),
+        true
+      )
+      assert.equal(
+        isAttributableEmailFor(account, '123+niik@users.noreply.github.com'),
+        true
+      )
     })
   })
 })

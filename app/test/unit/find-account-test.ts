@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { Account } from '../../src/models/account'
 import { findAccountForRemoteURL } from '../../src/lib/find-account'
 import { getDotComAPIEndpoint, getEnterpriseAPIURL } from '../../src/lib/api'
@@ -63,7 +65,7 @@ describe('findAccountForRemoteURL', () => {
       accounts,
       mockCanAccessRepository
     )
-    expect(account).toBeNull()
+    assert(account === null)
   })
 
   it('gives no account for non-existent GitHub owner/name repository', async () => {
@@ -72,7 +74,7 @@ describe('findAccountForRemoteURL', () => {
       accounts,
       mockCanAccessRepository
     )
-    expect(account).toBeNull()
+    assert(account === null)
   })
 
   it('finds the anonymous account for public GitHub owner/name repository', async () => {
@@ -81,8 +83,8 @@ describe('findAccountForRemoteURL', () => {
       [],
       mockCanAccessRepository
     )
-    expect(account).not.toBeNull()
-    expect(account!).toEqual(Account.anonymous())
+    assert(account !== null)
+    assert.deepStrictEqual(account, Account.anonymous())
   })
 
   it('finds the anonymous account for public repository on GitHub endpoint', async () => {
@@ -91,8 +93,8 @@ describe('findAccountForRemoteURL', () => {
       [],
       mockCanAccessRepository
     )
-    expect(account).not.toBeNull()
-    expect(account!).toEqual(Account.anonymous())
+    assert(account !== null)
+    assert.deepStrictEqual(account, Account.anonymous())
   })
 
   it('finds the account for GitHub owner/name repository', async () => {
@@ -101,8 +103,8 @@ describe('findAccountForRemoteURL', () => {
       accounts,
       mockCanAccessRepository
     )
-    expect(account).not.toBeNull()
-    expect(account!.login).toBe('joan')
+    assert(account !== null)
+    assert.deepStrictEqual(account.login, 'joan')
   })
 
   it('finds the account for GitHub endpoint', async () => {
@@ -111,8 +113,8 @@ describe('findAccountForRemoteURL', () => {
       accounts,
       mockCanAccessRepository
     )
-    expect(account).not.toBeNull()
-    expect(account!.login).toBe('joan')
+    assert(account !== null)
+    assert.deepStrictEqual(account.login, 'joan')
   })
 
   it('finds the account for GitHub Enterprise endpoint', async () => {
@@ -121,8 +123,8 @@ describe('findAccountForRemoteURL', () => {
       accounts,
       mockCanAccessRepository
     )
-    expect(account).not.toBeNull()
-    expect(account!.login).toBe('joel')
+    assert(account !== null)
+    assert.deepStrictEqual(account.login, 'joel')
   })
 
   it('finds the account for private GitHub owner/name repository', async () => {
@@ -131,8 +133,8 @@ describe('findAccountForRemoteURL', () => {
       accounts,
       mockCanAccessRepository
     )
-    expect(account).not.toBeNull()
-    expect(account!.login).toBe('joan')
+    assert(account !== null)
+    assert.deepStrictEqual(account.login, 'joan')
   })
 
   it('cannot see the private GitHub owner/name repository', async () => {
@@ -141,6 +143,6 @@ describe('findAccountForRemoteURL', () => {
       [],
       mockCanAccessRepository
     )
-    expect(account).toBeNull()
+    assert(account === null)
   })
 })

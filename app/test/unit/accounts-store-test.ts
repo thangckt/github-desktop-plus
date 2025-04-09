@@ -1,3 +1,5 @@
+import { describe, it, beforeEach } from 'node:test'
+import assert from 'node:assert'
 import { Account } from '../../src/models/account'
 import { AccountsStore } from '../../src/lib/stores'
 import { InMemoryStore, AsyncInMemoryStore } from '../helpers/stores'
@@ -31,7 +33,7 @@ describe('AccountsStore', () => {
       )
 
       const users = await accountsStore.getAll()
-      expect(users[0].login).toBe(newAccountLogin)
+      assert.equal(users[0].login, newAccountLogin)
     })
   })
 
@@ -56,12 +58,12 @@ describe('AccountsStore', () => {
       accountsStore = new AccountsStore(dataStore, new AsyncInMemoryStore())
 
       const users = await accountsStore.getAll()
-      expect(users[0].login).toBe('joan')
-      expect(users[0].endpoint).toBe('https://api.whatever.ghe.com/')
+      assert.equal(users[0].login, 'joan')
+      assert.equal(users[0].endpoint, 'https://api.whatever.ghe.com/')
 
       const persistedUsers = JSON.parse(dataStore.getItem('users'))
-      expect(persistedUsers[0].login).toBe('joan')
-      expect(persistedUsers[0].endpoint).toBe('https://api.whatever.ghe.com/')
+      assert.equal(persistedUsers[0].login, 'joan')
+      assert.equal(persistedUsers[0].endpoint, 'https://api.whatever.ghe.com/')
     })
 
     it('does NOT migrate GHE users already using the api. subdomain', async () => {
@@ -84,12 +86,12 @@ describe('AccountsStore', () => {
       accountsStore = new AccountsStore(dataStore, new AsyncInMemoryStore())
 
       const users = await accountsStore.getAll()
-      expect(users[0].login).toBe('joan')
-      expect(users[0].endpoint).toBe('https://api.whatever.ghe.com/')
+      assert.equal(users[0].login, 'joan')
+      assert.equal(users[0].endpoint, 'https://api.whatever.ghe.com/')
 
       const persistedUsers = JSON.parse(dataStore.getItem('users'))
-      expect(persistedUsers[0].login).toBe('joan')
-      expect(persistedUsers[0].endpoint).toBe('https://api.whatever.ghe.com/')
+      assert.equal(persistedUsers[0].login, 'joan')
+      assert.equal(persistedUsers[0].endpoint, 'https://api.whatever.ghe.com/')
     })
 
     it('does NOT migrate GHES users still using /api/v3 to api. subdomain', async () => {
@@ -112,12 +114,13 @@ describe('AccountsStore', () => {
       accountsStore = new AccountsStore(dataStore, new AsyncInMemoryStore())
 
       const users = await accountsStore.getAll()
-      expect(users[0].login).toBe('joan')
-      expect(users[0].endpoint).toBe('https://my-company-repos.com/api/v3')
+      assert.equal(users[0].login, 'joan')
+      assert.equal(users[0].endpoint, 'https://my-company-repos.com/api/v3')
 
       const persistedUsers = JSON.parse(dataStore.getItem('users'))
-      expect(persistedUsers[0].login).toBe('joan')
-      expect(persistedUsers[0].endpoint).toBe(
+      assert.equal(persistedUsers[0].login, 'joan')
+      assert.equal(
+        persistedUsers[0].endpoint,
         'https://my-company-repos.com/api/v3'
       )
     })

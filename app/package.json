@@ -3,7 +3,7 @@
   "productName": "GitHub Desktop",
   "bundleID": "com.github.GitHubClient",
   "companyName": "GitHub, Inc.",
-  "version": "3.4.19-beta1",
+  "version": "3.4.19-beta2",
   "main": "./main.js",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "codemirror-mode-zig": "^1.0.7",
     "compare-versions": "^3.6.0",
     "deep-equal": "^1.0.1",
-    "desktop-notifications": "^0.2.4",
+    "desktop-notifications": "file:../vendor/desktop-notifications",
     "desktop-trampoline": "desktop/desktop-trampoline#v0.9.10",
     "dexie": "^3.2.3",
     "dompurify": "^3.2.4",
@@ -72,7 +72,6 @@
   },
   "devDependencies": {
     "electron-devtools-installer": "^4.0.0",
-    "temp": "^0.8.3",
     "webpack-hot-middleware": "^2.10.0"
   }
 }
