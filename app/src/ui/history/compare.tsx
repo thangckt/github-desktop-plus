@@ -33,6 +33,7 @@ import { doMergeCommitsExistAfterCommit } from '../../lib/git'
 import { KeyboardInsertionData } from '../lib/list'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { syncClockwise } from '../octicons'
 
 interface ICompareSidebarProps {
   readonly isCompareView: boolean
@@ -73,6 +74,8 @@ interface ICompareSidebarState {
 
   /** Data to be reordered via keyboard */
   readonly keyboardReorderData?: KeyboardInsertionData
+
+  readonly isSearching: boolean
 }
 
 /** If we're within this many rows from the bottom, load the next history batch. */
@@ -93,7 +96,7 @@ export class CompareSidebar extends React.Component<
   public constructor(props: ICompareSidebarProps) {
     super(props)
 
-    this.state = { focusedBranch: null }
+    this.state = { focusedBranch: null, isSearching: false }
   }
 
   public componentWillReceiveProps(nextProps: ICompareSidebarProps) {
@@ -173,7 +176,8 @@ export class CompareSidebar extends React.Component<
         <div className="commit-search-form">
           <FancyTextBox
             ariaLabel="Commit filter"
-            symbol={octicons.search}
+            symbol={this.state.isSearching ? syncClockwise : octicons.search}
+            symbolClassName={this.state.isSearching ? 'spin' : undefined}
             displayClearButton={true}
             placeholder={__DARWIN__ ? 'Search Commits' : 'Search commits'}
             value={commitSearchQuery}
@@ -605,8 +609,13 @@ export class CompareSidebar extends React.Component<
     })
   }
 
-  private onCommitSearchQueryChanged = (text: string) => {
-    this.props.dispatcher.setCommitSearchQuery(this.props.repository, text)
+  private onCommitSearchQueryChanged = async (text: string) => {
+    this.setState({ isSearching: true })
+    await this.props.dispatcher.setCommitSearchQuery(
+      this.props.repository,
+      text
+    )
+    this.setState({ isSearching: false })
   }
 
   private clearFilterState = () => {

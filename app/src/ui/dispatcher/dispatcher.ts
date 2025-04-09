@@ -227,8 +227,11 @@ export class Dispatcher {
   }
 
   /** Update the commit search filter text. */
-  public setCommitSearchQuery(repository: Repository, text: string): void {
-    this.appStore._updateCommitSearchQuery(repository, text)
+  public setCommitSearchQuery(
+    repository: Repository,
+    text: string
+  ): Promise<void> {
+    return this.appStore._updateCommitSearchQuery(repository, text)
   }
 
   /** Load the changed files for the current history selection. */
