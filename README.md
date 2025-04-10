@@ -1,6 +1,6 @@
 # GitHub Desktop Plus
 
-This is a work in progress fork of [GitHub Desktop](https://desktop.github.com) for Linux with additional features and improvements.
+This is a fork of [GitHub Desktop](https://desktop.github.com) for Linux with additional features and improvements.
 
 ## Extra Features 
 
@@ -113,7 +113,7 @@ yarn test:docker
 
 While the "official" Linux fork of GitHub Desktop is great, I think it's slow in terms of updates and lacks some advanced features that I'd like. This fork has low code quality requirements compared to the official fork, so I (and hopefully you as well) can add features and improvements quickly.
 
-This fork also focuses on integrating nicely with Bitbucket, since I have to use them for work and haven't found a good desktop client for it.
+This fork also focuses on integrating nicely with Bitbucket, since I use it for work and haven't found a good Linux GUI client for it.
 
 ---
 
