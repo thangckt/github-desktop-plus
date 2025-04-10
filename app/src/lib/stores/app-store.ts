@@ -7991,10 +7991,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   public _setShowCIStatusPopover(showCIStatusPopover: boolean) {
-    if (this.showCIStatusPopover !== showCIStatusPopover) {
-      this.showCIStatusPopover = showCIStatusPopover
-      this.emitUpdate()
+    if (this.showCIStatusPopover === showCIStatusPopover) {
+      showCIStatusPopover = false
     }
+    this.showCIStatusPopover = showCIStatusPopover
+    this.emitUpdate()
   }
 
   public _toggleCIStatusPopover() {
