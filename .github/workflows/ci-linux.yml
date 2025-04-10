@@ -71,7 +71,7 @@ jobs:
           ref: ${{ inputs.ref }}
           submodules: recursive
       - name: Package and test application in container
-        uses: shiftkey/desktop-ubuntu-amd64-packaging@ea7b7a6a940a6b907b160b946439c5c7a516f9f1
+        uses: pol-rivero/desktop-ubuntu-amd64-packaging@b7e6c5c7b31a5330d7f4cbb88b7da08be70f1537
       - name: Upload output artifacts
         uses: actions/upload-artifact@v4
         with:
