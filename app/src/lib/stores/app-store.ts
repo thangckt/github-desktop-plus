@@ -1592,19 +1592,21 @@ export class AppStore extends TypedBaseStore<IAppState> {
         )
       )
 
-      const newState: IDisplayHistory = {
+      const historyState: IDisplayHistory = {
         kind: HistoryTabMode.History,
       }
 
-      this.repositoryStateCache.updateCompareState(repository, () => ({
+      this.repositoryStateCache.updateCompareState(repository, oldState => ({
         tip: currentSha,
-        formState: newState,
+        formState: fromInitialize ? oldState.formState : historyState,
         allHistoryCommitSHAs: commits,
         filteredHistoryCommitSHAs: filteredCommits,
-        filterText: '',
-        showBranchList: true,
+        filterText: fromInitialize ? oldState.filterText : '',
+        showBranchList: fromInitialize ? oldState.showBranchList : true,
       }))
-      this.updateOrSelectFirstCommit(repository, commits)
+      if (!fromInitialize) {
+        this.updateOrSelectFirstCommit(repository, commits)
+      }
 
       if (filteredCommits.length > 0) {
         this.emitUpdate()
