@@ -102,6 +102,7 @@ import { stat } from 'fs/promises'
 import { findForkedRemotesToPrune } from './helpers/find-forked-remotes-to-prune'
 import { findDefaultBranch } from '../find-default-branch'
 import { cleanUntrackedFiles } from '../git/clean'
+import { dotGitPath } from '../helpers/git-dir'
 
 /** The number of commits to load from history per batch. */
 const CommitBatchSize = 100
@@ -1446,7 +1447,7 @@ export class GitStore extends BaseStore {
 
   /** Update the last fetched date. */
   public async updateLastFetched() {
-    const fetchHeadPath = Path.join(this.repository.path, '.git', 'FETCH_HEAD')
+    const fetchHeadPath = dotGitPath(this.repository, 'FETCH_HEAD')
 
     try {
       const fstat = await stat(fetchHeadPath)

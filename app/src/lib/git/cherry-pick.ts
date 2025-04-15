@@ -1,4 +1,3 @@
-import * as Path from 'path'
 import { GitError } from 'dugite'
 import { Repository } from '../../models/repository'
 import {
@@ -26,6 +25,7 @@ import { getCommit } from '.'
 import { IMultiCommitOperationProgress } from '../../models/progress'
 import { readFile } from 'fs/promises'
 import { pathExists } from '../../ui/lib/path-exists'
+import { dotGitPath } from '../helpers/git-dir'
 
 /** The app-specific results from attempting to cherry pick commits*/
 export enum CherryPickResult {
@@ -241,7 +241,7 @@ export async function getCherryPickSnapshot(
   try {
     abortSafetySha = (
       await readFile(
-        Path.join(repository.path, '.git', 'sequencer', 'abort-safety'),
+        dotGitPath(repository, 'sequencer', 'abort-safety'),
         'utf8'
       )
     ).trim()
@@ -253,10 +253,7 @@ export async function getCherryPickSnapshot(
     }
 
     headSha = (
-      await readFile(
-        Path.join(repository.path, '.git', 'sequencer', 'head'),
-        'utf8'
-      )
+      await readFile(dotGitPath(repository, 'sequencer', 'head'), 'utf8')
     ).trim()
 
     if (headSha === '') {
@@ -266,10 +263,7 @@ export async function getCherryPickSnapshot(
     }
 
     const remainingPicks = (
-      await readFile(
-        Path.join(repository.path, '.git', 'sequencer', 'todo'),
-        'utf8'
-      )
+      await readFile(dotGitPath(repository, 'sequencer', 'todo'), 'utf8')
     ).trim()
 
     if (remainingPicks === '') {
@@ -307,10 +301,7 @@ export async function getCherryPickSnapshot(
     // If cherry-pick is in progress, then there was only one commit cherry-picked
     // thus sequencer files were not used.
     const cherryPickHeadSha = (
-      await readFile(
-        Path.join(repository.path, '.git', 'CHERRY_PICK_HEAD'),
-        'utf8'
-      )
+      await readFile(dotGitPath(repository, 'CHERRY_PICK_HEAD'), 'utf8')
     ).trim()
     const commit = await getCommit(repository, cherryPickHeadSha)
     if (commit === null) {
@@ -487,11 +478,7 @@ export async function isCherryPickHeadFound(
   repository: Repository
 ): Promise<boolean> {
   try {
-    const cherryPickHeadPath = Path.join(
-      repository.path,
-      '.git',
-      'CHERRY_PICK_HEAD'
-    )
+    const cherryPickHeadPath = dotGitPath(repository, 'CHERRY_PICK_HEAD')
     return pathExists(cherryPickHeadPath)
   } catch (err) {
     log.warn(
