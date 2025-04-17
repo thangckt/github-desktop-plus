@@ -162,6 +162,7 @@ interface IChangesListProps {
   readonly dispatcher: Dispatcher
   readonly availableWidth: number
   readonly isCommitting: boolean
+  readonly isGeneratingCommitMessage: boolean
   readonly commitToAmend: Commit | null
   readonly currentBranchProtected: boolean
   readonly currentRepoRulesInfo: RepoRulesInfo
@@ -813,6 +814,7 @@ export class ChangesList extends React.Component<
       repositoryAccount,
       dispatcher,
       isCommitting,
+      isGeneratingCommitMessage,
       commitToAmend,
       currentBranchProtected,
       currentRepoRulesInfo: currentRepoRulesInfo,
@@ -872,6 +874,7 @@ export class ChangesList extends React.Component<
         isShowingFoldout={this.props.isShowingFoldout}
         anyFilesSelected={anyFilesSelected}
         anyFilesAvailable={fileCount > 0}
+        filesSelected={filesSelected}
         filesToBeCommittedCount={
           enableFilteredChangesList() ? filesSelected.length : undefined
         }
@@ -881,6 +884,7 @@ export class ChangesList extends React.Component<
         focusCommitMessage={this.props.focusCommitMessage}
         autocompletionProviders={this.props.autocompletionProviders}
         isCommitting={isCommitting}
+        isGeneratingCommitMessage={isGeneratingCommitMessage}
         commitToAmend={commitToAmend}
         showCoAuthoredBy={this.props.showCoAuthoredBy}
         coAuthors={this.props.coAuthors}
@@ -903,6 +907,7 @@ export class ChangesList extends React.Component<
           this.onConfirmCommitWithUnknownCoAuthors
         }
         onPersistCommitMessage={this.onPersistCommitMessage}
+        onGenerateCommitMessage={this.onGenerateCommitMessage}
         onCommitMessageFocusSet={this.onCommitMessageFocusSet}
         onRefreshAuthor={this.onRefreshAuthor}
         onShowPopup={this.onShowPopup}
@@ -914,7 +919,6 @@ export class ChangesList extends React.Component<
       />
     )
   }
-
   private onCoAuthorsUpdated = (coAuthors: ReadonlyArray<Author>) =>
     this.props.dispatcher.setCoAuthors(this.props.repository, coAuthors)
 
@@ -939,6 +943,25 @@ export class ChangesList extends React.Component<
 
   private onPersistCommitMessage = (message: ICommitMessage) =>
     this.props.dispatcher.setCommitMessage(this.props.repository, message)
+
+  private onGenerateCommitMessage = (
+    filesSelected: ReadonlyArray<WorkingDirectoryFileChange>,
+    mustOverrideExistingMessage: boolean
+  ) => {
+    this.props.dispatcher.incrementMetric(
+      'generateCommitMessageButtonClickCount'
+    )
+
+    return mustOverrideExistingMessage
+      ? this.props.dispatcher.promptOverrideWithGeneratedCommitMessage(
+          this.props.repository,
+          filesSelected
+        )
+      : this.props.dispatcher.generateCommitMessage(
+          this.props.repository,
+          filesSelected
+        )
+  }
 
   private onShowPopup = (p: Popup) => this.props.dispatcher.showPopup(p)
   private onShowFoldout = (f: Foldout) => this.props.dispatcher.showFoldout(f)
