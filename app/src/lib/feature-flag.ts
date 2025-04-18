@@ -1,5 +1,3 @@
-import { Account } from '../models/account'
-
 const Disable = false
 
 /**
@@ -108,14 +106,4 @@ export const enableResizingToolbarButtons = () => true
 export const enableFilteredChangesList = enableBetaFeatures
 export const enableMultipleEnterpriseAccounts = enableBetaFeatures
 
-export const enableCommitMessageGeneration = (account: Account) => {
-  return (
-    enableBetaFeatures() &&
-    (account.features ?? []).includes(
-      'desktop_copilot_generate_commit_message'
-    ) &&
-    // IMPORTANT: Do not remove this feature flag without replacing its usages
-    // with a check for the `isCopilotDesktopEnabled` property on the account.
-    account.isCopilotDesktopEnabled
-  )
-}
+export const enableCommitMessageGeneration = enableBetaFeatures

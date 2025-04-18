@@ -1162,6 +1162,7 @@ export class API {
   ) {
     this.endpoint = endpoint
     this.token = token
+    this.copilotEndpoint = copilotEndpoint
   }
 
   public getToken() {
@@ -2632,7 +2633,7 @@ export class BitbucketAPI extends API {
   }
 
   public override async fetchAccount(): Promise<IAPIFullIdentity> {
-    const response = await this.request('GET', 'user')
+    const response = await this.request(this.endpoint, 'GET', 'user')
     return toIAPIFullIdentity(
       await parsedResponse<IBitbucketAPIIdentity>(response)
     )
@@ -2667,6 +2668,7 @@ export class BitbucketAPI extends API {
   ): Promise<IAPIFullRepository | null> {
     try {
       const response = await this.request(
+        this.endpoint,
         'GET',
         `repositories/${owner}/${name}`
       )

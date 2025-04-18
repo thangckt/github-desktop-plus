@@ -85,7 +85,10 @@ export class Account {
       this.avatarURL,
       this.id,
       this.name,
-      this.plan
+      this.plan,
+      this.copilotEndpoint,
+      this.isCopilotDesktopEnabled,
+      this.features
     )
   }
 
