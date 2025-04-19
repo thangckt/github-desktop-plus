@@ -86,7 +86,6 @@ export class CompareSidebar extends React.Component<
   ICompareSidebarState
 > {
   private textbox: TextBox | null = null
-  private searchBox: TextBox | null = null
   private readonly loadChangedFilesScheduler = new ThrottledScheduler(200)
   private branchList: BranchList | null = null
   private commitListRef = React.createRef<CommitList>()
@@ -176,15 +175,12 @@ export class CompareSidebar extends React.Component<
         <div className="commit-search-form">
           <FancyTextBox
             ariaLabel="Commit filter"
+            type="search"
             symbol={this.state.isSearching ? syncClockwise : octicons.search}
             symbolClassName={this.state.isSearching ? 'spin' : undefined}
-            displayClearButton={true}
             placeholder={__DARWIN__ ? 'Search Commits' : 'Search commits'}
             value={commitSearchQuery}
-            onRef={this.onSearchBoxRef}
             onValueChanged={this.onCommitSearchQueryChanged}
-            onKeyDown={this.onCommitFilterKeyDown}
-            onSearchCleared={this.handleEscapeCommitSearch}
           />
         </div>
 
@@ -487,15 +483,6 @@ export class CompareSidebar extends React.Component<
     return item.branch.name
   }
 
-  private onCommitFilterKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    const key = event.key
-    if (key === 'Escape') {
-      this.handleEscapeCommitSearch()
-    }
-  }
-
   private onBranchFilterKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
@@ -536,13 +523,6 @@ export class CompareSidebar extends React.Component<
         this.branchList.selectNextItem(true, 'up')
       }
     }
-  }
-
-  private handleEscapeCommitSearch = () => {
-    this.props.dispatcher.updateCompareForm(this.props.repository, {
-      commitSearchQuery: '',
-    })
-    this.searchBox?.blur()
   }
 
   private handleEscape = () => {
@@ -662,10 +642,6 @@ export class CompareSidebar extends React.Component<
 
   private onTextBoxRef = (textbox: TextBox) => {
     this.textbox = textbox
-  }
-
-  private onSearchBoxRef = (textbox: TextBox) => {
-    this.searchBox = textbox
   }
 
   private onCreateTag = (targetCommitSha: string) => {
