@@ -1595,12 +1595,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
         return
       }
 
-      const queryTextLowercase = compareState.commitSearchQuery.toLowerCase()
+      const queryLowercase = compareState.commitSearchQuery.toLowerCase()
       const filteredCommits = commits.filter(sha =>
-        this.commitIsIncluded(
-          gitStore.commitLookup.get(sha),
-          queryTextLowercase
-        )
+        this.commitIsIncluded(gitStore.commitLookup.get(sha), queryLowercase)
       )
 
       const historyState: IDisplayHistory = {
@@ -1626,7 +1623,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
         return this._loadNextCommitBatch(
           repository,
           filteredCommits.length,
-          queryTextLowercase
+          queryLowercase
         )
       }
       return
@@ -1838,12 +1835,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       ? compareState.filteredHistoryCommitSHAs
       : compareState.allHistoryCommitSHAs
     const queryTextLowercase = query.toLowerCase()
-    const filteredCommitSHAs = candidateCommitSHAs.filter(sha => {
-      return this.commitIsIncluded(
-        state.commitLookup.get(sha),
-        queryTextLowercase
-      )
-    })
+    const filteredCommitSHAs = candidateCommitSHAs.filter(sha =>
+      this.commitIsIncluded(state.commitLookup.get(sha), queryTextLowercase)
+    )
     this.repositoryStateCache.updateCompareState(repository, () => ({
       filteredHistoryCommitSHAs: filteredCommitSHAs,
     }))
