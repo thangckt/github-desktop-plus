@@ -15,6 +15,7 @@ import {
   RepositorySectionTab,
   ChangesSelectionKind,
   IConstrainedValue,
+  HistoryTabMode,
 } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
 import { IssuesStore, GitHubUserStore } from '../lib/stores'
@@ -776,6 +777,11 @@ export class RepositoryView extends React.Component<
       this.props.dispatcher.updateCompareForm(this.props.repository, {
         filterText: '',
         showBranchList: true,
+      })
+    }
+    if (section === RepositorySectionTab.History) {
+      this.props.dispatcher.executeCompare(this.props.repository, {
+        kind: HistoryTabMode.History,
       })
     }
   }
