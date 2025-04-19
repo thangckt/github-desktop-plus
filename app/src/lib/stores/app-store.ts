@@ -568,6 +568,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private repositoryFilterText: string = ''
 
   private currentMergeTreePromise: Promise<void> | null = null
+  private currentCommitFilterPromise: Promise<void> | null = null
 
   /** The function to resolve the current Open in Desktop flow. */
   private resolveOpenInDesktop:
@@ -1831,23 +1832,31 @@ export class AppStore extends TypedBaseStore<IAppState> {
       commitSearchQuery: query,
     }))
 
+    if (this.currentCommitFilterPromise) {
+      await this.currentCommitFilterPromise
+    }
+
     const candidateCommitSHAs = isIncrementalSearch
       ? compareState.filteredHistoryCommitSHAs
       : compareState.allHistoryCommitSHAs
     const queryTextLowercase = query.toLowerCase()
-    const filteredCommitSHAs = candidateCommitSHAs.filter(sha =>
-      this.commitIsIncluded(state.commitLookup.get(sha), queryTextLowercase)
-    )
+    const filteredCommitSHAs = queryTextLowercase
+      ? candidateCommitSHAs.filter(sha =>
+          this.commitIsIncluded(state.commitLookup.get(sha), queryTextLowercase)
+        )
+      : candidateCommitSHAs
     this.repositoryStateCache.updateCompareState(repository, () => ({
       filteredHistoryCommitSHAs: filteredCommitSHAs,
     }))
     this.emitUpdate()
     if (filteredCommitSHAs.length < MinimumFilteredCommitsToLoad) {
-      return this._loadNextCommitBatch(
+      this.currentCommitFilterPromise = this._loadNextCommitBatch(
         repository,
         filteredCommitSHAs.length,
         queryTextLowercase
       )
+      await this.currentCommitFilterPromise
+      this.currentCommitFilterPromise = null
     }
   }
 
