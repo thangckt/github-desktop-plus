@@ -506,6 +506,7 @@ export class CompareSidebar extends React.Component<
 
         this.props.dispatcher.updateCompareForm(this.props.repository, {
           filterText: branch.name,
+          showBranchList: false,
         })
       }
 
