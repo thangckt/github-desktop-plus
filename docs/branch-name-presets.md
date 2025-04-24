@@ -4,6 +4,10 @@ The app allows you to provide a script for generating branch name presets. This 
 
 After picking the name, you can edit it before creating the branch.
 
+| ![Example1](assets/branch-presets-1.png) | ![Example2](assets/branch-presets-2.png) |
+|------------------------------------------|------------------------------------------|
+| Hardcoded `feature/` and `bugfix/` presets. | Fetching ID + title from an issue tracker. |
+
 ### Step 1: Create the script
 
 Your script can perform any arbitrary logic, such as fetching issues from a repository or Jira server.
