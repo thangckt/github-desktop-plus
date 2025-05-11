@@ -2809,6 +2809,10 @@ export class Dispatcher {
     this.appStore._setShowRecentRepositories(showRecentRepositories)
   }
 
+  public setHideWindowOnQuit(hideWindowOnQuit: boolean) {
+    this.appStore._setHideWindowOnQuit(hideWindowOnQuit)
+  }
+
   public setCommitSpellcheckEnabled(commitSpellcheckEnabled: boolean) {
     this.appStore._setCommitSpellcheckEnabled(commitSpellcheckEnabled)
   }

@@ -81,6 +81,7 @@ interface IPreferencesProps {
   readonly titleBarStyle: TitleBarStyle
   readonly showRecentRepositories: boolean
   readonly repositoryIndicatorsEnabled: boolean
+  readonly hideWindowOnQuit: boolean
   readonly onEditGlobalGitConfig: () => void
   readonly underlineLinks: boolean
   readonly showDiffCheckMarks: boolean
@@ -129,6 +130,7 @@ interface IPreferencesState {
    */
   readonly existingLockFilePath?: string
   readonly repositoryIndicatorsEnabled: boolean
+  readonly hideWindowOnQuit: boolean
 
   readonly initiallySelectedTheme: ApplicationTheme
   readonly initiallySelectedTabSize: number
@@ -194,6 +196,7 @@ export class Preferences extends React.Component<
       titleBarStyle: this.props.titleBarStyle,
       showRecentRepositories: this.props.showRecentRepositories,
       repositoryIndicatorsEnabled: this.props.repositoryIndicatorsEnabled,
+      hideWindowOnQuit: this.props.hideWindowOnQuit,
       initiallySelectedTheme: this.props.selectedTheme,
       initiallySelectedTabSize: this.props.selectedTabSize,
       isLoadingGitConfig: true,
@@ -541,6 +544,7 @@ export class Preferences extends React.Component<
             optOutOfUsageTracking={this.state.optOutOfUsageTracking}
             useExternalCredentialHelper={this.state.useExternalCredentialHelper}
             repositoryIndicatorsEnabled={this.state.repositoryIndicatorsEnabled}
+            hideWindowOnQuit={this.state.hideWindowOnQuit}
             onUseWindowsOpenSSHChanged={this.onUseWindowsOpenSSHChanged}
             onOptOutofReportingChanged={this.onOptOutofReportingChanged}
             onUseExternalCredentialHelperChanged={
@@ -549,6 +553,7 @@ export class Preferences extends React.Component<
             onRepositoryIndicatorsEnabledChanged={
               this.onRepositoryIndicatorsEnabledChanged
             }
+            onHideWindowOnQuitChanged={this.onHideWindowOnQuitChanged}
           />
         )
         break
@@ -582,6 +587,10 @@ export class Preferences extends React.Component<
     repositoryIndicatorsEnabled: boolean
   ) => {
     this.setState({ repositoryIndicatorsEnabled })
+  }
+
+  private onHideWindowOnQuitChanged = (hideWindowOnQuit: boolean) => {
+    this.setState({ hideWindowOnQuit })
   }
 
   private onLockFileDeleted = () => {
@@ -785,6 +794,10 @@ export class Preferences extends React.Component<
         this.state.showRecentRepositories !== this.props.showRecentRepositories
       ) {
         dispatcher.setShowRecentRepositories(this.state.showRecentRepositories)
+      }
+
+      if (this.state.hideWindowOnQuit !== this.props.hideWindowOnQuit) {
+        dispatcher.setHideWindowOnQuit(this.state.hideWindowOnQuit)
       }
     } catch (e) {
       if (isConfigFileLockError(e)) {

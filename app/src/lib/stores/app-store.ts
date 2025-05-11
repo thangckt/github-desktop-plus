@@ -357,6 +357,7 @@ import {
   parseBranchNamePresets,
 } from '../../models/branch-preset'
 import { BypassReasonType } from '../../ui/secret-scanning/bypass-push-protection-dialog'
+import { store } from '../../main-process/settings-store'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -433,6 +434,7 @@ const shellKey = 'shell'
 
 const showRecentRepositoriesKey = 'show-recent-repositories'
 const repositoryIndicatorsEnabledKey = 'enable-repository-indicators'
+const hideWindowOnQuitKey = 'hide-window-on-quit'
 
 // background fetching should occur hourly when Desktop is active, but this
 // lower interval ensures user interactions like switching repositories and
@@ -591,6 +593,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private selectedTabSize = tabSizeDefault
   private titleBarStyle: TitleBarStyle = 'native'
   private showRecentRepositories: boolean = true
+  private hideWindowOnQuit: boolean = false
 
   private useWindowsOpenSSH: boolean = false
 
@@ -698,6 +701,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       getBoolean(repositoryIndicatorsEnabledKey) ?? true
 
     this.showRecentRepositories = getBoolean(showRecentRepositoriesKey) ?? true
+
+    this.hideWindowOnQuit = getBoolean(hideWindowOnQuitKey) ?? false
 
     this.repositoryIndicatorUpdater = new RepositoryIndicatorUpdater(
       this.getRepositoriesForIndicatorRefresh,
@@ -1135,6 +1140,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       optOutOfUsageTracking: this.statsStore.getOptOut(),
       currentOnboardingTutorialStep: this.currentOnboardingTutorialStep,
       repositoryIndicatorsEnabled: this.repositoryIndicatorsEnabled,
+      hideWindowOnQuit: this.hideWindowOnQuit,
       commitSpellcheckEnabled: this.commitSpellcheckEnabled,
       currentDragElement: this.currentDragElement,
       lastThankYou: this.lastThankYou,
@@ -3915,6 +3921,16 @@ export class AppStore extends TypedBaseStore<IAppState> {
     setBoolean(showRecentRepositoriesKey, showRecentRepositories)
     this.showRecentRepositories = showRecentRepositories
     this.emitUpdate()
+  }
+
+  public _setHideWindowOnQuit(hideWindowOnQuit: boolean) {
+    if (this.hideWindowOnQuit === hideWindowOnQuit) {
+      return
+    }
+    setBoolean(hideWindowOnQuitKey, hideWindowOnQuit)
+    this.hideWindowOnQuit = hideWindowOnQuit
+    this.emitUpdate()
+    store.set('hideWindowOnQuit', hideWindowOnQuit)
   }
 
   public _setCommitSpellcheckEnabled(commitSpellcheckEnabled: boolean) {

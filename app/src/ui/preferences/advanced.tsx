@@ -10,10 +10,12 @@ interface IAdvancedPreferencesProps {
   readonly optOutOfUsageTracking: boolean
   readonly useExternalCredentialHelper: boolean
   readonly repositoryIndicatorsEnabled: boolean
+  readonly hideWindowOnQuit: boolean
   readonly onUseWindowsOpenSSHChanged: (checked: boolean) => void
   readonly onOptOutofReportingChanged: (checked: boolean) => void
   readonly onUseExternalCredentialHelperChanged: (checked: boolean) => void
   readonly onRepositoryIndicatorsEnabledChanged: (enabled: boolean) => void
+  readonly onHideWindowOnQuitChanged: (enabled: boolean) => void
 }
 
 interface IAdvancedPreferencesState {
@@ -74,6 +76,12 @@ export class Advanced extends React.Component<
     this.props.onUseWindowsOpenSSHChanged(event.currentTarget.checked)
   }
 
+  private onHideWindowOnQuitChanged = (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    this.props.onHideWindowOnQuitChanged(event.currentTarget.checked)
+  }
+
   private reportDesktopUsageLabel() {
     return (
       <span>
@@ -86,6 +94,7 @@ export class Advanced extends React.Component<
   public render() {
     return (
       <DialogContent>
+        {!__DARWIN__ && this.renderAppSettings()}
         <div className="advanced-section">
           <h2>Background updates</h2>
           <Checkbox
@@ -171,6 +180,27 @@ export class Advanced extends React.Component<
           }
           onChange={this.onUseWindowsOpenSSHChanged}
         />
+      </div>
+    )
+  }
+
+  private renderAppSettings() {
+    return (
+      <div className="advanced-section">
+        <h2>App</h2>
+        <Checkbox
+          label="Hide window instead of quitting"
+          value={
+            this.props.hideWindowOnQuit ? CheckboxValue.On : CheckboxValue.Off
+          }
+          onChange={this.onHideWindowOnQuitChanged}
+        />
+        <div className="git-settings-description">
+          <p>
+            When the window is closed, the app will continue running in the
+            background. Use Ctrl+Q to completely quit the app.
+          </p>
+        </div>
       </div>
     )
   }

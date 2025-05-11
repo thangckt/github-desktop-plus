@@ -30,6 +30,7 @@ import {
 import { addTrustedIPCSender } from './trusted-ipc-sender'
 import { getUpdaterGUID } from '../lib/get-updater-guid'
 import { CLIAction } from '../lib/cli-action'
+import { store } from './settings-store'
 
 export class AppWindow {
   private window: Electron.BrowserWindow
@@ -123,11 +124,14 @@ export class AppWindow {
     })
 
     this.window.on('close', e => {
+      const hideWindowOnQuitSetting = store.get('hideWindowOnQuit', false)
+      const hideInsteadOfClose =
+        (__DARWIN__ || hideWindowOnQuitSetting) && !quitting
       // On macOS, closing the window doesn't mean the app is quitting. If the
       // app is updating, we will prevent the window from closing only when the
       // app is also quitting.
       if (
-        (!__DARWIN__ || quitting) &&
+        !hideInsteadOfClose &&
         !quittingEvenIfUpdating &&
         this.isDownloadingUpdate
       ) {
@@ -146,7 +150,7 @@ export class AppWindow {
       // on macOS, when the user closes the window we really just hide it. This
       // lets us activate quickly and keep all our interesting logic in the
       // renderer.
-      if (__DARWIN__ && !quitting) {
+      if (hideInsteadOfClose) {
         e.preventDefault()
         // https://github.com/desktop/desktop/issues/12838
         if (this.window.isFullScreen()) {
