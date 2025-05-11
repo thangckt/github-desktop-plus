@@ -352,6 +352,11 @@ import {
   migratedCustomIntegration,
 } from '../custom-integration'
 import { updateStore } from '../../ui/lib/update-store'
+import {
+  IBranchNamePreset,
+  parseBranchNamePresets,
+} from '../../models/branch-preset'
+import { BypassReasonType } from '../../ui/secret-scanning/bypass-push-protection-dialog'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
