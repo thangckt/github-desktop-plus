@@ -30,7 +30,7 @@ import {
 import { addTrustedIPCSender } from './trusted-ipc-sender'
 import { getUpdaterGUID } from '../lib/get-updater-guid'
 import { CLIAction } from '../lib/cli-action'
-import { store } from './settings-store'
+import { getStore } from './settings-store'
 
 export class AppWindow {
   private window: Electron.BrowserWindow
@@ -45,6 +45,8 @@ export class AppWindow {
 
   // See https://github.com/desktop/desktop/pull/11162
   private shouldMaximizeOnShow = false
+
+  private store = getStore()
 
   public constructor() {
     const savedWindowState = windowStateKeeper({
@@ -124,7 +126,7 @@ export class AppWindow {
     })
 
     this.window.on('close', e => {
-      const hideWindowOnQuitSetting = store.get('hideWindowOnQuit', false)
+      const hideWindowOnQuitSetting = this.store.get('hideWindowOnQuit', false)
       const hideInsteadOfClose =
         (__DARWIN__ || hideWindowOnQuitSetting) && !quitting
       // On macOS, closing the window doesn't mean the app is quitting. If the

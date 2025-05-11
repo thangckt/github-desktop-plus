@@ -357,7 +357,7 @@ import {
   parseBranchNamePresets,
 } from '../../models/branch-preset'
 import { BypassReasonType } from '../../ui/secret-scanning/bypass-push-protection-dialog'
-import { store } from '../../main-process/settings-store'
+import { getStore } from '../../main-process/settings-store'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -3930,7 +3930,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     setBoolean(hideWindowOnQuitKey, hideWindowOnQuit)
     this.hideWindowOnQuit = hideWindowOnQuit
     this.emitUpdate()
-    store.set('hideWindowOnQuit', hideWindowOnQuit)
+    getStore().set('hideWindowOnQuit', hideWindowOnQuit)
   }
 
   public _setCommitSpellcheckEnabled(commitSpellcheckEnabled: boolean) {
