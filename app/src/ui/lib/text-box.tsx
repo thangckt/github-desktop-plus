@@ -123,6 +123,12 @@ interface ITextBoxState {
   readonly value?: string
 
   /**
+   * The position of the cursor in the input element.
+   * This is used to restore the cursor position after a re-render.
+   */
+  readonly cursorPosition?: { start: number; end: number }
+
+  /**
    * Input just cleared via clear button.
    */
   readonly valueCleared: boolean
@@ -148,6 +154,16 @@ export class TextBox extends React.Component<ITextBoxProps, ITextBoxState> {
   public componentWillReceiveProps(nextProps: ITextBoxProps) {
     if (this.state.value !== nextProps.value) {
       this.setState({ value: nextProps.value })
+    }
+  }
+
+  public componentDidUpdate(prevProps: ITextBoxProps) {
+    if (this.inputElement && this.state.cursorPosition) {
+      const { start, end } = this.state.cursorPosition
+      const max = (this.state.value ?? '').length
+      const safeStart = Math.min(start, max)
+      const safeEnd = Math.min(end, max)
+      this.inputElement.setSelectionRange(safeStart, safeEnd)
     }
   }
 
@@ -191,10 +207,14 @@ export class TextBox extends React.Component<ITextBoxProps, ITextBoxState> {
 
   private onChange = (event: React.FormEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value
+    const cursorPosition = {
+      start: event.currentTarget.selectionStart ?? 0,
+      end: event.currentTarget.selectionEnd ?? 0,
+    }
 
     // Even when the new value is '', we don't want to render the aria-live
     // message saying "input cleared", so we set valueCleared to false.
-    this.setState({ value, valueCleared: false }, () => {
+    this.setState({ value, valueCleared: false, cursorPosition }, () => {
       if (this.props.onValueChanged) {
         this.props.onValueChanged(value)
       }
