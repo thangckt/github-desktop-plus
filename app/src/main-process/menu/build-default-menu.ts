@@ -8,6 +8,7 @@ import { MenuLabelsEvent } from '../../models/menu-labels'
 import * as ipcWebContents from '../ipc-webcontents'
 import { mkdir } from 'fs/promises'
 import { buildTestMenu } from './build-test-menu'
+import { enableFilteredChangesList } from '../../lib/feature-flag'
 import { assertNever } from '../../lib/fatal-error'
 
 const defaultBranchNameValue = __DARWIN__ ? 'Default Branch' : 'default branch'
@@ -41,6 +42,7 @@ export function buildDefaultMenu({
   isStashedChangesVisible = false,
   askForConfirmationWhenStashingAllChanges = true,
   gitHubRepositoryType,
+  isChangesFilterVisible = true,
 }: MenuLabelsEvent): Electron.Menu {
   contributionTargetDefaultBranch = truncateWithEllipsis(
     contributionTargetDefaultBranch,
@@ -221,6 +223,20 @@ export function buildDefaultMenu({
           ? emit('hide-stashed-changes')
           : emit('show-stashed-changes'),
       },
+      ...(enableFilteredChangesList()
+        ? [
+            {
+              label: __DARWIN__
+                ? `${isChangesFilterVisible ? 'Hide' : 'Show'} Changes Filter`
+                : `${
+                    isChangesFilterVisible ? 'Hide' : 'Show'
+                  } Toggle Chan&ges Filter`,
+              id: 'toggle-changes-filter',
+              accelerator: 'CmdOrCtrl+L',
+              click: emit('toggle-changes-filter'),
+            },
+          ]
+        : []),
       {
         label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle &full screen',
         role: 'togglefullscreen',
