@@ -65,21 +65,18 @@ export class RadioButton<T extends React.Key> extends React.Component<
 
   public render() {
     return (
-      // This is just for increasing the click area of the radio button. Keyboard navigation is not affected.
-      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-      <div className="radio-button-component" onClick={this.onContainerClick}>
-        <input
-          ref={this.inputRef}
-          type="radio"
-          id={this.state.inputId}
-          value={this.props.value}
-          checked={this.props.checked}
-          onChange={this.onSelected}
-          tabIndex={this.props.tabIndex}
-          autoFocus={this.props.autoFocus}
-        />
+      <div className="radio-button-component">
         <label htmlFor={this.state.inputId} onDoubleClick={this.onDoubleClick}>
-          {this.props.label ?? this.props.children}
+          <input
+            type="radio"
+            id={this.state.inputId}
+            value={this.props.value}
+            checked={this.props.checked}
+            onChange={this.onSelected}
+            tabIndex={this.props.tabIndex}
+            autoFocus={this.props.autoFocus}
+          />
+          <span>{this.props.label ?? this.props.children}</span>
         </label>
       </div>
     )
