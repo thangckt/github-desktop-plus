@@ -49,8 +49,6 @@ export class RadioButton<T extends React.Key> extends React.Component<
   IRadioButtonProps<T>,
   IRadioButtonState
 > {
-  private readonly inputRef = React.createRef<HTMLInputElement>()
-
   public constructor(props: IRadioButtonProps<T>) {
     super(props)
 
@@ -80,10 +78,6 @@ export class RadioButton<T extends React.Key> extends React.Component<
         </label>
       </div>
     )
-  }
-
-  private onContainerClick = (evt: React.MouseEvent<HTMLDivElement>) => {
-    this.inputRef.current?.click()
   }
 
   private onSelected = (evt: React.FormEvent<HTMLInputElement>) => {

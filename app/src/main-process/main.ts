@@ -327,6 +327,11 @@ if (process.env.GITHUB_DESKTOP_DISABLE_HARDWARE_ACCELERATION) {
   app.disableHardwareAcceleration()
 }
 
+if (__LINUX__) {
+  log.info(`Passing --gtk-version=3 to Electron`)
+  app.commandLine.appendSwitch('gtk-version', '3')
+}
+
 app.on('ready', () => {
   if (isDuplicateInstance || handlingSquirrelEvent) {
     return
