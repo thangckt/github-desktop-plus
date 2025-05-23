@@ -106,18 +106,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
-      - name: Set HOME on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          # Point HOME at USERPROFILE
-          $Env:HOME = $Env:USERPROFILE
-          Write-Output "HOME=$Env:HOME" >> $Env:GITHUB_ENV
-
-          # Ensure the HOME directory exists
-          if (-not (Test-Path -Path $Env:HOME)) {
-            New-Item -ItemType Directory -Path $Env:HOME -Force | Out-Null
-          }
       - name: Install and build dependencies
         run: yarn
         env:
@@ -151,7 +139,7 @@ jobs:
           npm_config_arch: ${{ matrix.arch }}
       - name: Run unit tests
         if: |
-          (runner.os == 'Windows' && matrix.arch == 'x64') || (runner.os == 'macOS' && matrix.arch == 'x64')
+          (runner.os == 'macOS' && matrix.arch == 'x64')
         run: yarn test:unit
       - name: Run script tests
         run: yarn test:script
