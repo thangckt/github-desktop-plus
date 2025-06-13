@@ -2851,6 +2851,10 @@ export class BitbucketAPI extends API {
   public override async fetchRefCheckRuns(): Promise<IAPIRefCheckRuns | null> {
     return null
   }
+
+  public async fetchUserCopilotInfo(): Promise<undefined> {
+    return undefined
+  }
 }
 
 export async function deleteToken(account: Account) {
