@@ -1351,6 +1351,16 @@ export class App extends React.Component<IAppProps, IAppState> {
     this.openInShell(repository)
   }
 
+  /**
+   * Gets a label string for the currently selected external editor, or
+   * `undefined` if the user has selected a custom editor.
+   */
+  private get externalEditorLabel() {
+    return this.state.useCustomEditor
+      ? undefined
+      : this.state.selectedExternalEditor ?? undefined
+  }
+
   private openCurrentRepositoryInExternalEditor() {
     const repository = this.getRepository()
     if (!repository) {
@@ -2900,9 +2910,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     const selectedRepository = this.state.selectedState
       ? this.state.selectedState.repository
       : null
-    const externalEditorLabel = this.state.selectedExternalEditor
-      ? this.state.selectedExternalEditor
-      : undefined
+
     const { useCustomShell, selectedShell } = this.state
     const filterText = this.state.repositoryFilterText
     return (
@@ -2923,7 +2931,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         onOpenInShell={this.openInShell}
         onShowRepository={this.showRepository}
         onOpenInExternalEditor={this.openInExternalEditor}
-        externalEditorLabel={externalEditorLabel}
+        externalEditorLabel={this.externalEditorLabel}
         shellLabel={useCustomShell ? undefined : selectedShell}
         dispatcher={this.props.dispatcher}
       />
@@ -3073,8 +3081,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       return
     }
 
-    const externalEditorLabel = this.state.selectedExternalEditor ?? undefined
-
     const onChangeRepositoryAlias = (repository: Repository) => {
       this.props.dispatcher.showPopup({
         type: PopupType.ChangeRepositoryAlias,
@@ -3093,7 +3099,7 @@ export class App extends React.Component<IAppProps, IAppState> {
       onOpenInExternalEditor: this.openInExternalEditor,
       askForConfirmationOnRemoveRepository:
         this.state.askForConfirmationOnRepositoryRemoval,
-      externalEditorLabel: externalEditorLabel,
+      externalEditorLabel: this.externalEditorLabel,
       onChangeRepositoryAlias: onChangeRepositoryAlias,
       onRemoveRepositoryAlias: onRemoveRepositoryAlias,
       onViewInBrowser: this.viewInBrowser,
@@ -3413,10 +3419,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
 
     if (selectedState.type === SelectionType.Repository) {
-      const externalEditorLabel = state.useCustomEditor
-        ? undefined
-        : state.selectedExternalEditor ?? undefined
-
       return (
         <RepositoryView
           ref={this.repositoryViewRef}
@@ -3455,7 +3457,7 @@ export class App extends React.Component<IAppProps, IAppState> {
           isExternalEditorAvailable={
             state.useCustomEditor || state.selectedExternalEditor !== null
           }
-          externalEditorLabel={externalEditorLabel}
+          externalEditorLabel={this.externalEditorLabel}
           resolvedExternalEditor={state.resolvedExternalEditor}
           onOpenInExternalEditor={this.onOpenInExternalEditor}
           appMenu={state.appMenuState[0]}
