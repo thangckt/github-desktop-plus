@@ -11,10 +11,6 @@
     padding: var(--spacing) 0;
   }
 
-  &:not(.vertical) {
-    gap: var(--spacing);
-  }
-
   &-item {
     // Reset styles from global buttons
     border: none;
