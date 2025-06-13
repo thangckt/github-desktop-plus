@@ -8,25 +8,25 @@
       "type": "node-terminal",
       "nodeVersionHint": 20,
       "preLaunchTask": "Build"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug current test file",
-      "args": [
-        "--disable-warning=ExperimentalWarning",
-        "--experimental-test-module-mocks",
-        "--import",
-        "tsx",
-        "--import",
-        "${workspaceFolder}/app/test/globals.mts",
-        "--test",
-        "${relativeFile}"
-      ],
-      "nodeVersionHint": 20,
-      "envFile": "${workspaceFolder}/.test.env",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
     }
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Debug current test file",
+    //   "args": [
+    //     "--disable-warning=ExperimentalWarning",
+    //     "--experimental-test-module-mocks",
+    //     "--import",
+    //     "tsx",
+    //     "--import",
+    //     "${workspaceFolder}/app/test/globals.mts",
+    //     "--test",
+    //     "${relativeFile}"
+    //   ],
+    //   "nodeVersionHint": 20,
+    //   "envFile": "${workspaceFolder}/.test.env",
+    //   "console": "integratedTerminal",
+    //   "internalConsoleOptions": "neverOpen"
+    // }
   ]
 }
