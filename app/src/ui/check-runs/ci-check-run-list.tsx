@@ -9,6 +9,7 @@ import {
 import { CICheckRunListItem } from './ci-check-run-list-item'
 import { FocusContainer } from '../lib/focus-container'
 import classNames from 'classnames'
+import { Dispatcher } from '../dispatcher'
 
 interface ICICheckRunListProps {
   /** List of check runs to display */
@@ -22,6 +23,8 @@ interface ICICheckRunListProps {
 
   /** Showing a condensed view */
   readonly isCondensedView?: boolean
+
+  readonly dispatcher: Dispatcher
 
   /** Callback to opens check runs target url (maybe GitHub, maybe third party) */
   readonly onViewCheckDetails?: (checkRun: IRefCheck) => void
@@ -167,6 +170,7 @@ export class CICheckRunList extends React.PureComponent<
           onRerunJob={this.props.onRerunJob}
           isCondensedView={this.props.isCondensedView}
           isHeader={false}
+          dispatcher={this.props.dispatcher}
         />
       )
     })

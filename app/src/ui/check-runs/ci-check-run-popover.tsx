@@ -369,6 +369,7 @@ export class CICheckRunPopover extends React.PureComponent<
     return (
       <div className="ci-check-run-list-container">
         <CICheckRunList
+          dispatcher={this.props.dispatcher}
           checkRuns={checkRuns}
           onViewCheckDetails={this.onViewCheckDetails}
           onViewJobStep={this.onViewJobStep}

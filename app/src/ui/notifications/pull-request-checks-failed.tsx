@@ -173,6 +173,7 @@ export class PullRequestChecksFailed extends React.Component<
       <CICheckRunList
         checkRuns={this.state.checks}
         selectable={true}
+        dispatcher={this.props.dispatcher}
         onViewCheckDetails={this.onViewOnGitHub}
         onCheckRunClick={this.onCheckRunClick}
         onRerunJob={
