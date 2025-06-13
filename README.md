@@ -117,7 +117,8 @@ This fork also focuses on integrating nicely with Bitbucket, since I use it for 
 
 ---
 
-*Original readme below.*
+<details>
+<summary>See original README</summary>
 
 # [GitHub Desktop](https://desktop.github.com) - The Linux Fork
 
@@ -292,3 +293,5 @@ folder: [logos](app/static/logos).
 GitHub® and its stylized versions and the Invertocat mark are GitHub's
 Trademarks or registered Trademarks. When using GitHub's logos, be sure to
 follow the GitHub [logo guidelines](https://github.com/logos).
+
+</details>
