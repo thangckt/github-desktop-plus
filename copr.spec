@@ -2,11 +2,10 @@ Name: github-desktop-plus
 Version: 0.4.21
 Release: 1%{?dist}
 Summary: GitHub Desktop Plus, a GUI client for Git and GitHub
+
 License: MIT
 URL: https://github.com/pol-rivero/github-desktop-plus
-
 Source0: %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
-
 
 %if 0%{?fedora} > 41
 ExcludeArch:   %{ix86}
@@ -55,7 +54,8 @@ cp assets/icon.png %{buildroot}%{_datadir}/pixmaps/%{name}.png
 
 mkdir -p %{buildroot}%{_bindir}
 cat > %{buildroot}%{_bindir}/%{name} << EOF
-#!/bin/sh exec electron %{_datadir}/%{name}/main.js --no-sandbox "$@"
+#!/bin/sh
+exec electron %{_datadir}/%{name}/main.js --no-sandbox "$@"
 EOF
 chmod +x %{buildroot}%{_bindir}/%{name}
 
@@ -74,5 +74,5 @@ update-desktop-database &>/dev/null || :
 %{_datadir}/pixmaps/%{name}.png
 
 %changelog
-* Tue Sep 06 2011 The Coon of Ty <Ty@coon.org> - 2.8-1
-- Initial version of the package
+* Thu Jun 26 2025 Your Name <your.email@example.com> - 3.4.21-1
+- Initial package release
