@@ -1,9 +1,9 @@
-Name: github-desktop
-Version: 3.4.21
+Name: github-desktop-plus
+Version: 0.4.21
 Release: 1%{?dist}
 Summary: GitHub Desktop Plus, a GUI client for Git and GitHub
 License: MIT
-URL: https://github.com/thangckt/github-desktop-plus
+URL: https://github.com/pol-rivero/github-desktop-plus
 
 Source0: %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
@@ -62,7 +62,8 @@ chmod +x %{buildroot}%{_bindir}/%{name}
 %post
 update-desktop-database &>/dev/null || :
 
-%postun update-desktop-database &>/dev/null || :
+%postun
+update-desktop-database &>/dev/null || :
 
 %files
 %license LICENSE
@@ -73,3 +74,5 @@ update-desktop-database &>/dev/null || :
 %{_datadir}/pixmaps/%{name}.png
 
 %changelog
+* Tue Sep 06 2011 The Coon of Ty <Ty@coon.org> - 2.8-1
+- Initial version of the package
