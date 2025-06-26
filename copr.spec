@@ -10,8 +10,6 @@ Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 BuildRequires:  git
 BuildRequires:  nodejs
 BuildRequires:  npm
-BuildRequires:  electron-bin
-Requires:       electron-bin
 Requires:       git
 
 %description
@@ -32,13 +30,17 @@ mkdir -p %{buildroot}%{_datadir}/applications
 cat > %{buildroot}%{_datadir}/applications/%{name}.desktop << 'EOF'
 [Desktop Entry]
 Name=GitHub Desktop Plus
-Exec=electron-bin %{_datadir}/%{name}/main.js --no-sandbox
+Exec=%{_bindir}/%{name}
 Type=Application
 Terminal=false
 EOF
 
 mkdir -p %{buildroot}%{_bindir}
-ln -s /usr/bin/electron-bin %{buildroot}%{_bindir}/%{name}
+cat > %{buildroot}%{_bindir}/%{name} << 'EOF'
+#!/bin/sh
+node %{_datadir}/%{name}/main.js "$@"
+EOF
+chmod +x %{buildroot}%{_bindir}/%{name}
 
 %files
 %license LICENSE
